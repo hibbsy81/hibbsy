@@ -154,18 +154,7 @@
 </div>
 
 <footer>
-  Data: <a href="https://open-meteo.com" target="_blank">Open-Meteo</a> — two sources are fetched: Open-Meteo's
-  own "Best Match" (its automatic pick of the highest-resolution model available for the location, shown by
-  default), and the NOAA GFS model directly. Switch between them with the source selector above the table.
-  Wind speed in knots, direction is the compass heading the wind is blowing <i>from</i>, temperature in °C.
-  Heights are shown above DZ level (AGL), using the model's own surface elevation for that point — not above
-  sea level. Altitudes between the underlying model's native pressure levels are linearly interpolated (by
-  vector, using each level's actual geopotential height for that forecast hour) to give values every 1,000 ft
-  — treat them as a smooth estimate, not an independent measurement. QNH shown is the lowest forecast mean-sea-level
-  pressure for the selected calendar day — a conservative reference for altimeter setting, not a substitute for
-  an actual QNH read from your DZ. MGRS parsing covers standard UTM zones/bands only (not the Svalbard/Norway
-  irregular zones or UPS polar zones). Always cross-check against a live winds-aloft briefing and your DZ's
-  actual observations before jumping. Planning reference only.
+  Data: <a href="https://open-meteo.com" target="_blank">Open-Meteo</a>.
 </footer>
 
 <script>
@@ -578,19 +567,6 @@ function renderSourcePicker(activeKey){
   return `<select id="sourcePicker">${opts}</select>`;
 }
 
-// lowest forecast QNH (pressure_msl) among hours that share the same local calendar
-// date as the selected date/time — a conservative altimeter-setting reference.
-function lowestQNH(hourly, selectedLocalIso){
-  const dateStr = selectedLocalIso.slice(0, 10);
-  let min = null, minTime = null;
-  (hourly.time || []).forEach((t, i)=>{
-    if(t.slice(0,10) !== dateStr) return;
-    const p = hourly.pressure_msl?.[i];
-    if(p != null && (min === null || p < min)){ min = p; minTime = t; }
-  });
-  return { min, minTime };
-}
-
 function renderResults(activeKey){
   const entry = lastData[activeKey];
   const pane = document.getElementById('resultsPane');
@@ -606,7 +582,6 @@ function renderResults(activeKey){
   const sfcDir = json.hourly.wind_direction_10m?.[idx];
   const sfcTemp = json.hourly.temperature_2m?.[idx];
   const qnhNow = json.hourly.pressure_msl?.[idx];
-  const qnh = lowestQNH(json.hourly, dt);
 
   let rows = '';
   TARGET_FT.forEach(ft=>{
@@ -646,11 +621,6 @@ function renderResults(activeKey){
         <div class="card-label">QNH at selected time</div>
         <div class="card-value">${qnhNow != null ? `${Math.round(qnhNow)} hPa` : '—'}</div>
       </div>
-      <div class="card">
-        <div class="card-label">Lowest forecast QNH (today)</div>
-        <div class="card-value">${qnh.min != null ? `${Math.round(qnh.min)} hPa` : '—'}
-          <span class="card-sub">${qnh.minTime ? 'at ' + qnh.minTime.slice(11,16) : ''}</span></div>
-      </div>
     </div>
     <div class="table-wrap">
       <table>
@@ -658,7 +628,6 @@ function renderResults(activeKey){
         <tbody>${rows}</tbody>
       </table>
     </div>
-    <div class="approx-note" style="margin-top:8px;">* outside the model's covered range above the DZ elevation — nearest available level used. AGL = above the DZ elevation shown above, not sea level.</div>
   `;
 
   document.getElementById('sourcePicker').addEventListener('change', (e)=>{
