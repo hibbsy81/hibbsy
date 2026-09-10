@@ -1,113 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Hibbs.org.uk</title>
-<link rel="icon" href="favicon.ico" sizes="any">
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500&family=Karla:wght@400;500&display=swap');
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>hibbs (.org.uk)</title>
+    <link rel="stylesheet" href="styles-site.css">
+    <style>
+        /* Center content vertically and horizontally */
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #ffffff;
+        }
 
-  :root {
-    --paper: #F2EBDD;
-    --ink: #2B2620;
-    --brick: #8C4A3A;
-    --brass: #B8985A;
-  }
+        .logo-container {
+            text-align: center;
+        }
 
-  * { box-sizing: border-box; }
-
-  html, body {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-  }
-
-  body {
-    background: var(--paper);
-    background-image:
-      radial-gradient(ellipse at top left, rgba(184,152,90,0.08), transparent 60%),
-      radial-gradient(ellipse at bottom right, rgba(140,74,58,0.06), transparent 55%);
-    color: var(--ink);
-    font-family: 'Karla', sans-serif;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    padding: 24px;
-  }
-
-  main {
-    text-align: center;
-    max-width: 480px;
-  }
-
-  .monogram {
-    width: 88px;
-    height: 88px;
-    margin: 0 auto 28px;
-    display: block;
-  }
-
-  h1 {
-    font-family: 'Fraunces', serif;
-    font-weight: 500;
-    font-optical-sizing: auto;
-    font-size: clamp(2.4rem, 7vw, 3.6rem);
-    line-height: 1.05;
-    margin: 0 0 6px;
-    letter-spacing: -0.01em;
-  }
-
-  .domain {
-    font-family: 'Fraunces', serif;
-    font-style: italic;
-    font-weight: 300;
-    font-size: 1.05rem;
-    color: var(--brick);
-    margin: 0 0 28px;
-  }
-
-  .rule {
-    width: 48px;
-    height: 1px;
-    background: var(--brass);
-    margin: 0 auto 28px;
-  }
-
-  p.status {
-    font-size: 1.05rem;
-    line-height: 1.6;
-    margin: 0 0 8px;
-  }
-
-  p.note {
-    font-size: 0.9rem;
-    color: #6b6255;
-    line-height: 1.6;
-    margin: 0;
-  }
-
-  footer {
-    margin-top: 40px;
-    font-size: 0.8rem;
-    color: #948a7a;
-  }
-</style>
+        .logo-container img {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
 </head>
 <body>
-  <main>
-    <img src="favicon_512.png" alt="Hibbs family monogram" class="monogram">
-    <h1>The Hibbs Family</h1>
-    <p class="domain">hibbs.org.uk</p>
-    <div class="rule"></div>
-    <p class="status">This address belongs to the Hibbs family.</p>
-    <p class="note">Nothing more to see here — just holding the name.</p>
-    <footer>&copy; <span id="year"></span> The Hibbs Family</footer>
-  </main>
-  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+
+    <main class="logo-container">
+        <img src="logo.jpg" width="615" height="180" alt="Hibbs site logo">
+        <div class="posted"></div>
+    </main>
+
 </body>
 </html>
