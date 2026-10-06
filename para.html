@@ -826,6 +826,9 @@ function interpAt(points, targetFt){
   return null;
 }
 
+function fmtDir(deg){
+  return String(Math.round(deg) % 360).padStart(3, '0');
+}
 function dirToArrow(deg){
   const rot = (deg + 180) % 360;
   return `<span class="arrow" style="display:inline-block;transform:rotate(${rot}deg)">↑</span>`;
@@ -876,7 +879,7 @@ function renderResults(activeKey){
     const tempStr = r.temp != null ? `${r.temp>0?'+':''}${Math.round(r.temp)}°C` : '—';
     rows += `<tr>
       <td>${ft.toLocaleString()} ft${r.extrapolated ? ' *' : ''}</td>
-      <td>${dirToArrow(r.dir)}${Math.round(r.dir)}°</td>
+      <td>${dirToArrow(r.dir)}${fmtDir(r.dir)}°</td>
       <td class="spd ${spdClass(r.spd)}">${Math.round(r.spd)} kt</td>
       <td>${tempStr}</td>
     </tr>`;
@@ -894,7 +897,7 @@ function renderResults(activeKey){
       </div>
       <div class="card">
         <div class="card-label">Surface wind</div>
-        <div class="card-value">${sfcSpd != null ? `${dirToArrow(sfcDir)}${Math.round(sfcDir)}° <span class="card-sub">${Math.round(sfcSpd)} kt</span>` : '—'}</div>
+        <div class="card-value">${sfcSpd != null ? `${dirToArrow(sfcDir)}${fmtDir(sfcDir)}° <span class="card-sub">${Math.round(sfcSpd)} kt</span>` : '—'}</div>
       </div>
       <div class="card">
         <div class="card-label">Surface temp</div>
