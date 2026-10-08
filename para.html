@@ -56,8 +56,8 @@
   .src-row{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; flex-wrap:wrap; }
   .src-row .meta{ font-size:12.5px; color:var(--muted); }
 
-  .summary-cards{ display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px; }
-  .card{ flex:1 1 160px; background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:10px 12px; }
+  .summary-cards{ display:grid; grid-template-columns:repeat(auto-fill, minmax(160px, 1fr)); gap:10px; margin-bottom:14px; }
+  .card{ background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:10px 12px; }
   .card-label{ font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; margin-bottom:4px; }
   .card-value{ font-size:16px; font-weight:650; }
   .card-sub{ font-size:12px; font-weight:500; color:var(--muted); margin-left:4px; }
@@ -105,7 +105,7 @@
 <body>
 
 <header>
-  <h1>🪂 DZ Wind Forecasts</h1>
+  <h1>DZ Wind Forecasts</h1>
   <div class="sub">Enter the drop zone location, pick a time, and read winds every 1,000 ft up to 25,000 ft.</div>
 </header>
 
@@ -932,8 +932,8 @@ function renderResults(activeKey){
         <div class="card-value">${Math.round(dzElevationFt).toLocaleString()} ft <span class="card-sub">${Math.round(dzElevationM)} m</span></div>
       </div>
       <div class="card">
-        <div class="card-label">Surface wind</div>
-        <div class="card-value">${sfcSpd != null ? `${dirToArrow(sfcDir)}${fmtDir(sfcDir)}° <span class="card-sub">${Math.round(sfcSpd)} kt</span>` : '—'}</div>
+        <div class="card-label">Surface wind (°T)</div>
+        <div class="card-value">${sfcSpd != null ? `${dirToArrow(sfcDir)}${fmtDir(sfcDir)}° <span style="margin-left:8px">${Math.round(sfcSpd)} kt</span>` : '—'}</div>
       </div>
       <div class="card">
         <div class="card-label">Surface temp</div>
@@ -950,7 +950,7 @@ function renderResults(activeKey){
     </div>
     <div class="table-wrap">
       <table>
-        <thead><tr><th>Height AGL</th><th>Direction (from)</th><th>Speed</th><th>Temp</th></tr></thead>
+        <thead><tr><th>Height AGL</th><th>Direction from (°T)</th><th>Speed</th><th>Temp</th></tr></thead>
         <tbody>${rows}</tbody>
       </table>
     </div>
