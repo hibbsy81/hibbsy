@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Winds Aloft — Parachute Drop Zone Planner</title>
+<title>DZ Wind Forecasts</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
@@ -105,7 +105,7 @@
 <body>
 
 <header>
-  <h1>🪂 Winds Aloft Planner</h1>
+  <h1>🪂 DZ Wind Forecasts</h1>
   <div class="sub">Enter the drop zone location, pick a time, and read winds every 1,000 ft up to 25,000 ft.</div>
 </header>
 
@@ -134,7 +134,14 @@
     </div>
 
     <div class="field">
-      <label>Date &amp; time (local to DZ)</label>
+      <label>Time basis</label>
+      <select id="timeBasis">
+        <option value="zulu" selected>Zulu (GMT)</option>
+        <option value="local">Local to DZ</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Date &amp; time</label>
       <input type="datetime-local" id="datetime" step="300">
     </div>
     <div class="field">
@@ -454,7 +461,7 @@ function updateMap(lat, lon, pan){
   marker.setLatLng([lat, lon]);
   if(pan !== false) map.setView([lat, lon], map.getZoom() < 6 ? 9 : map.getZoom());
   document.getElementById('locLabel').innerHTML =
-    `Location: <b>${lat.toFixed(5)}, ${lon.toFixed(5)}</b>`;
+    `Location: <b>${formatDDM(lat, true)}, ${formatDDM(lon, false)}</b>`;
 }
 
 // populate the visible input field(s) for whichever format is active
@@ -470,6 +477,29 @@ function populateFieldsFromLatLon(lat, lon){
     document.getElementById('latDDM').value = decToDDMStr(lat, true);
     document.getElementById('lonDDM').value = decToDDMStr(lon, false);
   }
+}
+
+// degrees + decimal minutes, e.g. 51° 30.444' N / 000° 07.668' W
+function formatDDM(dec, isLat){
+  const hemi = isLat ? (dec < 0 ? 'S' : 'N') : (dec < 0 ? 'W' : 'E');
+  const absVal = Math.abs(dec);
+  let deg = Math.floor(absVal);
+  let min = Math.round((absVal - deg) * 60 * 1000) / 1000;
+  if(min >= 60){ min = 0; deg += 1; }
+  const degStr = String(deg).padStart(isLat ? 2 : 3, '0');
+  const minStr = min.toFixed(3).padStart(6, '0');
+  return `${degStr}° ${minStr}' ${hemi}`;
+}
+
+// shift a "YYYY-MM-DDTHH:MM" string by a number of seconds (no timezone parsing)
+function shiftIso(iso, seconds){
+  const ms = Date.UTC(
+    parseInt(iso.slice(0,4),10), parseInt(iso.slice(5,7),10)-1, parseInt(iso.slice(8,10),10),
+    parseInt(iso.slice(11,13),10)||0, parseInt(iso.slice(14,16),10)||0
+  ) + seconds*1000;
+  const d = new Date(ms);
+  const pad = n => String(n).padStart(2,'0');
+  return `${d.getUTCFullYear()}-${pad(d.getUTCMonth()+1)}-${pad(d.getUTCDate())}T${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;
 }
 
 function decToDDMStr(dec, isLat){
@@ -724,10 +754,11 @@ function resolveLocation(){
 (function initDatetime(){
   const now = new Date();
   now.setMinutes(0,0,0);
-  now.setHours(now.getHours()+1);
+  now.setUTCHours(now.getUTCHours()+1);
   const pad = n => String(n).padStart(2,'0');
+  // default is Zulu, so prefill with the next whole hour in UTC
   document.getElementById('datetime').value =
-    `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:00`;
+    `${now.getUTCFullYear()}-${pad(now.getUTCMonth()+1)}-${pad(now.getUTCDate())}T${pad(now.getUTCHours())}:00`;
 })();
 
 // open the native calendar/time picker when the field is tapped or focused
@@ -856,7 +887,7 @@ function renderResults(activeKey){
   const pane = document.getElementById('resultsPane');
   if(!entry){ pane.innerHTML = '<div class="approx-note">No data for this source.</div>'; return; }
 
-  const { json, idx, dt } = entry;
+  const { json, idx, dt, basis } = entry;
   const dzElevationM = json.elevation;
   const dzElevationFt = dzElevationM * 3.28084;
   const points = buildProfile(json.hourly, idx, dzElevationFt);
@@ -891,7 +922,9 @@ function renderResults(activeKey){
   pane.innerHTML = `
     <div class="src-row">
       ${renderSourcePicker(activeKey)}
-      <span class="meta">Forecast for ${time.replace('T',' ')} (${json.timezone_abbreviation || ''})</span>
+      <span class="meta">Forecast for ${basis === 'zulu'
+        ? shiftIso(time, -(json.utc_offset_seconds || 0)).replace('T',' ') + 'Z'
+        : time.replace('T',' ') + ' (' + (json.timezone_abbreviation || 'local') + ')'}</span>
     </div>
     <div class="summary-cards">
       <div class="card">
@@ -931,6 +964,7 @@ function renderResults(activeKey){
 async function runFetch(){
   const statusEl = document.getElementById('status');
   const dt = document.getElementById('datetime').value;
+  const basis = document.getElementById('timeBasis').value;
   if(!dt){ statusEl.className='err'; statusEl.textContent = 'Pick a date and time first.'; return; }
 
   let loc;
@@ -953,11 +987,13 @@ async function runFetch(){
     lastData = {};
     SOURCES.forEach((s, i)=>{
       const json = results[i];
-      const idx = nearestIndex(json.hourly.time, dt);
-      lastData[s.key] = { json, idx, dt };
+      // forecast hours are in DZ-local time; convert a Zulu request to DZ-local first
+      const targetLocal = basis === 'zulu' ? shiftIso(dt, json.utc_offset_seconds || 0) : dt;
+      const idx = nearestIndex(json.hourly.time, targetLocal);
+      lastData[s.key] = { json, idx, dt, basis };
     });
     renderResults('best_match');
-    statusEl.textContent = `Nearest forecast hour matched. Requested: ${dt.replace('T',' ')}`;
+    statusEl.textContent = `Nearest forecast hour matched. Requested: ${dt.replace('T',' ')}${basis === 'zulu' ? 'Z' : ' local'}`;
   } catch(err){
     statusEl.className = 'err';
     statusEl.textContent = 'Error: ' + err.message;
