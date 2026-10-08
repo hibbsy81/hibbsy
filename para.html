@@ -134,15 +134,15 @@
     </div>
 
     <div class="field">
+      <label>Date &amp; time</label>
+      <input type="datetime-local" id="datetime" step="300">
+    </div>
+    <div class="field">
       <label>Time basis</label>
       <select id="timeBasis">
         <option value="zulu" selected>Zulu (GMT)</option>
         <option value="local">Local to DZ</option>
       </select>
-    </div>
-    <div class="field">
-      <label>Date &amp; time</label>
-      <input type="datetime-local" id="datetime" step="300">
     </div>
     <div class="field">
       <label>&nbsp;</label>
@@ -904,6 +904,15 @@ function renderResults(activeKey){
   const magVarStr = magVar != null ? `${Math.abs(magVar).toFixed(1)}° ${magVar >= 0 ? 'E' : 'W'}` : '—';
 
   let rows = '';
+  if(sfcSpd != null && sfcDir != null){
+    const sfcTempStr = sfcTemp != null ? `${sfcTemp>0?'+':''}${Math.round(sfcTemp)}°C` : '—';
+    rows += `<tr>
+      <td>Surface</td>
+      <td>${dirToArrow(sfcDir)}${fmtDir(sfcDir)}°</td>
+      <td class="spd ${spdClass(sfcSpd)}">${Math.round(sfcSpd)} kt</td>
+      <td>${sfcTempStr}</td>
+    </tr>`;
+  }
   TARGET_FT.forEach(ft=>{
     const r = interpAt(points, ft);
     if(!r){
@@ -930,10 +939,6 @@ function renderResults(activeKey){
       <div class="card">
         <div class="card-label">DZ elevation</div>
         <div class="card-value">${Math.round(dzElevationFt).toLocaleString()} ft <span class="card-sub">${Math.round(dzElevationM)} m</span></div>
-      </div>
-      <div class="card">
-        <div class="card-label">Surface wind (°T)</div>
-        <div class="card-value">${sfcSpd != null ? `${dirToArrow(sfcDir)}${fmtDir(sfcDir)}° <span style="margin-left:8px">${Math.round(sfcSpd)} kt</span>` : '—'}</div>
       </div>
       <div class="card">
         <div class="card-label">Surface temp</div>
