@@ -77,6 +77,13 @@
   a{ color:var(--accent); }
   .table-wrap{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
 
+  .day-view{ margin-top:16px; }
+  .day-title{ font-size:12.5px; color:var(--muted); margin-bottom:8px; }
+  .day-table{ width:auto; min-width:100%; }
+  .day-table th, .day-table td{ text-align:center; padding:6px 8px; white-space:nowrap; font-size:12.5px; }
+  .day-table th:first-child, .day-table td:first-child{ text-align:left; position:sticky; left:0; background:var(--panel2); }
+  .day-table .sel{ background:rgba(63,169,245,.18); }
+
   /* ---------------- Mobile ---------------- */
   @media (max-width: 640px){
     header{ padding:12px 14px; }
@@ -151,6 +158,10 @@
     <div class="field">
       <label>&nbsp;</label>
       <button id="myLocBtn">Use my location</button>
+    </div>
+    <div class="field">
+      <label>&nbsp;</label>
+      <button id="shareBtn">Copy link</button>
     </div>
   </div>
   <div id="locLabel">Location: <b>not set</b></div>
@@ -757,8 +768,14 @@ function resolveLocation(){
   now.setUTCHours(now.getUTCHours()+1);
   const pad = n => String(n).padStart(2,'0');
   // default is Zulu, so prefill with the next whole hour in UTC
-  document.getElementById('datetime').value =
-    `${now.getUTCFullYear()}-${pad(now.getUTCMonth()+1)}-${pad(now.getUTCDate())}T${pad(now.getUTCHours())}:00`;
+  const fmtUTC = d => `${d.getUTCFullYear()}-${pad(d.getUTCMonth()+1)}-${pad(d.getUTCDate())}T${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;
+  const dtInput = document.getElementById('datetime');
+  dtInput.value = fmtUTC(now).slice(0,13) + ':00';
+  // keep the picker inside the 16-day forecast window (with a day of slack for time zones)
+  const minD = new Date(); minD.setUTCDate(minD.getUTCDate()-1); minD.setUTCHours(0,0,0,0);
+  const maxD = new Date(); maxD.setUTCDate(maxD.getUTCDate()+15); maxD.setUTCHours(23,55,0,0);
+  dtInput.min = fmtUTC(minD);
+  dtInput.max = fmtUTC(maxD);
 })();
 
 // open the native calendar/time picker when the field is tapped or focused
@@ -781,12 +798,12 @@ for(let ft=1000; ft<=25000; ft+=1000) TARGET_FT.push(ft);
 let lastData = {}; // { sourceKey: {json, idx} }
 
 async function fetchSource(sourceKey, lat, lon){
-  const vars = ['wind_speed_10m', 'wind_direction_10m', 'temperature_2m', 'pressure_msl'];
+  const vars = ['wind_speed_10m', 'wind_direction_10m', 'wind_gusts_10m', 'temperature_2m', 'pressure_msl', 'freezing_level_height'];
   LEVELS_HPA.forEach(h=>{
     vars.push(`wind_speed_${h}hPa`, `wind_direction_${h}hPa`, `geopotential_height_${h}hPa`, `temperature_${h}hPa`);
   });
   const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}` +
-    `&hourly=${vars.join(',')}&models=${sourceKey}&wind_speed_unit=kn&timezone=auto&forecast_days=16`;
+    `&hourly=${vars.join(',')}&daily=sunrise,sunset&models=${sourceKey}&wind_speed_unit=kn&timezone=auto&forecast_days=16`;
   const res = await fetch(url);
   if(!res.ok){
     let reason = res.status;
@@ -819,8 +836,9 @@ function buildProfile(hourly, idx, dzElevationFt){
     const d = hourly[`wind_direction_${h}hPa`]?.[idx];
     const t = hourly[`temperature_${h}hPa`]?.[idx];
     if(gp != null && s != null && d != null){
-      const ftAMSL = gp*3.28084;
-      points.push({ ft: ftAMSL - dzElevationFt, spd: s, dir: d, temp: t });
+      const ftAGL = gp*3.28084 - dzElevationFt;
+      // pressure levels at or below the ground are model extrapolations, so skip them
+      if(ftAGL > 40) points.push({ ft: ftAGL, spd: s, dir: d, temp: t });
     }
   });
   points.sort((a,b)=>a.ft - b.ft);
@@ -878,16 +896,72 @@ function compass(deg){
 }
 
 function renderSourcePicker(activeKey){
-  const opts = SOURCES.map(s => `<option value="${s.key}" ${s.key===activeKey?'selected':''}>${s.label}</option>`).join('');
+  const opts = SOURCES.filter(s => lastData[s.key])
+    .map(s => `<option value="${s.key}" ${s.key===activeKey?'selected':''}>${s.label}</option>`).join('');
   return `<select id="sourcePicker">${opts}</select>`;
 }
 
+// index of the forecast hour matching a DZ-local ISO time, or -1 if none within 30 min
+function hourIndex(times, targetLocalIso){
+  const i = nearestIndex(times, targetLocalIso);
+  const diff = Math.abs(new Date(times[i]).getTime() - new Date(targetLocalIso).getTime());
+  return diff <= 30*60*1000 ? i : -1;
+}
+
+function fmtSun(isoLocal, basis, off){
+  if(!isoLocal) return '—';
+  const t = basis === 'zulu' ? shiftIso(isoLocal, -off) : isoLocal;
+  return t.slice(11,16);
+}
+
+function buildDayView(json, entryIdx, dt, basis){
+  const dayDate = dt.slice(0,10);
+  const off = json.utc_offset_seconds || 0;
+  let head = '', dirRow = '', spdRow = '', gstRow = '';
+  for(let h = 0; h < 24; h++){
+    const hh = String(h).padStart(2,'0');
+    const iso = `${dayDate}T${hh}:00`;
+    const target = basis === 'zulu' ? shiftIso(iso, off) : iso;
+    const i = hourIndex(json.hourly.time, target);
+    const sel = (i !== -1 && i === entryIdx) ? ' class="sel"' : '';
+    head += `<th${sel}>${hh}</th>`;
+    if(i === -1){
+      dirRow += `<td${sel}>–</td>`; spdRow += `<td${sel}>–</td>`; gstRow += `<td${sel}>–</td>`;
+      continue;
+    }
+    const d = json.hourly.wind_direction_10m?.[i];
+    const sp = json.hourly.wind_speed_10m?.[i];
+    const g = json.hourly.wind_gusts_10m?.[i];
+    dirRow += `<td${sel}>${d != null ? fmtDir(d) : '–'}</td>`;
+    spdRow += `<td${sel} class="${sp != null ? 'spd ' + spdClass(sp) : ''}">${sp != null ? Math.round(sp) : '–'}</td>`;
+    gstRow += `<td${sel} class="${g != null ? 'spd ' + spdClass(g) : ''}">${g != null ? Math.round(g) : '–'}</td>`;
+  }
+  return `
+    <div class="day-view">
+      <div class="day-title">Surface wind through the day: ${dayDate} (${basis === 'zulu' ? 'Zulu hours' : 'DZ local hours'})</div>
+      <div class="table-wrap">
+        <table class="day-table">
+          <thead><tr><th>Hour</th>${head}</tr></thead>
+          <tbody>
+            <tr><td>Dir (°T)</td>${dirRow}</tr>
+            <tr><td>Wind (kt)</td>${spdRow}</tr>
+            <tr><td>Gust (kt)</td>${gstRow}</tr>
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+let currentSource = null;
+
 function renderResults(activeKey){
+  currentSource = activeKey;
   const entry = lastData[activeKey];
   const pane = document.getElementById('resultsPane');
   if(!entry){ pane.innerHTML = '<div class="approx-note">No data for this source.</div>'; return; }
 
   const { json, idx, dt, basis } = entry;
+  const off = json.utc_offset_seconds || 0;
   const dzElevationM = json.elevation;
   const dzElevationFt = dzElevationM * 3.28084;
   const points = buildProfile(json.hourly, idx, dzElevationFt);
@@ -895,6 +969,7 @@ function renderResults(activeKey){
 
   const sfcSpd = json.hourly.wind_speed_10m?.[idx];
   const sfcDir = json.hourly.wind_direction_10m?.[idx];
+  const sfcGust = json.hourly.wind_gusts_10m?.[idx];
   const sfcTemp = json.hourly.temperature_2m?.[idx];
   const qnhNow = json.hourly.pressure_msl?.[idx];
 
@@ -902,6 +977,20 @@ function renderResults(activeKey){
   const magVarRaw = wmm.declination(dzElevationM/1000, json.latitude, json.longitude, decimalYear);
   const magVar = magVarRaw != null ? Math.round(magVarRaw*10)/10 : null;
   const magVarStr = magVar != null ? `${Math.abs(magVar).toFixed(1)}° ${magVar >= 0 ? 'E' : 'W'}` : '—';
+
+  // freezing level (given AMSL by the model) shown as height above the DZ
+  const flAMSLm = json.hourly.freezing_level_height?.[idx];
+  let flStr = '—';
+  if(flAMSLm != null){
+    const flAGL = flAMSLm*3.28084 - dzElevationFt;
+    flStr = flAGL <= 0 ? 'At/below surface' : `${(Math.round(flAGL/100)*100).toLocaleString()} ft`;
+  }
+
+  // sunrise / sunset for the DZ-local date of the selected forecast hour
+  const di = json.daily?.time ? json.daily.time.indexOf(time.slice(0,10)) : -1;
+  const sunStr = di !== -1
+    ? `${fmtSun(json.daily.sunrise?.[di], basis, off)} / ${fmtSun(json.daily.sunset?.[di], basis, off)}`
+    : '—';
 
   let rows = '';
   if(sfcSpd != null && sfcDir != null){
@@ -932,7 +1021,7 @@ function renderResults(activeKey){
     <div class="src-row">
       ${renderSourcePicker(activeKey)}
       <span class="meta">Forecast for ${basis === 'zulu'
-        ? shiftIso(time, -(json.utc_offset_seconds || 0)).replace('T',' ') + 'Z'
+        ? shiftIso(time, -off).replace('T',' ') + 'Z'
         : time.replace('T',' ') + ' (' + (json.timezone_abbreviation || 'local') + ')'}</span>
     </div>
     <div class="summary-cards">
@@ -952,6 +1041,18 @@ function renderResults(activeKey){
         <div class="card-label">Magnetic variation</div>
         <div class="card-value">${magVarStr}</div>
       </div>
+      <div class="card">
+        <div class="card-label">Surface gusts</div>
+        <div class="card-value">${sfcGust != null ? `${Math.round(sfcGust)} kt` : '—'}</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Freezing level (AGL)</div>
+        <div class="card-value">${flStr}</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Sunrise / sunset <span class="card-sub" style="margin-left:2px">${basis === 'zulu' ? 'Z' : 'local'}</span></div>
+        <div class="card-value">${sunStr}</div>
+      </div>
     </div>
     <div class="table-wrap">
       <table>
@@ -959,11 +1060,11 @@ function renderResults(activeKey){
         <tbody>${rows}</tbody>
       </table>
     </div>
+    ${buildDayView(json, idx, dt, basis)}
   `;
 
-  document.getElementById('sourcePicker').addEventListener('change', (e)=>{
-    renderResults(e.target.value);
-  });
+  const picker = document.getElementById('sourcePicker');
+  if(picker) picker.addEventListener('change', (e)=>{ renderResults(e.target.value); });
 }
 
 async function runFetch(){
@@ -984,32 +1085,129 @@ async function runFetch(){
 
   updateMap(loc.lat, loc.lon);
   statusEl.className = '';
-  statusEl.textContent = 'Fetching winds from two sources…';
+  statusEl.textContent = 'Fetching winds…';
   document.getElementById('resultsPane').innerHTML = '';
 
+  const fetchBtn = document.getElementById('fetchBtn');
+  const originalLabel = fetchBtn.textContent;
+  fetchBtn.disabled = true;
+  fetchBtn.textContent = 'Loading…';
+
   try{
-    const results = await Promise.all(SOURCES.map(s => fetchSource(s.key, loc.lat, loc.lon)));
+    const outcomes = await Promise.allSettled(SOURCES.map(s => fetchSource(s.key, loc.lat, loc.lon)));
     lastData = {};
+    const failures = [];
+    let gapMin = 0;
     SOURCES.forEach((s, i)=>{
-      const json = results[i];
+      const outcome = outcomes[i];
+      if(outcome.status !== 'fulfilled'){
+        failures.push(`${s.label} (${outcome.reason && outcome.reason.message ? outcome.reason.message : 'failed'})`);
+        return;
+      }
+      const json = outcome.value;
       // forecast hours are in DZ-local time; convert a Zulu request to DZ-local first
       const targetLocal = basis === 'zulu' ? shiftIso(dt, json.utc_offset_seconds || 0) : dt;
       const idx = nearestIndex(json.hourly.time, targetLocal);
+      gapMin = Math.max(gapMin, Math.abs(new Date(json.hourly.time[idx]).getTime() - new Date(targetLocal).getTime())/60000);
       lastData[s.key] = { json, idx, dt, basis };
     });
-    renderResults('best_match');
-    statusEl.textContent = `Nearest forecast hour matched. Requested: ${dt.replace('T',' ')}${basis === 'zulu' ? 'Z' : ' local'}`;
+
+    const firstOk = SOURCES.find(s => lastData[s.key]);
+    if(!firstOk) throw new Error('Both sources failed to load. ' + failures.join('; '));
+    renderResults(lastData['best_match'] ? 'best_match' : firstOk.key);
+
+    const reqStr = `${dt.replace('T',' ')}${basis === 'zulu' ? 'Z' : ' local'}`;
+    if(failures.length){
+      statusEl.className = 'err';
+      statusEl.textContent = `Loaded, but ${failures.join('; ')}. Showing the source that worked.`;
+    } else if(gapMin > 90){
+      statusEl.className = 'err';
+      statusEl.textContent = `${reqStr} is outside the forecast range, so the nearest available hour is shown.`;
+    } else {
+      statusEl.textContent = `Nearest forecast hour matched. Requested: ${reqStr}`;
+    }
   } catch(err){
     statusEl.className = 'err';
     statusEl.textContent = 'Error: ' + err.message;
+  } finally {
+    fetchBtn.disabled = false;
+    fetchBtn.textContent = originalLabel;
   }
 }
 
 document.getElementById('fetchBtn').addEventListener('click', runFetch);
 
-// prefill fields with the map's default marker location
-updateMap(51.5074, -0.1278, false);
-populateFieldsFromLatLon(51.5074, -0.1278);
+// Enter key in any input field fetches
+['latDDM','lonDDM','mgrsInput','datetime'].forEach(id=>{
+  document.getElementById(id).addEventListener('keydown', (e)=>{
+    if(e.key === 'Enter') runFetch();
+  });
+});
+
+/* ---------------- Shareable link ---------------- */
+function buildShareURL(){
+  const params = new URLSearchParams();
+  params.set('fmt', locFormat.value);
+  if(locFormat.value === 'mgrs'){
+    params.set('loc', document.getElementById('mgrsInput').value);
+  } else {
+    params.set('lat', document.getElementById('latDDM').value);
+    params.set('lon', document.getElementById('lonDDM').value);
+  }
+  params.set('dt', document.getElementById('datetime').value);
+  params.set('tb', document.getElementById('timeBasis').value);
+  const base = location.href.split('#')[0].split('?')[0];
+  return `${base}?${params.toString()}`;
+}
+async function copyText(text){
+  try{
+    if(navigator.clipboard && window.isSecureContext){ await navigator.clipboard.writeText(text); return true; }
+  }catch(e){}
+  try{
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select(); ta.setSelectionRange(0, text.length);
+    const ok = document.execCommand('copy');
+    document.body.removeChild(ta);
+    return ok;
+  }catch(e){ return false; }
+}
+document.getElementById('shareBtn').addEventListener('click', async ()=>{
+  const url = buildShareURL();
+  const statusEl = document.getElementById('status');
+  if(await copyText(url)){
+    statusEl.className = '';
+    statusEl.textContent = 'Link copied to clipboard.';
+  } else {
+    statusEl.className = '';
+    statusEl.textContent = 'Could not copy automatically. Link: ' + url;
+  }
+});
+function loadFromURL(){
+  const params = new URLSearchParams(location.search);
+  if(!params.has('dt') && !params.has('loc') && !params.has('lat')) return false;
+  const fmt = params.get('fmt');
+  if(fmt === 'mgrs' || fmt === 'ddm'){
+    locFormat.value = fmt;
+    locFormat.dispatchEvent(new Event('change'));
+  }
+  if(params.has('loc')) document.getElementById('mgrsInput').value = params.get('loc');
+  if(params.has('lat')) document.getElementById('latDDM').value = params.get('lat');
+  if(params.has('lon')) document.getElementById('lonDDM').value = params.get('lon');
+  if(params.has('tb')) document.getElementById('timeBasis').value = params.get('tb') === 'local' ? 'local' : 'zulu';
+  if(params.has('dt')) document.getElementById('datetime').value = params.get('dt');
+  return true;
+}
+
+// a shared link fills everything in and fetches; otherwise start at the map's default marker
+if(loadFromURL()){
+  runFetch();
+} else {
+  updateMap(51.5074, -0.1278, false);
+  populateFieldsFromLatLon(51.5074, -0.1278);
+}
 </script>
 </body>
 </html>
