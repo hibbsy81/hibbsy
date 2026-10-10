@@ -1116,10 +1116,6 @@ function renderResults(activeKey){
         <div class="card-value">${Math.round(dzElevationFt).toLocaleString()} ft <span class="card-sub">${Math.round(dzElevationM)} m</span></div>
       </div>
       <div class="card">
-        <div class="card-label">Surface temp</div>
-        <div class="card-value">${sfcTemp != null ? `${sfcTemp>0?'+':''}${Math.round(sfcTemp)}°C` : '—'}</div>
-      </div>
-      <div class="card">
         <div class="card-label">QNH at selected time</div>
         <div class="card-value">${qnhNow != null ? `${Math.round(qnhNow)} hPa` : '—'}</div>
       </div>
@@ -1149,14 +1145,12 @@ function renderResults(activeKey){
     ${day.html}
   `;
 
-  const fmtTemp = v => v != null ? `${v>0?'+':''}${Math.round(v)} C` : '-';
   const plain = str => String(str).replace(/—/g, '-');
   lastReport = {
     when: whenStr,
     source: (SOURCES.find(s => s.key === activeKey) || {}).label || activeKey,
     cards: [
       ['DZ elevation', `${Math.round(dzElevationFt).toLocaleString()} ft / ${Math.round(dzElevationM)} m`],
-      ['Surface temp', fmtTemp(sfcTemp)],
       ['QNH at selected time', qnhNow != null ? `${Math.round(qnhNow)} hPa` : '-'],
       ['Magnetic variation', plain(magVarStr)],
       ['Surface gusts', sfcGust != null ? `${Math.round(sfcGust)} kt` : '-'],
