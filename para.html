@@ -1311,7 +1311,17 @@ function downloadPDF(){
     headStyles: { fillColor: [24, 35, 56], textColor: 255, fontSize: 8.5 },
     styles: { fontSize: 8, cellPadding: 1.1, textColor: 20, lineColor: [200, 205, 212] },
     columnStyles: { 0: { cellWidth: 40 }, 1: { halign: 'center' }, 2: { halign: 'center' }, 3: { halign: 'center' } },
-    didParseCell: (data) => { if(data.section === 'head' && data.column.index > 0) data.cell.styles.halign = 'center'; },
+    didParseCell: (data) => {
+      if(data.section === 'head' && data.column.index > 0) data.cell.styles.halign = 'center';
+      // colour the speed column like the on-screen table (darker shades so they read on white paper)
+      if(data.section === 'body' && data.column.index === 2){
+        const v = parseFloat(data.cell.raw);
+        if(!isNaN(v)){
+          data.cell.styles.textColor = v < 10 ? [20, 130, 75] : v < 20 ? [170, 112, 0] : [200, 45, 25];
+          data.cell.styles.fontStyle = 'bold';
+        }
+      }
+    },
     margin: { left: L, right: R }
   });
 
