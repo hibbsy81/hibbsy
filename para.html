@@ -860,7 +860,9 @@ function resolveLocation(){
 })();
 
 /* ---------------- Wind fetch + interpolation ---------------- */
-const LEVELS_HPA = [1000, 925, 850, 700, 600, 500, 400, 300];
+// Pressure levels requested from the model. The dense set below 18,000 ft (about every 500-1,000 ft
+// of height) stops the blend between levels from smoothing over real turns in the wind.
+const LEVELS_HPA = [1000, 975, 950, 925, 900, 850, 800, 750, 700, 650, 600, 550, 500, 400, 350, 300];
 const SOURCES = [
   { key: 'best_match',   label: 'Open-Meteo (Best Match)' },
   { key: 'gfs_seamless', label: 'NOAA GFS' },
