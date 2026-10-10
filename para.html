@@ -11,7 +11,7 @@
 <style>
   :root{
     --bg:#0b1220; --panel:#131c2e; --panel2:#182338; --border:#25334d;
-    --text:#e8edf5; --muted:#8fa0bd; --accent:#3fa9f5;
+    --text:#e8edf5; --muted:#8fa0bd; --accent:#8b7cf6;
     --good:#3fd68a; --warn:#f5c33f; --bad:#f56a4f;
   }
   *{box-sizing:border-box;}
@@ -19,12 +19,24 @@
     margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
     background:var(--bg); color:var(--text);
   }
-  header{ padding:14px 18px; border-bottom:1px solid var(--border); }
-  header h1{ font-size:17px; margin:0; font-weight:650; }
-  header .sub{ color:var(--muted); font-size:12.5px; margin-top:2px; }
+  header{
+    position:relative; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
+    padding:16px 18px 16px 22px; border-bottom:1px solid var(--border);
+    background:linear-gradient(90deg, rgba(139,124,246,.18), rgba(139,124,246,0) 65%);
+  }
+  header::before{ content:''; position:absolute; left:0; top:0; bottom:0; width:4px; background:var(--accent); }
+  header h1{ font-size:21px; margin:0; font-weight:700; letter-spacing:.3px; }
+  header .sub{ color:var(--muted); font-size:12.5px; margin-top:3px; }
+  .utc-clock{ font-size:13px; color:var(--muted); font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .utc-clock b{ color:var(--text); font-weight:650; }
 
   .controls{ padding:14px 16px; border-bottom:1px solid var(--border); background:var(--panel); }
   .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; }
+  .ctl-groups{ display:flex; flex-wrap:wrap; gap:12px; align-items:stretch; }
+  .ctl-group{ background:rgba(255,255,255,.025); border:1px solid var(--border); border-radius:10px; padding:10px 12px 12px; }
+  .ctl-title{ font-size:12px; font-weight:650; color:var(--accent); margin-bottom:8px; }
+  .ctl-actions{ display:flex; flex-direction:column; justify-content:flex-end; gap:8px; background:none; border:none; padding:0; }
+  .ctl-actions button{ min-width:140px; }
   .field{ display:flex; flex-direction:column; gap:4px; }
   .field label{ font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; }
   input, select, button{
@@ -111,6 +123,11 @@
     header h1{ font-size:16px; }
     header .sub{ font-size:12px; }
     .controls{ padding:12px 14px; }
+    .ctl-groups{ flex-direction:column; }
+    .field-btn label{ display:none; }
+    .ctl-group{ width:100%; }
+    .ctl-actions{ flex-direction:row; flex-wrap:wrap; }
+    .ctl-actions button{ flex:1 1 140px; }
     .row{ flex-direction:column; align-items:stretch; gap:12px; }
     .field{ width:100%; }
     .fmt-group.active{ flex-direction:column; }
@@ -133,59 +150,70 @@
 <body>
 
 <header>
-  <h1>DZ Wind Forecasts</h1>
-  <div class="sub">Enter the drop zone location, pick a time, and read winds every 1,000 ft up to 25,000 ft.</div>
+  <div>
+    <h1>DZ Wind Forecasts</h1>
+    <div class="sub">Enter the drop zone location, pick a time, and read winds every 1,000 ft up to 25,000 ft.</div>
+  </div>
+  <div class="utc-clock" id="utcClock"></div>
 </header>
 
 <div class="controls">
-  <div class="row">
-    <div class="field">
-      <label>Location format</label>
-      <select id="locFormat">
-        <option value="mgrs" selected>MGRS</option>
-        <option value="ddm">Lat/Long (DDM)</option>
-      </select>
-    </div>
+  <div class="ctl-groups">
+    <section class="ctl-group">
+      <div class="ctl-title">Location</div>
+      <div class="row">
+        <div class="field">
+          <label>Format</label>
+          <select id="locFormat">
+            <option value="mgrs" selected>MGRS</option>
+            <option value="ddm">Lat/Long (DDM)</option>
+          </select>
+        </div>
 
-    <div class="field fmt-group" id="ddmFields">
-      <label>Latitude</label>
-      <input type="text" id="latDDM" placeholder="51 30.444 N">
-    </div>
-    <div class="field fmt-group" id="ddmFields2">
-      <label>Longitude</label>
-      <input type="text" id="lonDDM" placeholder="000 07.668 W">
-    </div>
+        <div class="field fmt-group" id="ddmFields">
+          <label>Latitude</label>
+          <input type="text" id="latDDM" placeholder="51 30.444 N">
+        </div>
+        <div class="field fmt-group" id="ddmFields2">
+          <label>Longitude</label>
+          <input type="text" id="lonDDM" placeholder="000 07.668 W">
+        </div>
 
-    <div class="field fmt-group active" id="mgrsFields">
-      <label>MGRS</label>
-      <input type="text" id="mgrsInput" placeholder="30UXC1234567890">
-    </div>
+        <div class="field fmt-group active" id="mgrsFields">
+          <label>MGRS</label>
+          <input type="text" id="mgrsInput" placeholder="30UXC1234567890">
+        </div>
 
-    <div class="field">
-      <label>Date &amp; time</label>
-      <input type="datetime-local" id="datetime" step="300">
-    </div>
-    <div class="field">
-      <label>Time basis</label>
-      <select id="timeBasis">
-        <option value="zulu" selected>Zulu (GMT)</option>
-        <option value="local">Local to DZ</option>
-      </select>
-    </div>
-    <div class="field">
-      <label>&nbsp;</label>
+        <div class="field field-btn">
+          <label>&nbsp;</label>
+          <button id="myLocBtn">Use my location</button>
+        </div>
+      </div>
+      <div id="locLabel">Location: <b>not set</b></div>
+    </section>
+
+    <section class="ctl-group">
+      <div class="ctl-title">Time</div>
+      <div class="row">
+        <div class="field">
+          <label>Date &amp; time</label>
+          <input type="datetime-local" id="datetime" step="300">
+        </div>
+        <div class="field">
+          <label>Basis</label>
+          <select id="timeBasis">
+            <option value="zulu" selected>Zulu (GMT)</option>
+            <option value="local">Local to DZ</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <div class="ctl-group ctl-actions">
       <button class="primary" id="fetchBtn">Get Winds</button>
-    </div>
-    <div class="field">
-      <label>&nbsp;</label>
-      <button id="myLocBtn">Use my location</button>
-    </div>
-    <div class="field">
-      <label>&nbsp;</label>
       <button id="shareBtn">Copy link</button>
     </div>
   </div>
-  <div id="locLabel">Location: <b>not set</b></div>
 </div>
 
 <div id="status"></div>
@@ -477,6 +505,16 @@ function decimalYearFromISO(isoLocal){
   const point = Date.UTC(year, month-1, day, hour, minute);
   return year + (point - start) / (end - start);
 }
+
+/* ---------------- Live Zulu clock in the header ---------------- */
+function tickClock(){
+  const d = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  document.getElementById('utcClock').innerHTML =
+    `Now <b>${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}Z</b> ${d.getUTCFullYear()}-${pad(d.getUTCMonth()+1)}-${pad(d.getUTCDate())}`;
+}
+tickClock();
+setInterval(tickClock, 15000);
 
 /* ---------------- Map (clickable to set location) ---------------- */
 const map = L.map('map', { dragging:true, scrollWheelZoom:true }).setView([51.7500, -1.5836], 9);
@@ -967,7 +1005,7 @@ function buildDayView(json, entryIdx, dt, basis){
   const html = `
     <div class="day-view">
       <div class="day-title">${title}</div>
-      <div class="day-legend"><i style="background:rgba(63,214,138,.5)"></i>under 10 kt<i style="background:rgba(245,195,63,.6)"></i>10 to 19 kt<i style="background:rgba(245,106,79,.7)"></i>20 kt and over<span style="margin-left:10px">Blue outline = selected hour</span></div>
+      <div class="day-legend"><i style="background:rgba(63,214,138,.5)"></i>under 10 kt<i style="background:rgba(245,195,63,.6)"></i>10 to 19 kt<i style="background:rgba(245,106,79,.7)"></i>20 kt and over<span style="margin-left:10px">Outlined hour = selected</span></div>
       <div class="table-wrap">
         <table class="day-table">
           <thead><tr><th>Hour</th>${head}</tr></thead>
