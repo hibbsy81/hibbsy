@@ -71,9 +71,10 @@
   .src-row{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; flex-wrap:wrap; }
   .src-row .meta{ font-size:12.5px; color:var(--muted); }
 
-  .summary-cards{ display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); margin-bottom:14px;
+  .summary-cards{ display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); margin-bottom:14px;
     background:var(--panel); border:1px solid var(--border); border-radius:10px; overflow:hidden; }
-  .card{ padding:10px 12px; box-shadow:1px 0 0 var(--border), 0 1px 0 var(--border); }
+  .card{ padding:10px 12px; box-shadow:1px 0 0 var(--border), 0 1px 0 var(--border);
+    display:flex; flex-direction:column; justify-content:space-between; gap:4px; }
   .card-label{ font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; margin-bottom:4px; }
   .card-value{ font-size:16px; font-weight:650; }
   .card-sub{ font-size:12px; font-weight:500; color:var(--muted); margin-left:4px; }
@@ -127,6 +128,10 @@
     .controls{ padding:12px 14px; }
     .ctl-groups{ flex-direction:column; }
     .field-btn label{ display:none; }
+    .card{ padding:8px 9px; }
+    .card-label{ font-size:9.5px; }
+    .card-value{ font-size:14px; }
+    .card-sub{ margin-left:2px; }
     .field, .ctl-group, .row{ min-width:0; max-width:100%; }
     input[type="datetime-local"]{
       -webkit-appearance:none; appearance:none; display:block;
@@ -1120,12 +1125,12 @@ function renderResults(activeKey){
         <div class="card-value">${qnhNow != null ? `${Math.round(qnhNow)} hPa` : '—'}</div>
       </div>
       <div class="card">
-        <div class="card-label">Magnetic variation</div>
-        <div class="card-value">${magVarStr}</div>
-      </div>
-      <div class="card">
         <div class="card-label">Surface gusts</div>
         <div class="card-value">${sfcGust != null ? `${Math.round(sfcGust)} kt` : '—'}</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Magnetic variation</div>
+        <div class="card-value">${magVarStr}</div>
       </div>
       <div class="card">
         <div class="card-label">Freezing level (AGL)</div>
@@ -1152,8 +1157,8 @@ function renderResults(activeKey){
     cards: [
       ['DZ elevation', `${Math.round(dzElevationFt).toLocaleString()} ft / ${Math.round(dzElevationM)} m`],
       ['QNH at selected time', qnhNow != null ? `${Math.round(qnhNow)} hPa` : '-'],
-      ['Magnetic variation', plain(magVarStr)],
       ['Surface gusts', sfcGust != null ? `${Math.round(sfcGust)} kt` : '-'],
+      ['Magnetic variation', plain(magVarStr)],
       ['Freezing level (AGL)', plain(flStr)],
       [`Sunrise / sunset (${basis === 'zulu' ? 'Z' : 'local'})`, plain(sunStr)]
     ],
