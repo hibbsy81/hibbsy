@@ -6,6 +6,8 @@
 <title>DZ Wind Forecasts</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 <style>
   :root{
     --bg:#0b1220; --panel:#131c2e; --panel2:#182338; --border:#25334d;
@@ -76,6 +78,17 @@
   footer{ padding:14px 16px 30px; color:var(--muted); font-size:11.5px; line-height:1.6; }
   a{ color:var(--accent); }
   .table-wrap{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
+
+  .pdf-link{ font-size:13px; color:var(--accent); text-decoration:none; border:1px solid var(--border);
+    border-radius:8px; padding:6px 10px; }
+  .pdf-link:hover{ border-color:var(--accent); }
+  @media print{
+    :root{ --bg:#fff; --panel:#fff; --panel2:#f1f3f6; --border:#c8ccd2; --text:#000; --muted:#555; --accent:#000; }
+    header, .controls, #status, #map, footer, .pdf-link, #sourcePicker{ display:none !important; }
+    .layout{ display:block; padding:0; }
+    #resultsPane{ max-height:none; overflow:visible; }
+    body{ background:#fff; color:#000; }
+  }
 
   .day-view{ margin-top:16px; }
   .day-title{ font-size:12.5px; color:var(--muted); margin-bottom:8px; }
@@ -458,12 +471,12 @@ function decimalYearFromISO(isoLocal){
 }
 
 /* ---------------- Map (clickable to set location) ---------------- */
-const map = L.map('map', { dragging:true, scrollWheelZoom:true }).setView([51.5074, -0.1278], 9);
+const map = L.map('map', { dragging:true, scrollWheelZoom:true }).setView([51.7500, -1.5836], 9);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '&copy; OpenStreetMap contributors',
   maxZoom: 18
 }).addTo(map);
-let marker = L.marker([51.5074, -0.1278], { draggable:true }).addTo(map);
+let marker = L.marker([51.7500, -1.5836], { draggable:true }).addTo(map);
 
 let currentLat = null, currentLon = null;
 
@@ -918,6 +931,7 @@ function buildDayView(json, entryIdx, dt, basis){
   const dayDate = dt.slice(0,10);
   const off = json.utc_offset_seconds || 0;
   let head = '', dirRow = '', spdRow = '', gstRow = '';
+  const pdf = { hours: [], dir: [], spd: [], gst: [] };
   for(let h = 0; h < 24; h++){
     const hh = String(h).padStart(2,'0');
     const iso = `${dayDate}T${hh}:00`;
@@ -925,20 +939,26 @@ function buildDayView(json, entryIdx, dt, basis){
     const i = hourIndex(json.hourly.time, target);
     const sel = (i !== -1 && i === entryIdx) ? ' class="sel"' : '';
     head += `<th${sel}>${hh}</th>`;
+    pdf.hours.push(hh);
     if(i === -1){
+      pdf.dir.push('-'); pdf.spd.push('-'); pdf.gst.push('-');
       dirRow += `<td${sel}>–</td>`; spdRow += `<td${sel}>–</td>`; gstRow += `<td${sel}>–</td>`;
       continue;
     }
     const d = json.hourly.wind_direction_10m?.[i];
     const sp = json.hourly.wind_speed_10m?.[i];
     const g = json.hourly.wind_gusts_10m?.[i];
+    pdf.dir.push(d != null ? fmtDir(d) : '-');
+    pdf.spd.push(sp != null ? String(Math.round(sp)) : '-');
+    pdf.gst.push(g != null ? String(Math.round(g)) : '-');
     dirRow += `<td${sel}>${d != null ? fmtDir(d) : '–'}</td>`;
     spdRow += `<td${sel} class="${sp != null ? 'spd ' + spdClass(sp) : ''}">${sp != null ? Math.round(sp) : '–'}</td>`;
     gstRow += `<td${sel} class="${g != null ? 'spd ' + spdClass(g) : ''}">${g != null ? Math.round(g) : '–'}</td>`;
   }
-  return `
+  const title = `Surface wind through the day: ${dayDate} (${basis === 'zulu' ? 'Zulu hours' : 'DZ local hours'})`;
+  const html = `
     <div class="day-view">
-      <div class="day-title">Surface wind through the day: ${dayDate} (${basis === 'zulu' ? 'Zulu hours' : 'DZ local hours'})</div>
+      <div class="day-title">${title}</div>
       <div class="table-wrap">
         <table class="day-table">
           <thead><tr><th>Hour</th>${head}</tr></thead>
@@ -950,9 +970,12 @@ function buildDayView(json, entryIdx, dt, basis){
         </table>
       </div>
     </div>`;
+  return { html, title, pdf };
 }
 
 let currentSource = null;
+let lastReport = null;
+let lastLoc = null;
 
 function renderResults(activeKey){
   currentSource = activeKey;
@@ -993,8 +1016,10 @@ function renderResults(activeKey){
     : '—';
 
   let rows = '';
+  const pdfRows = [];
   if(sfcSpd != null && sfcDir != null){
     const sfcTempStr = sfcTemp != null ? `${sfcTemp>0?'+':''}${Math.round(sfcTemp)}°C` : '—';
+    pdfRows.push(['Surface', `${fmtDir(sfcDir)}`, `${Math.round(sfcSpd)}`, sfcTemp != null ? `${sfcTemp>0?'+':''}${Math.round(sfcTemp)} C` : '-']);
     rows += `<tr>
       <td>Surface</td>
       <td>${dirToArrow(sfcDir)}${fmtDir(sfcDir)}°</td>
@@ -1009,6 +1034,7 @@ function renderResults(activeKey){
       return;
     }
     const tempStr = r.temp != null ? `${r.temp>0?'+':''}${Math.round(r.temp)}°C` : '—';
+    pdfRows.push([`${ft.toLocaleString()} ft${r.extrapolated ? ' *' : ''}`, fmtDir(r.dir), `${Math.round(r.spd)}`, r.temp != null ? `${r.temp>0?'+':''}${Math.round(r.temp)} C` : '-']);
     rows += `<tr>
       <td>${ft.toLocaleString()} ft${r.extrapolated ? ' *' : ''}</td>
       <td>${dirToArrow(r.dir)}${fmtDir(r.dir)}°</td>
@@ -1017,12 +1043,16 @@ function renderResults(activeKey){
     </tr>`;
   });
 
+  const whenStr = basis === 'zulu'
+    ? shiftIso(time, -off).replace('T',' ') + 'Z'
+    : time.replace('T',' ') + ' (' + (json.timezone_abbreviation || 'local') + ')';
+  const day = buildDayView(json, idx, dt, basis);
+
   pane.innerHTML = `
     <div class="src-row">
       ${renderSourcePicker(activeKey)}
-      <span class="meta">Forecast for ${basis === 'zulu'
-        ? shiftIso(time, -off).replace('T',' ') + 'Z'
-        : time.replace('T',' ') + ' (' + (json.timezone_abbreviation || 'local') + ')'}</span>
+      <span class="meta">Forecast for ${whenStr}</span>
+      <a href="#" id="pdfLink" class="pdf-link">Download PDF</a>
     </div>
     <div class="summary-cards">
       <div class="card">
@@ -1060,8 +1090,29 @@ function renderResults(activeKey){
         <tbody>${rows}</tbody>
       </table>
     </div>
-    ${buildDayView(json, idx, dt, basis)}
+    ${day.html}
   `;
+
+  const fmtTemp = v => v != null ? `${v>0?'+':''}${Math.round(v)} C` : '-';
+  const plain = str => String(str).replace(/—/g, '-');
+  lastReport = {
+    when: whenStr,
+    source: (SOURCES.find(s => s.key === activeKey) || {}).label || activeKey,
+    cards: [
+      ['DZ elevation', `${Math.round(dzElevationFt).toLocaleString()} ft / ${Math.round(dzElevationM)} m`],
+      ['Surface temp', fmtTemp(sfcTemp)],
+      ['QNH at selected time', qnhNow != null ? `${Math.round(qnhNow)} hPa` : '-'],
+      ['Magnetic variation', plain(magVarStr)],
+      ['Surface gusts', sfcGust != null ? `${Math.round(sfcGust)} kt` : '-'],
+      ['Freezing level (AGL)', plain(flStr)],
+      [`Sunrise / sunset (${basis === 'zulu' ? 'Z' : 'local'})`, plain(sunStr)]
+    ],
+    rows: pdfRows,
+    day: day.pdf,
+    dayTitle: day.title,
+    stamp: dt.replace(/[-:]/g,'').replace('T','-') + (basis === 'zulu' ? 'Z' : 'L')
+  };
+  document.getElementById('pdfLink').addEventListener('click', (e)=>{ e.preventDefault(); downloadPDF(); });
 
   const picker = document.getElementById('sourcePicker');
   if(picker) picker.addEventListener('change', (e)=>{ renderResults(e.target.value); });
@@ -1084,6 +1135,7 @@ async function runFetch(){
   }
 
   updateMap(loc.lat, loc.lon);
+  lastLoc = loc;
   statusEl.className = '';
   statusEl.textContent = 'Fetching winds…';
   document.getElementById('resultsPane').innerHTML = '';
@@ -1143,6 +1195,98 @@ document.getElementById('fetchBtn').addEventListener('click', runFetch);
     if(e.key === 'Enter') runFetch();
   });
 });
+
+/* ---------------- PDF export ---------------- */
+function downloadPDF(){
+  const rep = lastReport;
+  if(!rep) return;
+  const statusEl = document.getElementById('status');
+  if(!(window.jspdf && window.jspdf.jsPDF)){
+    // PDF library didn't load (offline or blocked): fall back to the browser's print dialog
+    statusEl.className = '';
+    statusEl.textContent = 'PDF library not available, opening the print dialog. Choose "Save as PDF".';
+    window.print();
+    return;
+  }
+  const doc = new window.jspdf.jsPDF({ unit: 'mm', format: 'a4' });
+  const pageW = doc.internal.pageSize.getWidth();
+  const pageH = doc.internal.pageSize.getHeight();
+  const L = 14, R = 14;
+
+  let locStr = '';
+  if(lastLoc){
+    locStr = `${formatDDM(lastLoc.lat, true)}, ${formatDDM(lastLoc.lon, false)}`;
+    try{ locStr += `   (MGRS ${latLonToMGRS(lastLoc.lat, lastLoc.lon, 5)})`; }catch(e){}
+  }
+
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(17); doc.setTextColor(20);
+  doc.text('DZ Wind Forecasts', L, 16);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5); doc.setTextColor(70);
+  doc.text(`Location: ${locStr}`, L, 23);
+  doc.text(`Forecast for: ${rep.when}`, L, 28);
+  doc.text(`Source: ${rep.source}`, L, 33);
+
+  // summary, two label/value pairs per row
+  const body = [];
+  for(let i = 0; i < rep.cards.length; i += 2){
+    const a = rep.cards[i], b = rep.cards[i+1] || ['', ''];
+    body.push([a[0], a[1], b[0], b[1]]);
+  }
+  const labelStyle = { fontStyle: 'bold', fillColor: [238, 241, 246], cellWidth: 40 };
+  doc.autoTable({
+    startY: 38, body, theme: 'grid',
+    styles: { fontSize: 8.5, cellPadding: 1.8, textColor: 20, lineColor: [200, 205, 212] },
+    columnStyles: { 0: labelStyle, 1: { cellWidth: 51 }, 2: labelStyle, 3: { cellWidth: 51 } },
+    margin: { left: L, right: R }
+  });
+
+  doc.autoTable({
+    startY: doc.lastAutoTable.finalY + 6,
+    head: [['Height AGL', 'Direction (degT)', 'Speed (kt)', 'Temp (C)']],
+    body: rep.rows.map(r => [r[0], r[1] + '\u00B0', r[2], r[3].replace(' C', '')]),
+    theme: 'grid',
+    headStyles: { fillColor: [24, 35, 56], textColor: 255, fontSize: 8.5 },
+    styles: { fontSize: 8, cellPadding: 1.1, textColor: 20, lineColor: [200, 205, 212] },
+    columnStyles: { 0: { cellWidth: 40 }, 1: { halign: 'center' }, 2: { halign: 'center' }, 3: { halign: 'center' } },
+    didParseCell: (data) => { if(data.section === 'head' && data.column.index > 0) data.cell.styles.halign = 'center'; },
+    margin: { left: L, right: R }
+  });
+
+  let y = doc.lastAutoTable.finalY + 9;
+  if(y > pageH - 45){ doc.addPage(); y = 16; }
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(20);
+  doc.text(rep.dayTitle, L, y);
+  const hourCols = rep.day.hours.length;
+  const colW = (pageW - L - R - 17) / hourCols;
+  const columnStyles = { 0: { cellWidth: 17, halign: 'left', fontStyle: 'bold' } };
+  for(let c = 1; c <= hourCols; c++) columnStyles[c] = { cellWidth: colW, halign: 'center' };
+  doc.autoTable({
+    startY: y + 3,
+    head: [['Hour', ...rep.day.hours]],
+    body: [
+      ['Dir (degT)', ...rep.day.dir],
+      ['Wind (kt)', ...rep.day.spd],
+      ['Gust (kt)', ...rep.day.gst]
+    ],
+    theme: 'grid',
+    headStyles: { fillColor: [24, 35, 56], textColor: 255, fontSize: 6.5, halign: 'center' },
+    styles: { fontSize: 6.5, cellPadding: 1, textColor: 20, lineColor: [200, 205, 212], overflow: 'hidden' },
+    columnStyles,
+    margin: { left: L, right: R }
+  });
+
+  // footer on every page
+  const pages = doc.internal.getNumberOfPages();
+  const gen = new Date().toISOString().slice(0, 16).replace('T', ' ') + 'Z';
+  for(let pg = 1; pg <= pages; pg++){
+    doc.setPage(pg);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(120);
+    doc.text(`Data: Open-Meteo. Generated ${gen}`, L, pageH - 8);
+    doc.text(`Page ${pg} of ${pages}`, pageW - R, pageH - 8, { align: 'right' });
+  }
+
+  doc.save(`DZ-wind-forecast-${rep.stamp}.pdf`);
+}
 
 /* ---------------- Shareable link ---------------- */
 function buildShareURL(){
@@ -1205,8 +1349,8 @@ function loadFromURL(){
 if(loadFromURL()){
   runFetch();
 } else {
-  updateMap(51.5074, -0.1278, false);
-  populateFieldsFromLatLon(51.5074, -0.1278);
+  updateMap(51.7500, -1.5836, false);
+  populateFieldsFromLatLon(51.7500, -1.5836);
 }
 </script>
 </body>
