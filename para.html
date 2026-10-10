@@ -71,8 +71,9 @@
   .src-row{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; flex-wrap:wrap; }
   .src-row .meta{ font-size:12.5px; color:var(--muted); }
 
-  .summary-cards{ display:grid; grid-template-columns:repeat(auto-fill, minmax(160px, 1fr)); gap:10px; margin-bottom:14px; }
-  .card{ background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:10px 12px; }
+  .summary-cards{ display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); margin-bottom:14px;
+    background:var(--panel); border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+  .card{ padding:10px 12px; box-shadow:1px 0 0 var(--border), 0 1px 0 var(--border); }
   .card-label{ font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; margin-bottom:4px; }
   .card-value{ font-size:16px; font-weight:650; }
   .card-sub{ font-size:12px; font-weight:500; color:var(--muted); margin-left:4px; }
