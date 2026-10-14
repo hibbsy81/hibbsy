@@ -870,7 +870,12 @@ const SOURCES = [
 const TARGET_FT = [];
 for(let ft=1000; ft<=25000; ft+=1000) TARGET_FT.push(ft);
 
-let lastData = {}; // { sourceKey: {json, idx} }
+let lastData = {}; // { sourceKey: { json, idx, i0, frac, hb, targetLocal, dt, basis } }
+
+// forecast data already downloaded, so changing the time doesn't need a new download
+const CACHE_MAX_AGE_MS = 30 * 60 * 1000;
+const sourceCache = {};   // sourceKey -> { json, at }
+let cacheKey = null;      // which location the cache belongs to
 
 async function fetchSource(sourceKey, lat, lon){
   const vars = ['wind_speed_10m', 'wind_direction_10m', 'wind_gusts_10m', 'temperature_2m', 'pressure_msl', 'freezing_level_height'];
@@ -896,6 +901,56 @@ function nearestIndex(timesArr, targetLocalIso){
     if(diff < bestDiff){ bestDiff = diff; bestIdx = i; }
   });
   return bestIdx;
+}
+
+function isoToMs(iso){
+  return Date.UTC(+iso.slice(0,4), +iso.slice(5,7)-1, +iso.slice(8,10), +iso.slice(11,13) || 0, +iso.slice(14,16) || 0);
+}
+
+// where a DZ-local time sits among the hourly forecast times
+function locateTime(times, targetIso){
+  const t = isoToMs(targetIso), n = times.length;
+  const first = isoToMs(times[0]), last = isoToMs(times[n-1]);
+  if(t <= first) return { i0: 0, frac: 0, idx: 0, gapMin: (first - t)/60000 };
+  if(t >= last) return { i0: n-1, frac: 0, idx: n-1, gapMin: (t - last)/60000 };
+  let lo = 0, hi = n-1;
+  while(hi - lo > 1){ const mid = (lo + hi) >> 1; if(isoToMs(times[mid]) <= t) lo = mid; else hi = mid; }
+  const a = isoToMs(times[lo]), b = isoToMs(times[lo+1]);
+  const frac = (t - a)/(b - a);
+  return { i0: lo, frac, idx: frac >= 0.5 ? lo+1 : lo, gapMin: 0 };
+}
+
+// blend the forecast between two neighbouring hours (winds are blended as vectors so
+// directions turn the short way round); returns one-element arrays, same keys as hourly
+function blendHourly(hourly, i0, frac){
+  const n = hourly.time.length;
+  const i1 = Math.min(i0 + 1, n - 1);
+  const out = { time: [hourly.time[i0]] };
+  Object.keys(hourly).forEach(k=>{
+    if(k === 'time' || k.startsWith('wind_direction')) return;
+    const arr = hourly[k];
+    if(!Array.isArray(arr)) return;
+    const a = arr[i0], b = arr[i1];
+    const exact = (frac === 0 || i1 === i0);
+    if(k.startsWith('wind_speed')){
+      const dk = k.replace('wind_speed', 'wind_direction');
+      const da = hourly[dk]?.[i0], db = hourly[dk]?.[i1];
+      if(exact){ out[k] = [a]; out[dk] = [da]; return; }
+      if(a != null && b != null && da != null && db != null){
+        const ua = toUV(a, da), ub = toUV(b, db);
+        const w = fromUV(ua.u + (ub.u - ua.u)*frac, ua.v + (ub.v - ua.v)*frac);
+        out[k] = [w.spd]; out[dk] = [w.dir];
+      } else {
+        const useB = frac >= 0.5;
+        out[k] = [useB ? b : a]; out[dk] = [useB ? db : da];
+      }
+      return;
+    }
+    if(exact) out[k] = [a];
+    else if(a != null && b != null) out[k] = [a + (b - a)*frac];
+    else out[k] = [frac >= 0.5 ? b : a];
+  });
+  return out;
 }
 
 // dzElevationFt: ground elevation at the DZ (ft AMSL) — used to convert pressure-level
@@ -1046,18 +1101,19 @@ function renderResults(activeKey){
   const pane = document.getElementById('resultsPane');
   if(!entry){ pane.innerHTML = '<div class="approx-note">No data for this source.</div>'; return; }
 
-  const { json, idx, dt, basis } = entry;
+  const { json, idx, i0, frac, hb, targetLocal, dt, basis } = entry;
   const off = json.utc_offset_seconds || 0;
   const dzElevationM = json.elevation;
   const dzElevationFt = dzElevationM * 3.28084;
-  const points = buildProfile(json.hourly, idx, dzElevationFt);
-  const time = json.hourly?.time?.[idx] ?? '';
+  const points = buildProfile(hb, 0, dzElevationFt);
+  const time = targetLocal;
 
-  const sfcSpd = json.hourly.wind_speed_10m?.[idx];
-  const sfcDir = json.hourly.wind_direction_10m?.[idx];
-  const sfcGust = json.hourly.wind_gusts_10m?.[idx];
-  const sfcTemp = json.hourly.temperature_2m?.[idx];
-  const qnhNow = json.hourly.pressure_msl?.[idx];
+  const sfcSpd = hb.wind_speed_10m?.[0];
+  const sfcDir = hb.wind_direction_10m?.[0];
+  const sfcGust = hb.wind_gusts_10m?.[0];
+  const sfcTemp = hb.temperature_2m?.[0];
+  const qnhNow = hb.pressure_msl?.[0];
+
 
   const decimalYear = decimalYearFromISO(dt);
   const magVarRaw = wmm.declination(dzElevationM/1000, json.latitude, json.longitude, decimalYear);
@@ -1065,7 +1121,7 @@ function renderResults(activeKey){
   const magVarStr = magVar != null ? `${Math.abs(magVar).toFixed(1)}° ${magVar >= 0 ? 'E' : 'W'}` : '—';
 
   // freezing level (given AMSL by the model) shown as height above the DZ
-  const flAMSLm = json.hourly.freezing_level_height?.[idx];
+  const flAMSLm = hb.freezing_level_height?.[0];
   let flStr = '—';
   if(flAMSLm != null){
     const flAGL = flAMSLm*3.28084 - dzElevationFt;
@@ -1106,11 +1162,16 @@ function renderResults(activeKey){
     </tr>`;
   });
 
-  const whenStr = basis === 'zulu'
-    ? shiftIso(time, -off).replace('T',' ') + 'Z'
-    : time.replace('T',' ') + ' (' + (json.timezone_abbreviation || 'local') + ')';
+  const hm = iso => basis === 'zulu' ? shiftIso(iso, -off).slice(11,16) + 'Z' : iso.slice(11,16);
+  const nHours = json.hourly.time.length;
+  const blendNote = (frac > 0 && i0 + 1 < nHours)
+    ? ` (blend of ${hm(json.hourly.time[i0])} and ${hm(json.hourly.time[i0+1])})` : '';
+  const whenStr = (basis === 'zulu'
+    ? dt.replace('T',' ') + 'Z'
+    : dt.replace('T',' ') + ' (' + (json.timezone_abbreviation || 'local') + ')') + blendNote;
   const day = buildDayView(json, idx, dt, basis);
 
+  const keepScroll = pane.scrollTop;
   pane.innerHTML = `
     <div class="src-row">
       ${renderSourcePicker(activeKey)}
@@ -1152,6 +1213,7 @@ function renderResults(activeKey){
     ${day.html}
   `;
 
+  pane.scrollTop = keepScroll;
   const plain = str => String(str).replace(/—/g, '-');
   lastReport = {
     when: whenStr,
@@ -1181,7 +1243,11 @@ function renderResults(activeKey){
   if(picker) picker.addEventListener('change', (e)=>{ renderResults(e.target.value); });
 }
 
-async function runFetch(){
+const locKey = loc => `${loc.lat.toFixed(4)},${loc.lon.toFixed(4)}`;
+
+// force = true downloads fresh data (Get Winds button); false reuses recent data for the same
+// location, so changing only the time or time basis is instant.
+async function runFetch(force = true){
   const statusEl = document.getElementById('status');
   const dt = document.getElementById('datetime').value;
   const basis = document.getElementById('timeBasis').value;
@@ -1197,39 +1263,58 @@ async function runFetch(){
     return;
   }
 
-  updateMap(loc.lat, loc.lon);
+  const key = locKey(loc);
+  const moved = key !== cacheKey;
+  if(moved) Object.keys(sourceCache).forEach(k => delete sourceCache[k]);
+  cacheKey = key;
+  updateMap(loc.lat, loc.lon, moved);
   lastLoc = loc;
-  statusEl.className = '';
-  statusEl.textContent = 'Fetching winds…';
-  document.getElementById('resultsPane').innerHTML = '';
+
+  const isFresh = k => sourceCache[k] && (Date.now() - sourceCache[k].at) < CACHE_MAX_AGE_MS;
+  const need = SOURCES.filter(s => force || !isFresh(s.key));
 
   const fetchBtn = document.getElementById('fetchBtn');
   const originalLabel = fetchBtn.textContent;
-  fetchBtn.disabled = true;
-  fetchBtn.textContent = 'Loading…';
+  if(need.length){
+    statusEl.className = '';
+    statusEl.textContent = 'Fetching winds…';
+    document.getElementById('resultsPane').innerHTML = '';
+    fetchBtn.disabled = true;
+    fetchBtn.textContent = 'Loading…';
+  }
 
   try{
-    const outcomes = await Promise.allSettled(SOURCES.map(s => fetchSource(s.key, loc.lat, loc.lon)));
-    lastData = {};
     const failures = [];
+    if(need.length){
+      const outcomes = await Promise.allSettled(need.map(s => fetchSource(s.key, loc.lat, loc.lon)));
+      need.forEach((s, i)=>{
+        const outcome = outcomes[i];
+        if(outcome.status === 'fulfilled'){
+          sourceCache[s.key] = { json: outcome.value, at: Date.now() };
+        } else {
+          delete sourceCache[s.key];
+          failures.push(`${s.label} (${outcome.reason && outcome.reason.message ? outcome.reason.message : 'failed'})`);
+        }
+      });
+    }
+
+    lastData = {};
     let gapMin = 0;
-    SOURCES.forEach((s, i)=>{
-      const outcome = outcomes[i];
-      if(outcome.status !== 'fulfilled'){
-        failures.push(`${s.label} (${outcome.reason && outcome.reason.message ? outcome.reason.message : 'failed'})`);
-        return;
-      }
-      const json = outcome.value;
+    SOURCES.forEach(s=>{
+      const c = sourceCache[s.key];
+      if(!c) return;
+      const json = c.json;
       // forecast hours are in DZ-local time; convert a Zulu request to DZ-local first
       const targetLocal = basis === 'zulu' ? shiftIso(dt, json.utc_offset_seconds || 0) : dt;
-      const idx = nearestIndex(json.hourly.time, targetLocal);
-      gapMin = Math.max(gapMin, Math.abs(new Date(json.hourly.time[idx]).getTime() - new Date(targetLocal).getTime())/60000);
-      lastData[s.key] = { json, idx, dt, basis };
+      const pos = locateTime(json.hourly.time, targetLocal);
+      gapMin = Math.max(gapMin, pos.gapMin);
+      const hb = blendHourly(json.hourly, pos.i0, pos.frac);
+      lastData[s.key] = { json, idx: pos.idx, i0: pos.i0, frac: pos.frac, hb, targetLocal, dt, basis };
     });
 
     const firstOk = SOURCES.find(s => lastData[s.key]);
     if(!firstOk) throw new Error('Both sources failed to load. ' + failures.join('; '));
-    renderResults(lastData['best_match'] ? 'best_match' : firstOk.key);
+    renderResults(lastData[currentSource] ? currentSource : (lastData['best_match'] ? 'best_match' : firstOk.key));
 
     const reqStr = `${dt.replace('T',' ')}${basis === 'zulu' ? 'Z' : ' local'}`;
     if(failures.length){
@@ -1239,7 +1324,11 @@ async function runFetch(){
       statusEl.className = 'err';
       statusEl.textContent = `${reqStr} is outside the forecast range, so the nearest available hour is shown.`;
     } else {
-      statusEl.textContent = `Nearest forecast hour matched. Requested: ${reqStr}`;
+      statusEl.className = '';
+      const ageMin = Math.round((Date.now() - Math.min(...Object.values(sourceCache).map(c => c.at)))/60000);
+      statusEl.textContent = need.length
+        ? `Showing ${reqStr}.`
+        : `Showing ${reqStr}, from forecast data loaded ${ageMin} min ago.`;
     }
   } catch(err){
     statusEl.className = 'err';
@@ -1250,13 +1339,25 @@ async function runFetch(){
   }
 }
 
-document.getElementById('fetchBtn').addEventListener('click', runFetch);
+document.getElementById('fetchBtn').addEventListener('click', () => runFetch(true));
 
 // Enter key in any input field fetches
 ['latDDM','lonDDM','mgrsInput','datetime'].forEach(id=>{
   document.getElementById(id).addEventListener('keydown', (e)=>{
-    if(e.key === 'Enter') runFetch();
+    if(e.key === 'Enter') runFetch(true);
   });
+});
+
+// changing only the time or the time basis re-uses the data already downloaded for this location
+function refreshFromCache(){
+  if(!Object.keys(lastData).length) return;
+  let loc;
+  try{ loc = resolveLocation(); }catch(e){ return; }
+  if(isNaN(loc.lat) || isNaN(loc.lon) || locKey(loc) !== cacheKey) return;
+  runFetch(false);
+}
+['datetime','timeBasis'].forEach(id=>{
+  document.getElementById(id).addEventListener('change', refreshFromCache);
 });
 
 /* ---------------- PDF export ---------------- */
