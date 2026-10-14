@@ -1,0 +1,1602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DZ Wind Forecasts</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+<style>
+  :root{
+    --bg:#0b1220; --panel:#131c2e; --panel2:#182338; --border:#25334d;
+    --text:#e8edf5; --muted:#8fa0bd; --accent:#3fa9f5;
+    --good:#3fd68a; --warn:#f5c33f; --bad:#f56a4f;
+  }
+  *{box-sizing:border-box;}
+  html{ -webkit-text-size-adjust:100%; }
+  body{
+    margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg); color:var(--text); overflow-x:hidden;
+  }
+  header{
+    position:relative; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
+    padding:16px 18px 16px 22px; border-bottom:1px solid var(--border);
+    background:linear-gradient(90deg, rgba(63,169,245,.18), rgba(63,169,245,0) 65%);
+  }
+  header::before{ content:''; position:absolute; left:0; top:0; bottom:0; width:4px; background:var(--accent); }
+  header h1{ font-size:21px; margin:0; font-weight:700; letter-spacing:.3px; }
+  header .sub{ color:var(--muted); font-size:12.5px; margin-top:3px; }
+  .utc-clock{ font-size:13px; color:var(--muted); font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .utc-clock b{ color:var(--text); font-weight:650; }
+
+  .controls{ padding:14px 16px; border-bottom:1px solid var(--border); background:var(--panel); }
+  .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; }
+  .ctl-groups{ display:flex; flex-wrap:wrap; gap:12px; align-items:stretch; }
+  .ctl-group{ background:rgba(255,255,255,.025); border:1px solid var(--border); border-radius:10px; padding:10px 12px 12px; }
+  .ctl-title{ font-size:12px; font-weight:650; color:var(--accent); margin-bottom:8px; }
+  .ctl-actions{ display:flex; flex-direction:column; justify-content:center; gap:8px; background:none; border:none; padding:0; }
+  .ctl-actions button{ min-width:140px; }
+  .field{ display:flex; flex-direction:column; gap:4px; }
+  .field label{ font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; }
+  input, select, button{
+    background:var(--panel2); border:1px solid var(--border); color:var(--text);
+    padding:8px 10px; border-radius:8px; font-size:14px;
+  }
+  input{ width:170px; }
+  #datetime{ width:230px; }
+  button.primary{ background:var(--accent); border-color:var(--accent); color:#06131f; font-weight:650; cursor:pointer; }
+  button.primary:active{ transform:translateY(1px); }
+  .fmt-group{ display:none; gap:10px; flex-wrap:wrap; }
+  .fmt-group.active{ display:flex; }
+  #mgrsInput{ width:220px; }
+  #locLabel{ font-size:12.5px; color:var(--muted); margin-top:8px; }
+  #locLabel b{ color:var(--text); }
+  #status{ font-size:12.5px; color:var(--muted); padding:8px 16px 0; }
+  #status.err{ color:var(--bad); }
+
+  .layout{ display:flex; align-items:flex-start; gap:14px; padding:14px 16px 30px; }
+  #map{
+    flex:1 1 42%; height:calc(100vh - 260px); min-height:340px;
+    border:1px solid var(--border); border-radius:10px; overflow:hidden;
+  }
+  #resultsPane{ flex:1 1 58%; padding:0; max-height:calc(100vh - 260px); min-height:340px; overflow-y:auto; }
+  @media (max-width: 820px){
+    .layout{ flex-direction:column; }
+    #map{ width:100%; height:38vh; min-height:260px; }
+    #resultsPane{ width:100%; max-height:none; min-height:0; }
+  }
+
+  .src-row{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:10px; flex-wrap:wrap; }
+  .src-row .meta{ font-size:12.5px; color:var(--muted); }
+
+  .summary-cards{ display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); margin-bottom:14px;
+    background:var(--panel); border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+  .card{ padding:10px 12px; box-shadow:1px 0 0 var(--border), 0 1px 0 var(--border);
+    display:flex; flex-direction:column; justify-content:space-between; gap:4px; }
+  .card-label{ font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; margin-bottom:4px; }
+  .card-value{ font-size:16px; font-weight:650; }
+  .card-sub{ font-size:12px; font-weight:500; color:var(--muted); margin-left:4px; }
+
+  table{ width:100%; border-collapse:collapse; font-size:13.5px; background:var(--panel); border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+  thead th{ text-align:left; background:var(--panel2); color:var(--muted); font-weight:600; padding:8px 10px; font-size:11px; text-transform:uppercase; letter-spacing:.4px; }
+  tbody td{ padding:7px 10px; border-top:1px solid var(--border); }
+  tbody tr.anchor td{ color:var(--muted); font-style:italic; }
+  .arrow{ display:inline-block; font-size:16px; margin-right:6px; }
+  .spd{ font-weight:650; }
+  .spd.light{ color:var(--good); }
+  .spd.mod{ color:var(--warn); }
+  .spd.strong{ color:var(--bad); }
+  .approx-note{ font-size:11.5px; color:var(--muted); }
+
+  footer{ padding:14px 16px 30px; color:var(--muted); font-size:11.5px; line-height:1.6; }
+  a{ color:var(--accent); }
+  .table-wrap{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
+
+  .pdf-link{ font-size:13px; color:var(--accent); text-decoration:none; border:1px solid var(--border);
+    border-radius:8px; padding:6px 10px; }
+  .pdf-link:hover{ border-color:var(--accent); }
+  @media print{
+    :root{ --bg:#fff; --panel:#fff; --panel2:#f1f3f6; --border:#c8ccd2; --text:#000; --muted:#555; --accent:#000; }
+    header, .controls, #status, #map, footer, .pdf-link, #sourcePicker{ display:none !important; }
+    .layout{ display:block; padding:0; }
+    #resultsPane{ max-height:none; overflow:visible; }
+    body{ background:#fff; color:#000; }
+  }
+
+  .day-view{ margin-top:16px; }
+  .day-title{ font-size:12.5px; color:var(--muted); margin-bottom:8px; }
+  .day-table{ width:auto; min-width:100%; }
+  .day-table th, .day-table td{ text-align:center; padding:6px 8px; white-space:nowrap; font-size:12.5px; }
+  .day-table th:first-child, .day-table td:first-child{ text-align:left; position:sticky; left:0; background:var(--panel2); }
+  .day-table td.spd{ color:var(--text); font-weight:600; }
+  .day-table td.spd.light{ background:rgba(63,214,138,.20); }
+  .day-table td.spd.mod{ background:rgba(245,195,63,.24); }
+  .day-table td.spd.strong{ background:rgba(245,106,79,.32); }
+  .day-table td.sel{ box-shadow:inset 0 0 0 2px var(--accent); }
+  .day-table th.sel{ background:var(--accent); color:#06131f; }
+  .day-legend{ font-size:11.5px; color:var(--muted); margin:-4px 0 8px; }
+  .day-legend i{ display:inline-block; width:10px; height:10px; border-radius:3px; margin:0 4px 0 10px; vertical-align:-1px; }
+  .day-legend i:first-child{ margin-left:0; }
+
+  /* ---------------- Mobile ---------------- */
+  @media (max-width: 640px){
+    header{ padding:12px 14px; }
+    header h1{ font-size:16px; }
+    header .sub{ font-size:12px; }
+    .controls{ padding:12px 14px; }
+    .ctl-groups{ flex-direction:column; }
+    .field-btn label{ display:none; }
+    .card{ padding:8px 9px; }
+    .card-label{ font-size:9.5px; }
+    .card-value{ font-size:14px; }
+    .card-sub{ margin-left:2px; }
+    .field, .ctl-group, .row{ min-width:0; max-width:100%; }
+    input[type="datetime-local"]{
+      -webkit-appearance:none; appearance:none; display:block;
+      width:100% !important; min-width:0 !important; max-width:100% !important;
+      min-height:46px; text-align:left;
+    }
+    input[type="datetime-local"]::-webkit-date-and-time-value{ text-align:left; min-height:1.3em; }
+    .ctl-group{ width:100%; }
+    .ctl-actions{ flex-direction:row; flex-wrap:wrap; }
+    .ctl-actions button{ flex:1 1 140px; }
+    .row{ flex-direction:column; align-items:stretch; gap:12px; }
+    .field{ width:100%; }
+    .fmt-group.active{ flex-direction:column; }
+    input, select, button{
+      width:100% !important;
+      font-size:16px; /* prevents iOS auto-zoom on focus */
+      padding:11px 12px;
+      box-sizing:border-box;
+    }
+    button{ min-height:46px; }
+    .layout{ padding:12px 12px 24px; gap:12px; }
+    #map{ height:42vh; min-height:220px; }
+    table{ font-size:12.5px; }
+    thead th{ padding:7px 8px; font-size:10.5px; }
+    tbody td{ padding:7px 8px; }
+    footer{ padding:12px 14px 24px; font-size:11px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>DZ Wind Forecasts</h1>
+    <div class="sub">Enter the drop zone location, pick a time, and read winds every 1,000 ft up to 25,000 ft.</div>
+  </div>
+  <div class="utc-clock" id="utcClock"></div>
+</header>
+
+<div class="controls">
+  <div class="ctl-groups">
+    <section class="ctl-group">
+      <div class="ctl-title">Location</div>
+      <div class="row">
+        <div class="field">
+          <label>Format</label>
+          <select id="locFormat">
+            <option value="mgrs" selected>MGRS</option>
+            <option value="ddm">Lat/Long (DDM)</option>
+          </select>
+        </div>
+
+        <div class="field fmt-group" id="ddmFields">
+          <label>Latitude</label>
+          <input type="text" id="latDDM" placeholder="51 30.444 N">
+        </div>
+        <div class="field fmt-group" id="ddmFields2">
+          <label>Longitude</label>
+          <input type="text" id="lonDDM" placeholder="000 07.668 W">
+        </div>
+
+        <div class="field fmt-group active" id="mgrsFields">
+          <label>MGRS</label>
+          <input type="text" id="mgrsInput" placeholder="30UXC1234567890">
+        </div>
+
+        <div class="field field-btn">
+          <label>&nbsp;</label>
+          <button id="myLocBtn">Use my location</button>
+        </div>
+      </div>
+      <div id="locLabel">Location: <b>not set</b></div>
+    </section>
+
+    <section class="ctl-group">
+      <div class="ctl-title">Time</div>
+      <div class="row">
+        <div class="field">
+          <label>Date &amp; time</label>
+          <input type="datetime-local" id="datetime" step="300">
+        </div>
+        <div class="field">
+          <label>Basis</label>
+          <select id="timeBasis">
+            <option value="zulu" selected>Zulu (GMT)</option>
+            <option value="local">Local to DZ</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <div class="ctl-group ctl-actions">
+      <button class="primary" id="fetchBtn">Get Winds</button>
+      <button id="shareBtn">Copy link</button>
+    </div>
+  </div>
+</div>
+
+<div id="status"></div>
+
+<div class="layout">
+  <div id="map"></div>
+  <div id="resultsPane"><div class="approx-note">Enter a location and time above, then tap "Get Winds".</div></div>
+</div>
+
+<footer>
+  Data: <a href="https://open-meteo.com" target="_blank">Open-Meteo</a>.
+</footer>
+
+<script>
+/* ---------------- World Magnetic Model 2025 (magnetic declination) ----------------
+   Faithful port of the NOAA/NGA reference WMM algorithm (spherical harmonic
+   synthesis to degree/order 12), with official WMM2025 coefficients
+   (epoch 2025.0, valid 2025.0-2030.0, source: NOAA NCEI / BGS WMM.COF). */
+function WorldMagneticModel(){
+  this.coff = [
+" 1, 0, -29351.8 , 0.0 , 12.0 , 0.0",
+" 1, 1, -1410.8 , 4545.4 , 9.7 , -21.5",
+" 2, 0, -2556.6 , 0.0 , -11.6 , 0.0",
+" 2, 1, 2951.1 , -3133.6 , -5.2 , -27.7",
+" 2, 2, 1649.3 , -815.1 , -8.0 , -12.1",
+" 3, 0, 1361.0 , 0.0 , -1.3 , 0.0",
+" 3, 1, -2404.1 , -56.6 , -4.2 , 4.0",
+" 3, 2, 1243.8 , 237.5 , 0.4 , -0.3",
+" 3, 3, 453.6 , -549.5 , -15.6 , -4.1",
+" 4, 0, 895.0 , 0.0 , -1.6 , 0.0",
+" 4, 1, 799.5 , 278.6 , -2.4 , -1.1",
+" 4, 2, 55.7 , -133.9 , -6.0 , 4.1",
+" 4, 3, -281.1 , 212.0 , 5.6 , 1.6",
+" 4, 4, 12.1 , -375.6 , -7.0 , -4.4",
+" 5, 0, -233.2 , 0.0 , 0.6 , 0.0",
+" 5, 1, 368.9 , 45.4 , 1.4 , -0.5",
+" 5, 2, 187.2 , 220.2 , 0.0 , 2.2",
+" 5, 3, -138.7 , -122.9 , 0.6 , 0.4",
+" 5, 4, -142.0 , 43.0 , 2.2 , 1.7",
+" 5, 5, 20.9 , 106.1 , 0.9 , 1.9",
+" 6, 0, 64.4 , 0.0 , -0.2 , 0.0",
+" 6, 1, 63.8 , -18.4 , -0.4 , 0.3",
+" 6, 2, 76.9 , 16.8 , 0.9 , -1.6",
+" 6, 3, -115.7 , 48.8 , 1.2 , -0.4",
+" 6, 4, -40.9 , -59.8 , -0.9 , 0.9",
+" 6, 5, 14.9 , 10.9 , 0.3 , 0.7",
+" 6, 6, -60.7 , 72.7 , 0.9 , 0.9",
+" 7, 0, 79.5 , 0.0 , -0.0 , 0.0",
+" 7, 1, -77.0 , -48.9 , -0.1 , 0.6",
+" 7, 2, -8.8 , -14.4 , -0.1 , 0.5",
+" 7, 3, 59.3 , -1.0 , 0.5 , -0.8",
+" 7, 4, 15.8 , 23.4 , -0.1 , 0.0",
+" 7, 5, 2.5 , -7.4 , -0.8 , -1.0",
+" 7, 6, -11.1 , -25.1 , -0.8 , 0.6",
+" 7, 7, 14.2 , -2.3 , 0.8 , -0.2",
+" 8, 0, 23.2 , 0.0 , -0.1 , 0.0",
+" 8, 1, 10.8 , 7.1 , 0.2 , -0.2",
+" 8, 2, -17.5 , -12.6 , 0.0 , 0.5",
+" 8, 3, 2.0 , 11.4 , 0.5 , -0.4",
+" 8, 4, -21.7 , -9.7 , -0.1 , 0.4",
+" 8, 5, 16.9 , 12.7 , 0.3 , -0.5",
+" 8, 6, 15.0 , 0.7 , 0.2 , -0.6",
+" 8, 7, -16.8 , -5.2 , -0.0 , 0.3",
+" 8, 8, 0.9 , 3.9 , 0.2 , 0.2",
+" 9, 0, 4.6 , 0.0 , -0.0 , 0.0",
+" 9, 1, 7.8 , -24.8 , -0.1 , -0.3",
+" 9, 2, 3.0 , 12.2 , 0.1 , 0.3",
+" 9, 3, -0.2 , 8.3 , 0.3 , -0.3",
+" 9, 4, -2.5 , -3.3 , -0.3 , 0.3",
+" 9, 5, -13.1 , -5.2 , 0.0 , 0.2",
+" 9, 6, 2.4 , 7.2 , 0.3 , -0.1",
+" 9, 7, 8.6 , -0.6 , -0.1 , -0.2",
+" 9, 8, -8.7 , 0.8 , 0.1 , 0.4",
+" 9, 9, -12.9 , 10.0 , -0.1 , 0.1",
+" 10, 0, -1.3 , 0.0 , 0.1 , 0.0",
+" 10, 1, -6.4 , 3.3 , 0.0 , 0.0",
+" 10, 2, 0.2 , 0.0 , 0.1 , -0.0",
+" 10, 3, 2.0 , 2.4 , 0.1 , -0.2",
+" 10, 4, -1.0 , 5.3 , -0.0 , 0.1",
+" 10, 5, -0.6 , -9.1 , -0.3 , -0.1",
+" 10, 6, -0.9 , 0.4 , 0.0 , 0.1",
+" 10, 7, 1.5 , -4.2 , -0.1 , 0.0",
+" 10, 8, 0.9 , -3.8 , -0.1 , -0.1",
+" 10, 9, -2.7 , 0.9 , -0.0 , 0.2",
+" 10, 10, -3.9 , -9.1 , -0.0 , -0.0",
+" 11, 0, 2.9 , 0.0 , 0.0 , 0.0",
+" 11, 1, -1.5 , 0.0 , -0.0 , -0.0",
+" 11, 2, -2.5 , 2.9 , 0.0 , 0.1",
+" 11, 3, 2.4 , -0.6 , 0.0 , -0.0",
+" 11, 4, -0.6 , 0.2 , 0.0 , 0.1",
+" 11, 5, -0.1 , 0.5 , -0.1 , -0.0",
+" 11, 6, -0.6 , -0.3 , 0.0 , -0.0",
+" 11, 7, -0.1 , -1.2 , -0.0 , 0.1",
+" 11, 8, 1.1 , -1.7 , -0.1 , -0.0",
+" 11, 9, -1.0 , -2.9 , -0.1 , 0.0",
+" 11, 10, -0.2 , -1.8 , -0.1 , 0.0",
+" 11, 11, 2.6 , -2.3 , -0.1 , 0.0",
+" 12, 0, -2.0 , 0.0 , 0.0 , 0.0",
+" 12, 1, -0.2 , -1.3 , 0.0 , -0.0",
+" 12, 2, 0.3 , 0.7 , -0.0 , 0.0",
+" 12, 3, 1.2 , 1.0 , -0.0 , -0.1",
+" 12, 4, -1.3 , -1.4 , -0.0 , 0.1",
+" 12, 5, 0.6 , -0.0 , -0.0 , -0.0",
+" 12, 6, 0.6 , 0.6 , 0.1 , -0.0",
+" 12, 7, 0.5 , -0.1 , -0.0 , -0.0",
+" 12, 8, -0.1 , 0.8 , 0.0 , 0.0",
+" 12, 9, -0.4 , 0.1 , 0.0 , -0.0",
+" 12, 10, -0.2 , -1.0 , -0.1 , -0.0",
+" 12, 11, -1.3 , 0.1 , -0.0 , 0.0",
+" 12, 12, -0.7 , 0.2 , -0.1 , -0.1"
+  ];
+
+  this.c = new Array(13);
+  this.cd = new Array(13);
+  this.tc = new Array(13);
+  this.dp = new Array(13);
+  this.k = new Array(13);
+  for(var i=0; i< 13; i++){
+    this.c[i] = new Array(13);
+    this.cd[i] = new Array(13);
+    this.tc[i] = new Array(13);
+    this.dp[i] = new Array(13);
+    this.k[i] = new Array(13);
+  }
+  this.snorm = new Array(169);
+  this.sp = new Array(13);
+  this.cp = new Array(13);
+  this.fn = new Array(13);
+  this.fm = new Array(13);
+  this.pp = new Array(13);
+
+  var maxdeg = 12;
+  var maxord;
+  var i,j,D1,D2,n,m;
+  var gnm,hnm,dgnm,dhnm,flnmj;
+  var c_str, c_flds;
+
+  maxord = maxdeg;
+  this.sp[0] = 0.0;
+  this.cp[0] = this.snorm[0] = this.pp[0] = 1.0;
+  this.dp[0][0] = 0.0;
+
+  this.c[0][0] = 0.0;
+  this.cd[0][0] = 0.0;
+
+  for(i=0; i<this.coff.length; i++){
+    c_str = this.coff[i];
+    c_flds = c_str.split(",");
+    n = parseInt(c_flds[0],10);
+    m = parseInt(c_flds[1],10);
+    gnm = parseFloat(c_flds[2]);
+    hnm = parseFloat(c_flds[3]);
+    dgnm = parseFloat(c_flds[4]);
+    dhnm = parseFloat(c_flds[5]);
+    if (m <= n){
+      this.c[m][n] = gnm;
+      this.cd[m][n] = dgnm;
+      if (m != 0){
+        this.c[n][m-1] = hnm;
+        this.cd[n][m-1] = dhnm;
+      }
+    }
+  }
+
+  this.snorm[0] = 1.0;
+  for (n=1; n<=maxord; n++){
+    this.snorm[n] = this.snorm[n-1]*(2*n-1)/n;
+    j = 2;
+    for (m=0,D1=1,D2=(n-m+D1)/D1; D2>0; D2--,m+=D1){
+      this.k[m][n] = (((n-1)*(n-1))-(m*m))/((2*n-1)*(2*n-3));
+      if (m > 0){
+        flnmj = ((n-m+1)*j)/(n+m);
+        this.snorm[n+m*13] = this.snorm[n+(m-1)*13]*Math.sqrt(flnmj);
+        j = 1;
+        this.c[n][m-1] = this.snorm[n+m*13]*this.c[n][m-1];
+        this.cd[n][m-1] = this.snorm[n+m*13]*this.cd[n][m-1];
+      }
+      this.c[m][n] = this.snorm[n+m*13]*this.c[m][n];
+      this.cd[m][n] = this.snorm[n+m*13]*this.cd[m][n];
+    }
+    this.fn[n] = (n+1);
+    this.fm[n] = n;
+  }
+  this.k[1][1] = 0.0;
+  this.fm[0] = 0.0;
+  this.epoch = 2025.0;
+}
+
+WorldMagneticModel.prototype.declination = function(altitudeKm, latitudeDegrees, longitudeDegrees, yearFloat){
+  var a = 6378.137, b = 6356.7523142, re = 6371.2;
+  var a2=a*a,b2=b*b,c2=a2-b2,a4=a2*a2,b4=b2*b2,c4=a4-b4;
+  var D3,D4,dec,n,m;
+  var pi,dt,rlon,rlat,srlon,srlat,crlon,crlat,srlat2,crlat2,q,q1,q2,ct,d,aor,ar,r2,bpp,par,
+      temp1,parp,temp2,bx,by,bz,bh,dtr,bp,bt,st,ca,sa,r;
+  var maxord=12;
+  var alt=altitudeKm, glon=longitudeDegrees, glat=latitudeDegrees;
+
+  dt = yearFloat - this.epoch;
+  if ((dt < 0.0) || (dt > 5.0)) return null;
+
+  pi=3.14159265359; dtr=pi/180.0;
+  rlon=glon*dtr; rlat=glat*dtr;
+  srlon=Math.sin(rlon); srlat=Math.sin(rlat);
+  crlon=Math.cos(rlon); crlat=Math.cos(rlat);
+  srlat2=srlat*srlat; crlat2=crlat*crlat;
+  this.sp[1]=srlon; this.cp[1]=crlon;
+
+  q=Math.sqrt(a2-c2*srlat2);
+  q1=alt*q;
+  q2=((q1+a2)/(q1+b2))*((q1+a2)/(q1+b2));
+  ct=srlat/Math.sqrt(q2*crlat2+srlat2);
+  st=Math.sqrt(1.0-(ct*ct));
+  r2=(alt*alt)+2.0*q1+(a4-c4*srlat2)/(q*q);
+  r=Math.sqrt(r2);
+  d=Math.sqrt(a2*crlat2+b2*srlat2);
+  ca=(alt+d)/r;
+  sa=c2*crlat*srlat/(r*d);
+
+  for (m=2; m<=maxord; m++){
+    this.sp[m]=this.sp[1]*this.cp[m-1]+this.cp[1]*this.sp[m-1];
+    this.cp[m]=this.cp[1]*this.cp[m-1]-this.sp[1]*this.sp[m-1];
+  }
+
+  aor=re/r; ar=aor*aor; var br=0,btv=0,bpv=0; bpp=0.0;
+
+  for (n=1; n<=maxord; n++){
+    ar=ar*aor;
+    for (m=0,D3=1,D4=(n+m+D3)/D3; D4>0; D4--,m+=D3){
+      if (n==m){
+        this.snorm[n+m*13]=st*this.snorm[n-1+(m-1)*13];
+        this.dp[m][n]=st*this.dp[m-1][n-1]+ct*this.snorm[n-1+(m-1)*13];
+      } else if (n==1 && m==0){
+        this.snorm[n+m*13]=ct*this.snorm[n-1+m*13];
+        this.dp[m][n]=ct*this.dp[m][n-1]-st*this.snorm[n-1+m*13];
+      } else if (n>1 && n!=m){
+        if (m>n-2) this.snorm[n-2+m*13]=0.0;
+        if (m>n-2) this.dp[m][n-2]=0.0;
+        this.snorm[n+m*13]=ct*this.snorm[n-1+m*13]-this.k[m][n]*this.snorm[n-2+m*13];
+        this.dp[m][n]=ct*this.dp[m][n-1]-st*this.snorm[n-1+m*13]-this.k[m][n]*this.dp[m][n-2];
+      }
+      this.tc[m][n]=this.c[m][n]+dt*this.cd[m][n];
+      if (m!=0) this.tc[n][m-1]=this.c[n][m-1]+dt*this.cd[n][m-1];
+
+      par=ar*this.snorm[n+m*13];
+      if (m==0){
+        temp1=this.tc[m][n]*this.cp[m];
+        temp2=this.tc[m][n]*this.sp[m];
+      } else {
+        temp1=this.tc[m][n]*this.cp[m]+this.tc[n][m-1]*this.sp[m];
+        temp2=this.tc[m][n]*this.sp[m]-this.tc[n][m-1]*this.cp[m];
+      }
+      btv=btv-ar*temp1*this.dp[m][n];
+      bpv += (this.fm[m]*temp2*par);
+      br += (this.fn[n]*temp1*par);
+
+      if (st==0.0 && m==1){
+        if (n==1) this.pp[n]=this.pp[n-1];
+        else this.pp[n]=ct*this.pp[n-1]-this.k[m][n]*this.pp[n-2];
+        parp=ar*this.pp[n];
+        bpp += (this.fm[m]*temp2*parp);
+      }
+    }
+  }
+
+  if (st==0.0) bp=bpp; else bp=bpv/st;
+  bt=btv;
+
+  bx=-bt*ca-br*sa;
+  by=bp;
+  bz=bt*sa-br*ca;
+
+  bh=Math.sqrt((bx*bx)+(by*by));
+  dec=Math.atan2(by,bx)/dtr;
+  return dec;
+}
+
+const wmm = new WorldMagneticModel();
+
+function decimalYearFromISO(isoLocal){
+  // isoLocal: "YYYY-MM-DDTHH:MM" (local to the DZ, no timezone math needed —
+  // decimal-year precision doesn't need to be timezone-exact)
+  const year = parseInt(isoLocal.slice(0,4), 10);
+  const month = parseInt(isoLocal.slice(5,7), 10);
+  const day = parseInt(isoLocal.slice(8,10), 10);
+  const hour = parseInt(isoLocal.slice(11,13), 10) || 0;
+  const minute = parseInt(isoLocal.slice(14,16), 10) || 0;
+  const start = Date.UTC(year, 0, 1);
+  const end = Date.UTC(year+1, 0, 1);
+  const point = Date.UTC(year, month-1, day, hour, minute);
+  return year + (point - start) / (end - start);
+}
+
+/* ---------------- Live Zulu clock in the header ---------------- */
+function tickClock(){
+  const d = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  document.getElementById('utcClock').innerHTML =
+    `Now <b>${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}Z</b> ${d.getUTCFullYear()}-${pad(d.getUTCMonth()+1)}-${pad(d.getUTCDate())}`;
+}
+tickClock();
+setInterval(tickClock, 15000);
+
+/* ---------------- Map (clickable to set location) ---------------- */
+const map = L.map('map', { dragging:true, scrollWheelZoom:true }).setView([51.7500, -1.5836], 9);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '&copy; OpenStreetMap contributors',
+  maxZoom: 18
+}).addTo(map);
+let marker = L.marker([51.7500, -1.5836], { draggable:true }).addTo(map);
+
+let currentLat = null, currentLon = null;
+
+function updateMap(lat, lon, pan){
+  currentLat = lat; currentLon = lon;
+  marker.setLatLng([lat, lon]);
+  if(pan !== false) map.setView([lat, lon], map.getZoom() < 6 ? 9 : map.getZoom());
+  document.getElementById('locLabel').innerHTML =
+    `Location: <b>${formatDDM(lat, true)}, ${formatDDM(lon, false)}</b>`;
+}
+
+// populate the visible input field(s) for whichever format is active
+function populateFieldsFromLatLon(lat, lon){
+  if(locFormat.value === 'mgrs'){
+    try{
+      document.getElementById('mgrsInput').value = latLonToMGRS(lat, lon, 5);
+    }catch(err){
+      document.getElementById('status').className = 'err';
+      document.getElementById('status').textContent = err.message;
+    }
+  } else {
+    document.getElementById('latDDM').value = decToDDMStr(lat, true);
+    document.getElementById('lonDDM').value = decToDDMStr(lon, false);
+  }
+}
+
+// degrees + decimal minutes, e.g. 51° 30.444' N / 000° 07.668' W
+function formatDDM(dec, isLat){
+  const hemi = isLat ? (dec < 0 ? 'S' : 'N') : (dec < 0 ? 'W' : 'E');
+  const absVal = Math.abs(dec);
+  let deg = Math.floor(absVal);
+  let min = Math.round((absVal - deg) * 60 * 1000) / 1000;
+  if(min >= 60){ min = 0; deg += 1; }
+  const degStr = String(deg).padStart(isLat ? 2 : 3, '0');
+  const minStr = min.toFixed(3).padStart(6, '0');
+  return `${degStr}° ${minStr}' ${hemi}`;
+}
+
+// shift a "YYYY-MM-DDTHH:MM" string by a number of seconds (no timezone parsing)
+function shiftIso(iso, seconds){
+  const ms = Date.UTC(
+    parseInt(iso.slice(0,4),10), parseInt(iso.slice(5,7),10)-1, parseInt(iso.slice(8,10),10),
+    parseInt(iso.slice(11,13),10)||0, parseInt(iso.slice(14,16),10)||0
+  ) + seconds*1000;
+  const d = new Date(ms);
+  const pad = n => String(n).padStart(2,'0');
+  return `${d.getUTCFullYear()}-${pad(d.getUTCMonth()+1)}-${pad(d.getUTCDate())}T${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;
+}
+
+function decToDDMStr(dec, isLat){
+  const hemi = isLat ? (dec < 0 ? 'S' : 'N') : (dec < 0 ? 'W' : 'E');
+  const absVal = Math.abs(dec);
+  const deg = Math.floor(absVal);
+  const min = (absVal - deg) * 60;
+  return `${deg} ${min.toFixed(3)} ${hemi}`;
+}
+
+map.on('click', (e)=>{
+  updateMap(e.latlng.lat, e.latlng.lng, false);
+  populateFieldsFromLatLon(e.latlng.lat, e.latlng.lng);
+});
+marker.on('dragend', ()=>{
+  const p = marker.getLatLng();
+  updateMap(p.lat, p.lng, false);
+  populateFieldsFromLatLon(p.lat, p.lng);
+});
+
+document.getElementById('myLocBtn').addEventListener('click', ()=>{
+  if(!navigator.geolocation){ alert('Geolocation not available in this browser.'); return; }
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      updateMap(pos.coords.latitude, pos.coords.longitude, true);
+      populateFieldsFromLatLon(pos.coords.latitude, pos.coords.longitude);
+    },
+    err => alert('Could not get location: ' + err.message)
+  );
+});
+
+/* ---------------- Format toggle ---------------- */
+const locFormat = document.getElementById('locFormat');
+locFormat.addEventListener('change', ()=>{
+  const isMgrs = locFormat.value === 'mgrs';
+  document.getElementById('ddmFields').classList.toggle('active', !isMgrs);
+  document.getElementById('ddmFields2').classList.toggle('active', !isMgrs);
+  document.getElementById('mgrsFields').classList.toggle('active', isMgrs);
+});
+
+/* ---------------- DDM parsing ---------------- */
+function parseDDM(str, isLat){
+  const raw = str.trim().toUpperCase();
+  const re = /^([NSEW])?\s*(\d{1,3})[°\s:]+(\d{1,2}(?:\.\d+)?)['\s]*([NSEW])?$/;
+  const m = raw.match(re);
+  if(!m) throw new Error(`Could not parse ${isLat ? 'latitude' : 'longitude'} "${str}". Use e.g. "51 30.444 N" or "000 07.668 W".`);
+  const hemi = m[1] || m[4];
+  if(!hemi) throw new Error(`Missing hemisphere letter (${isLat ? 'N/S' : 'E/W'}) for ${isLat ? 'latitude' : 'longitude'}.`);
+  const expected = isLat ? 'NS' : 'EW';
+  if(!expected.includes(hemi)) throw new Error(`"${hemi}" is not a valid ${isLat ? 'latitude (use N/S)' : 'longitude (use E/W)'} hemisphere letter.`);
+  const deg = parseFloat(m[2]);
+  const min = parseFloat(m[3]);
+  if(min >= 60) throw new Error('Minutes must be less than 60.');
+  if(isLat && deg > 90) throw new Error('Latitude degrees must be 0–90.');
+  if(!isLat && deg > 180) throw new Error('Longitude degrees must be 0–180.');
+  let dec = deg + min/60;
+  if(hemi === 'S' || hemi === 'W') dec = -dec;
+  return dec;
+}
+
+/* ---------------- MGRS parsing (standard UTM zones/bands only) ---------------- */
+const WGS84_A = 6378137.0, WGS84_F = 1/298.257223563;
+
+function utmToLatLon(zone, hemisphere, easting, northing){
+  const a = WGS84_A, f = WGS84_F;
+  const e2 = f*(2-f);
+  const ep2 = e2/(1-e2);
+  const k0 = 0.9996;
+  const e1 = (1-Math.sqrt(1-e2))/(1+Math.sqrt(1-e2));
+
+  const x = easting - 500000;
+  let y = northing;
+  if(hemisphere === 'S') y -= 10000000;
+
+  const M = y / k0;
+  const mu = M / (a*(1 - e2/4 - 3*e2*e2/64 - 5*Math.pow(e2,3)/256));
+
+  const phi1 = mu
+    + (3*e1/2 - 27*Math.pow(e1,3)/32)*Math.sin(2*mu)
+    + (21*e1*e1/16 - 55*Math.pow(e1,4)/32)*Math.sin(4*mu)
+    + (151*Math.pow(e1,3)/96)*Math.sin(6*mu)
+    + (1097*Math.pow(e1,4)/512)*Math.sin(8*mu);
+
+  const sinPhi1 = Math.sin(phi1), cosPhi1 = Math.cos(phi1), tanPhi1 = Math.tan(phi1);
+  const N1 = a / Math.sqrt(1 - e2*sinPhi1*sinPhi1);
+  const T1 = tanPhi1*tanPhi1;
+  const C1 = ep2*cosPhi1*cosPhi1;
+  const R1 = a*(1-e2) / Math.pow(1 - e2*sinPhi1*sinPhi1, 1.5);
+  const D = x / (N1*k0);
+
+  const lat = phi1 - (N1*tanPhi1/R1) * (
+      D*D/2
+      - (5 + 3*T1 + 10*C1 - 4*C1*C1 - 9*ep2) * Math.pow(D,4)/24
+      + (61 + 90*T1 + 298*C1 + 45*T1*T1 - 252*ep2 - 3*C1*C1) * Math.pow(D,6)/720
+    );
+
+  const lon = (D
+      - (1+2*T1+C1)*Math.pow(D,3)/6
+      + (5 - 2*C1 + 28*T1 - 3*C1*C1 + 8*ep2 + 24*T1*T1) * Math.pow(D,5)/120
+    ) / cosPhi1;
+
+  const lonOrigin = (zone - 1)*6 - 180 + 3;
+  return { lat: lat*180/Math.PI, lon: lonOrigin + lon*180/Math.PI };
+}
+
+function meridianArcNorthing(latRad, hemisphere){
+  const a = WGS84_A, f = WGS84_F;
+  const e2 = f*(2-f);
+  const k0 = 0.9996;
+  const Mv = a*(
+      (1 - e2/4 - 3*e2*e2/64 - 5*Math.pow(e2,3)/256)*latRad
+      - (3*e2/8 + 3*e2*e2/32 + 45*Math.pow(e2,3)/1024)*Math.sin(2*latRad)
+      + (15*e2*e2/256 + 45*Math.pow(e2,3)/1024)*Math.sin(4*latRad)
+      - (35*Math.pow(e2,3)/3072)*Math.sin(6*latRad)
+    );
+  let northing = k0*Mv;
+  if(hemisphere === 'S') northing += 10000000;
+  return northing;
+}
+
+function parseMGRS(input){
+  const str = input.replace(/\s+/g, '').toUpperCase();
+  const m = str.match(/^(\d{1,2})([C-HJ-NP-X])([A-HJ-NP-Z])([A-HJ-NP-V])(\d+)$/);
+  if(!m) throw new Error(`Could not parse MGRS "${input}". Expected e.g. "30UXC1234567890".`);
+  const zone = parseInt(m[1], 10);
+  if(zone < 1 || zone > 60) throw new Error('MGRS zone number must be 1–60.');
+  const band = m[2], colLetter = m[3], rowLetter = m[4], digits = m[5];
+  if(digits.length % 2 !== 0 || digits.length < 2 || digits.length > 10){
+    throw new Error('MGRS numeric part must have an even number of digits (e.g. 4, 6, 8 or 10).');
+  }
+  const half = digits.length/2;
+  const precision = Math.pow(10, 5-half);
+  const easting100k = parseInt(digits.slice(0, half), 10) * precision;
+  const northing100k = parseInt(digits.slice(half), 10) * precision;
+
+  const colSets = ['ABCDEFGH', 'JKLMNPQR', 'STUVWXYZ'];
+  const colSet = colSets[(zone-1) % 3];
+  const colIdx = colSet.indexOf(colLetter);
+  if(colIdx === -1) throw new Error(`"${colLetter}" is not a valid 100km column letter for zone ${zone}.`);
+  const easting = (colIdx+1)*100000 + easting100k;
+
+  const rowLetters = 'ABCDEFGHJKLMNPQRSTUV';
+  const rowStart = (zone % 2 === 0) ? 5 : 0;
+  const rowIdxRaw = rowLetters.indexOf(rowLetter);
+  if(rowIdxRaw === -1) throw new Error(`"${rowLetter}" is not a valid 100km row letter.`);
+  const rowIdx = (rowIdxRaw - rowStart + 20) % 20;
+  const northingBase = rowIdx*100000 + northing100k;
+
+  const bandOrder = 'CDEFGHJKLMNPQRSTUVWX';
+  const bandIdx = bandOrder.indexOf(band);
+  const bandMinLat = -80 + bandIdx*8;
+  const hemisphere = bandIdx <= 9 ? 'S' : 'N';
+  const approxLat = (bandMinLat + 4) * Math.PI/180;
+  const approxNorthing = meridianArcNorthing(approxLat, hemisphere);
+
+  let best = northingBase, bestDiff = Infinity;
+  for(let k=0; k<10; k++){
+    const candidate = northingBase + k*2000000;
+    const diff = Math.abs(candidate - approxNorthing);
+    if(diff < bestDiff){ bestDiff = diff; best = candidate; }
+  }
+
+  return utmToLatLon(zone, hemisphere, easting, best);
+}
+
+/* ---------------- MGRS forward conversion (lat/lon -> MGRS string) ---------------- */
+function latLonToUTM(lat, lon){
+  const a = WGS84_A, f = WGS84_F;
+  const e2 = f*(2-f);
+  const ep2 = e2/(1-e2);
+  const k0 = 0.9996;
+  const latRad = lat*Math.PI/180, lonRad = lon*Math.PI/180;
+
+  const zone = Math.floor((lon+180)/6) + 1;
+  const lonOrigin = (zone-1)*6 - 180 + 3;
+  const lonOriginRad = lonOrigin*Math.PI/180;
+
+  const sinLat = Math.sin(latRad), cosLat = Math.cos(latRad), tanLat = Math.tan(latRad);
+  const N = a / Math.sqrt(1 - e2*sinLat*sinLat);
+  const T = tanLat*tanLat;
+  const C = ep2*cosLat*cosLat;
+  const Ax = cosLat*(lonRad - lonOriginRad);
+
+  const Mv = a*(
+      (1 - e2/4 - 3*e2*e2/64 - 5*Math.pow(e2,3)/256)*latRad
+      - (3*e2/8 + 3*e2*e2/32 + 45*Math.pow(e2,3)/1024)*Math.sin(2*latRad)
+      + (15*e2*e2/256 + 45*Math.pow(e2,3)/1024)*Math.sin(4*latRad)
+      - (35*Math.pow(e2,3)/3072)*Math.sin(6*latRad)
+    );
+
+  let easting = k0*N*(Ax + (1-T+C)*Math.pow(Ax,3)/6
+      + (5-18*T+T*T+72*C-58*ep2)*Math.pow(Ax,5)/120) + 500000;
+  let northing = k0*(Mv + N*tanLat*(Ax*Ax/2
+      + (5-T+9*C+4*C*C)*Math.pow(Ax,4)/24
+      + (61-58*T+T*T+600*C-330*ep2)*Math.pow(Ax,6)/720));
+
+  let hemisphere = 'N';
+  if(lat < 0){ northing += 10000000; hemisphere = 'S'; }
+
+  return { zone, hemisphere, easting, northing };
+}
+
+function latBand(lat){
+  const bandOrder = 'CDEFGHJKLMNPQRSTUVWX';
+  if(lat < -80 || lat > 84) return null;
+  let idx = Math.floor((lat+80)/8);
+  if(idx > 19) idx = 19;
+  return bandOrder[idx];
+}
+
+function get100kID(easting, northing, zone){
+  const colSets = ['ABCDEFGH', 'JKLMNPQR', 'STUVWXYZ'];
+  const colSet = colSets[(zone-1) % 3];
+  const colIdx = Math.floor(easting/100000) - 1;
+  const colLetter = colSet[colIdx];
+
+  const rowLetters = 'ABCDEFGHJKLMNPQRSTUV';
+  const rowStart = (zone % 2 === 0) ? 5 : 0;
+  const rowIdx = (Math.floor(northing/100000) % 20 + rowStart) % 20;
+  const rowLetter = rowLetters[rowIdx];
+
+  return colLetter + rowLetter;
+}
+
+function latLonToMGRS(lat, lon, precision){
+  precision = precision || 5;
+  const band = latBand(lat);
+  if(!band) throw new Error('MGRS is not supported above 84°N or below 80°S.');
+  const utm = latLonToUTM(lat, lon);
+  const sq = get100kID(utm.easting, utm.northing, utm.zone);
+  const eastingStr = String(Math.floor(utm.easting % 100000)).padStart(5,'0').slice(0, precision);
+  const northingStr = String(Math.floor(utm.northing % 100000)).padStart(5,'0').slice(0, precision);
+  const zoneStr = String(utm.zone).padStart(2,'0');
+  return `${zoneStr}${band}${sq}${eastingStr}${northingStr}`;
+}
+
+/* ---------------- Location resolution ---------------- */
+function resolveLocation(){
+  if(locFormat.value === 'mgrs'){
+    const val = document.getElementById('mgrsInput').value.trim();
+    if(!val) throw new Error('Enter an MGRS coordinate.');
+    return parseMGRS(val);
+  } else {
+    const latStr = document.getElementById('latDDM').value.trim();
+    const lonStr = document.getElementById('lonDDM').value.trim();
+    if(!latStr || !lonStr) throw new Error('Enter both latitude and longitude.');
+    return { lat: parseDDM(latStr, true), lon: parseDDM(lonStr, false) };
+  }
+}
+
+/* ---------------- Datetime default ---------------- */
+(function initDatetime(){
+  const now = new Date();
+  now.setMinutes(0,0,0);
+  now.setUTCHours(now.getUTCHours()+1);
+  const pad = n => String(n).padStart(2,'0');
+  // default is Zulu, so prefill with the next whole hour in UTC
+  const fmtUTC = d => `${d.getUTCFullYear()}-${pad(d.getUTCMonth()+1)}-${pad(d.getUTCDate())}T${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;
+  const dtInput = document.getElementById('datetime');
+  dtInput.value = fmtUTC(now).slice(0,13) + ':00';
+  // keep the picker inside the 16-day forecast window (with a day of slack for time zones)
+  const minD = new Date(); minD.setUTCDate(minD.getUTCDate()-1); minD.setUTCHours(0,0,0,0);
+  const maxD = new Date(); maxD.setUTCDate(maxD.getUTCDate()+15); maxD.setUTCHours(23,55,0,0);
+  dtInput.min = fmtUTC(minD);
+  dtInput.max = fmtUTC(maxD);
+})();
+
+// open the native calendar/time picker when the field is tapped or focused
+(function wireDatetimePicker(){
+  const dtInput = document.getElementById('datetime');
+  const openPicker = ()=>{ if(dtInput.showPicker){ try{ dtInput.showPicker(); }catch(e){} } };
+  dtInput.addEventListener('click', openPicker);
+  dtInput.addEventListener('focus', openPicker);
+})();
+
+/* ---------------- Wind fetch + interpolation ---------------- */
+// Pressure levels requested from the model. The dense set below 18,000 ft (about every 500-1,000 ft
+// of height) stops the blend between levels from smoothing over real turns in the wind.
+const LEVELS_HPA = [1000, 975, 950, 925, 900, 850, 800, 750, 700, 650, 600, 550, 500, 400, 350, 300];
+const SOURCES = [
+  { key: 'best_match',   label: 'Open-Meteo (Best Match)' },
+  { key: 'gfs_seamless', label: 'NOAA GFS' },
+];
+const TARGET_FT = [];
+for(let ft=1000; ft<=25000; ft+=1000) TARGET_FT.push(ft);
+
+const RH_LEVELS = LEVELS_HPA.filter(h => h >= 500);
+let lastData = {}; // { sourceKey: { json, idx, i0, frac, hb, targetLocal, dt, basis } }
+
+// forecast data already downloaded, so changing the time doesn't need a new download
+const CACHE_MAX_AGE_MS = 30 * 60 * 1000;
+const sourceCache = {};   // sourceKey -> { json, at }
+let cacheKey = null;      // which location the cache belongs to
+
+async function fetchSource(sourceKey, lat, lon){
+  const vars = ['wind_speed_10m', 'wind_direction_10m', 'wind_gusts_10m', 'temperature_2m', 'dew_point_2m', 'pressure_msl',
+    'freezing_level_height', 'cloud_cover', 'cloud_cover_low', 'cloud_cover_mid', 'cloud_cover_high', 'visibility'];
+  LEVELS_HPA.forEach(h=>{
+    vars.push(`wind_speed_${h}hPa`, `wind_direction_${h}hPa`, `geopotential_height_${h}hPa`, `temperature_${h}hPa`);
+  });
+  // humidity is only needed up to about 18,000 ft, where the cloud-base estimate stops
+  RH_LEVELS.forEach(h => vars.push(`relative_humidity_${h}hPa`));
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}` +
+    `&hourly=${vars.join(',')}&daily=sunrise,sunset&models=${sourceKey}&wind_speed_unit=kn&timezone=auto&forecast_days=16`;
+  const res = await fetch(url);
+  if(!res.ok){
+    let reason = res.status;
+    try{ const j = await res.json(); if(j.reason) reason = j.reason; }catch(e){}
+    throw new Error(`${sourceKey} request failed: ${reason}`);
+  }
+  return res.json();
+}
+
+function nearestIndex(timesArr, targetLocalIso){
+  const target = new Date(targetLocalIso).getTime();
+  let bestIdx = 0, bestDiff = Infinity;
+  timesArr.forEach((t, i)=>{
+    const diff = Math.abs(new Date(t).getTime() - target);
+    if(diff < bestDiff){ bestDiff = diff; bestIdx = i; }
+  });
+  return bestIdx;
+}
+
+function isoToMs(iso){
+  return Date.UTC(+iso.slice(0,4), +iso.slice(5,7)-1, +iso.slice(8,10), +iso.slice(11,13) || 0, +iso.slice(14,16) || 0);
+}
+
+// where a DZ-local time sits among the hourly forecast times
+function locateTime(times, targetIso){
+  const t = isoToMs(targetIso), n = times.length;
+  const first = isoToMs(times[0]), last = isoToMs(times[n-1]);
+  if(t <= first) return { i0: 0, frac: 0, idx: 0, gapMin: (first - t)/60000 };
+  if(t >= last) return { i0: n-1, frac: 0, idx: n-1, gapMin: (t - last)/60000 };
+  let lo = 0, hi = n-1;
+  while(hi - lo > 1){ const mid = (lo + hi) >> 1; if(isoToMs(times[mid]) <= t) lo = mid; else hi = mid; }
+  const a = isoToMs(times[lo]), b = isoToMs(times[lo+1]);
+  const frac = (t - a)/(b - a);
+  return { i0: lo, frac, idx: frac >= 0.5 ? lo+1 : lo, gapMin: 0 };
+}
+
+// blend the forecast between two neighbouring hours (winds are blended as vectors so
+// directions turn the short way round); returns one-element arrays, same keys as hourly
+function blendHourly(hourly, i0, frac){
+  const n = hourly.time.length;
+  const i1 = Math.min(i0 + 1, n - 1);
+  const out = { time: [hourly.time[i0]] };
+  Object.keys(hourly).forEach(k=>{
+    if(k === 'time' || k.startsWith('wind_direction')) return;
+    const arr = hourly[k];
+    if(!Array.isArray(arr)) return;
+    const a = arr[i0], b = arr[i1];
+    const exact = (frac === 0 || i1 === i0);
+    if(k.startsWith('wind_speed')){
+      const dk = k.replace('wind_speed', 'wind_direction');
+      const da = hourly[dk]?.[i0], db = hourly[dk]?.[i1];
+      if(exact){ out[k] = [a]; out[dk] = [da]; return; }
+      if(a != null && b != null && da != null && db != null){
+        const ua = toUV(a, da), ub = toUV(b, db);
+        const w = fromUV(ua.u + (ub.u - ua.u)*frac, ua.v + (ub.v - ua.v)*frac);
+        out[k] = [w.spd]; out[dk] = [w.dir];
+      } else {
+        const useB = frac >= 0.5;
+        out[k] = [useB ? b : a]; out[dk] = [useB ? db : da];
+      }
+      return;
+    }
+    if(exact) out[k] = [a];
+    else if(a != null && b != null) out[k] = [a + (b - a)*frac];
+    else out[k] = [frac >= 0.5 ? b : a];
+  });
+  return out;
+}
+
+// Cloud base estimate (ft AGL): the lowest height where the model's humidity reaches 93%,
+// used only when the model forecasts some low or mid cloud. It is an estimate, not an observation.
+function estimateCloudBase(hb, dzElevationFt){
+  const low = hb.cloud_cover_low?.[0], mid = hb.cloud_cover_mid?.[0];
+  if(low == null && mid == null) return '—';
+  if(Math.max(low ?? 0, mid ?? 0) < 20) return 'Clear';
+  const THRESH = 93;
+  const pts = [];
+  const T = hb.temperature_2m?.[0], Td = hb.dew_point_2m?.[0];
+  if(T != null && Td != null){
+    pts.push({ ft: 7, rh: 100*Math.exp(17.625*Td/(243.04+Td) - 17.625*T/(243.04+T)) });
+  }
+  RH_LEVELS.forEach(h=>{
+    const gp = hb[`geopotential_height_${h}hPa`]?.[0];
+    const rh = hb[`relative_humidity_${h}hPa`]?.[0];
+    if(gp != null && rh != null){
+      const ft = gp*3.28084 - dzElevationFt;
+      if(ft > 40) pts.push({ ft, rh });
+    }
+  });
+  pts.sort((a, b) => a.ft - b.ft);
+  if(!pts.length) return '—';
+  if(pts[0].rh >= THRESH) return 'At surface';
+  for(let i = 1; i < pts.length; i++){
+    if(pts[i].rh >= THRESH){
+      const a = pts[i-1], b = pts[i];
+      const ft = a.ft + (THRESH - a.rh)/(b.rh - a.rh)*(b.ft - a.ft);
+      return `${Math.max(100, Math.round(ft/100)*100).toLocaleString()} ft`;
+    }
+  }
+  return `Above ${(Math.floor(pts[pts.length-1].ft/1000)*1000).toLocaleString()} ft`;
+}
+
+function fmtVis(m){
+  if(m == null) return '—';
+  if(m < 1000) return `${Math.round(m/10)*10} m`;
+  const km = m/1000;
+  return km < 10 ? `${km.toFixed(1)} km` : `${Math.round(km)} km`;
+}
+
+// dzElevationFt: ground elevation at the DZ (ft AMSL) — used to convert pressure-level
+// geopotential heights (AMSL) into height above DZ level. The 10m surface wind point is
+// already height-above-ground by definition, so it doesn't need adjusting.
+function buildProfile(hourly, idx, dzElevationFt){
+  const points = [];
+  const s0 = hourly.wind_speed_10m?.[idx], d0 = hourly.wind_direction_10m?.[idx], t0 = hourly.temperature_2m?.[idx];
+  if(s0 != null && d0 != null) points.push({ ft: 33, spd: s0, dir: d0, temp: t0, anchor:true });
+  LEVELS_HPA.forEach(h=>{
+    const gp = hourly[`geopotential_height_${h}hPa`]?.[idx];
+    const s = hourly[`wind_speed_${h}hPa`]?.[idx];
+    const d = hourly[`wind_direction_${h}hPa`]?.[idx];
+    const t = hourly[`temperature_${h}hPa`]?.[idx];
+    if(gp != null && s != null && d != null){
+      const ftAGL = gp*3.28084 - dzElevationFt;
+      // pressure levels at or below the ground are model extrapolations, so skip them
+      if(ftAGL > 40) points.push({ ft: ftAGL, spd: s, dir: d, temp: t });
+    }
+  });
+  points.sort((a,b)=>a.ft - b.ft);
+  return points;
+}
+
+function toUV(spd, dir){
+  const r = dir*Math.PI/180;
+  return { u: -spd*Math.sin(r), v: -spd*Math.cos(r) };
+}
+function fromUV(u, v){
+  const spd = Math.sqrt(u*u+v*v);
+  let dir = Math.atan2(-u, -v)*180/Math.PI;
+  if(dir < 0) dir += 360;
+  return { spd, dir };
+}
+
+function interpAt(points, targetFt){
+  if(points.length === 0) return null;
+  if(targetFt <= points[0].ft) return { spd: points[0].spd, dir: points[0].dir, temp: points[0].temp, extrapolated: true };
+  if(targetFt >= points[points.length-1].ft){
+    const p = points[points.length-1];
+    return { spd: p.spd, dir: p.dir, temp: p.temp, extrapolated: true };
+  }
+  for(let i=0; i<points.length-1; i++){
+    const p0 = points[i], p1 = points[i+1];
+    if(targetFt >= p0.ft && targetFt <= p1.ft){
+      const frac = (targetFt - p0.ft) / (p1.ft - p0.ft);
+      const uv0 = toUV(p0.spd, p0.dir), uv1 = toUV(p1.spd, p1.dir);
+      const u = uv0.u + (uv1.u - uv0.u)*frac;
+      const v = uv0.v + (uv1.v - uv0.v)*frac;
+      let temp = null;
+      if(p0.temp != null && p1.temp != null) temp = p0.temp + (p1.temp - p0.temp)*frac;
+      return { ...fromUV(u, v), temp, extrapolated: false };
+    }
+  }
+  return null;
+}
+
+function fmtDir(deg){
+  return String(Math.round(deg) % 360).padStart(3, '0');
+}
+function dirToArrow(deg){
+  const rot = (deg + 180) % 360;
+  return `<span class="arrow" style="display:inline-block;transform:rotate(${rot}deg)">↑</span>`;
+}
+function spdClass(kt){
+  if(kt < 10) return 'light';
+  if(kt < 20) return 'mod';
+  return 'strong';
+}
+function compass(deg){
+  const dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+  return dirs[Math.round(deg/22.5) % 16];
+}
+
+function renderSourcePicker(activeKey){
+  const opts = SOURCES.filter(s => lastData[s.key])
+    .map(s => `<option value="${s.key}" ${s.key===activeKey?'selected':''}>${s.label}</option>`).join('');
+  return `<select id="sourcePicker">${opts}</select>`;
+}
+
+// index of the forecast hour matching a DZ-local ISO time, or -1 if none within 30 min
+function hourIndex(times, targetLocalIso){
+  const i = nearestIndex(times, targetLocalIso);
+  const diff = Math.abs(new Date(times[i]).getTime() - new Date(targetLocalIso).getTime());
+  return diff <= 30*60*1000 ? i : -1;
+}
+
+function fmtSun(isoLocal, basis, off){
+  if(!isoLocal) return '—';
+  const t = basis === 'zulu' ? shiftIso(isoLocal, -off) : isoLocal;
+  return t.slice(11,16);
+}
+
+function buildDayView(json, entryIdx, dt, basis){
+  const dayDate = dt.slice(0,10);
+  const off = json.utc_offset_seconds || 0;
+  let head = '', dirRow = '', spdRow = '', gstRow = '';
+  const pdf = { hours: [], dir: [], spd: [], gst: [] };
+  for(let h = 0; h < 24; h++){
+    const hh = String(h).padStart(2,'0');
+    const iso = `${dayDate}T${hh}:00`;
+    const target = basis === 'zulu' ? shiftIso(iso, off) : iso;
+    const i = hourIndex(json.hourly.time, target);
+    const sel = (i !== -1 && i === entryIdx) ? ' class="sel"' : '';
+    head += `<th${sel}>${hh}</th>`;
+    pdf.hours.push(hh);
+    if(i === -1){
+      pdf.dir.push('-'); pdf.spd.push('-'); pdf.gst.push('-');
+      dirRow += `<td${sel}>–</td>`; spdRow += `<td${sel}>–</td>`; gstRow += `<td${sel}>–</td>`;
+      continue;
+    }
+    const d = json.hourly.wind_direction_10m?.[i];
+    const sp = json.hourly.wind_speed_10m?.[i];
+    const g = json.hourly.wind_gusts_10m?.[i];
+    pdf.dir.push(d != null ? fmtDir(d) : '-');
+    pdf.spd.push(sp != null ? String(Math.round(sp)) : '-');
+    pdf.gst.push(g != null ? String(Math.round(g)) : '-');
+    dirRow += `<td${sel}>${d != null ? fmtDir(d) : '–'}</td>`;
+    spdRow += `<td${sel} class="${sp != null ? 'spd ' + spdClass(sp) : ''}">${sp != null ? Math.round(sp) : '–'}</td>`;
+    gstRow += `<td${sel} class="${g != null ? 'spd ' + spdClass(g) : ''}">${g != null ? Math.round(g) : '–'}</td>`;
+  }
+  const title = `Surface wind through the day: ${dayDate} (${basis === 'zulu' ? 'Z' : 'DZ local hours'})`;
+  const html = `
+    <div class="day-view">
+      <div class="day-title">${title}</div>
+      <div class="day-legend"><i style="background:rgba(63,214,138,.5)"></i>under 10 kt<i style="background:rgba(245,195,63,.6)"></i>10 to 19 kt<i style="background:rgba(245,106,79,.7)"></i>20 kt and over<span style="margin-left:10px">Outlined hour = selected</span></div>
+      <div class="table-wrap">
+        <table class="day-table">
+          <thead><tr><th>Hour</th>${head}</tr></thead>
+          <tbody>
+            <tr><td>Dir (°T)</td>${dirRow}</tr>
+            <tr><td>Wind (kt)</td>${spdRow}</tr>
+            <tr><td>Gust (kt)</td>${gstRow}</tr>
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+  return { html, title, pdf };
+}
+
+let currentSource = null;
+let lastReport = null;
+let lastLoc = null;
+
+function renderResults(activeKey){
+  currentSource = activeKey;
+  const entry = lastData[activeKey];
+  const pane = document.getElementById('resultsPane');
+  if(!entry){ pane.innerHTML = '<div class="approx-note">No data for this source.</div>'; return; }
+
+  const { json, idx, i0, frac, hb, targetLocal, dt, basis } = entry;
+  const off = json.utc_offset_seconds || 0;
+  const dzElevationM = json.elevation;
+  const dzElevationFt = dzElevationM * 3.28084;
+  const points = buildProfile(hb, 0, dzElevationFt);
+  const time = targetLocal;
+
+  const sfcSpd = hb.wind_speed_10m?.[0];
+  const sfcDir = hb.wind_direction_10m?.[0];
+  const sfcGust = hb.wind_gusts_10m?.[0];
+  const sfcTemp = hb.temperature_2m?.[0];
+  const qnhNow = hb.pressure_msl?.[0];
+
+  const cc = hb.cloud_cover?.[0], ccl = hb.cloud_cover_low?.[0], ccm = hb.cloud_cover_mid?.[0], cch = hb.cloud_cover_high?.[0];
+  const cloudStr = cc != null ? `${Math.round(cc)}%` : '—';
+  const cloudSub = (ccl != null && ccm != null && cch != null) ? `L${Math.round(ccl)} M${Math.round(ccm)} H${Math.round(cch)}` : '';
+  const cloudBaseStr = estimateCloudBase(hb, dzElevationFt);
+  const visStr = fmtVis(hb.visibility?.[0]);
+
+  const decimalYear = decimalYearFromISO(dt);
+  const magVarRaw = wmm.declination(dzElevationM/1000, json.latitude, json.longitude, decimalYear);
+  const magVar = magVarRaw != null ? Math.round(magVarRaw*10)/10 : null;
+  const magVarStr = magVar != null ? `${Math.abs(magVar).toFixed(1)}° ${magVar >= 0 ? 'E' : 'W'}` : '—';
+
+  // freezing level (given AMSL by the model) shown as height above the DZ
+  const flAMSLm = hb.freezing_level_height?.[0];
+  let flStr = '—';
+  if(flAMSLm != null){
+    const flAGL = flAMSLm*3.28084 - dzElevationFt;
+    flStr = flAGL <= 0 ? 'At/below surface' : `${(Math.round(flAGL/100)*100).toLocaleString()} ft`;
+  }
+
+  // sunrise / sunset for the DZ-local date of the selected forecast hour
+  const di = json.daily?.time ? json.daily.time.indexOf(time.slice(0,10)) : -1;
+  const sunStr = di !== -1
+    ? `${fmtSun(json.daily.sunrise?.[di], basis, off)} / ${fmtSun(json.daily.sunset?.[di], basis, off)}`
+    : '—';
+
+  let rows = '';
+  const pdfRows = [];
+  if(sfcSpd != null && sfcDir != null){
+    const sfcTempStr = sfcTemp != null ? `${sfcTemp>0?'+':''}${Math.round(sfcTemp)}°C` : '—';
+    pdfRows.push(['Surface', `${fmtDir(sfcDir)}`, `${Math.round(sfcSpd)}`, sfcTemp != null ? `${sfcTemp>0?'+':''}${Math.round(sfcTemp)} C` : '-']);
+    rows += `<tr>
+      <td>Surface</td>
+      <td>${dirToArrow(sfcDir)}${fmtDir(sfcDir)}°</td>
+      <td class="spd ${spdClass(sfcSpd)}">${Math.round(sfcSpd)} kt</td>
+      <td>${sfcTempStr}</td>
+    </tr>`;
+  }
+  TARGET_FT.forEach(ft=>{
+    const r = interpAt(points, ft);
+    if(!r){
+      rows += `<tr><td>${ft.toLocaleString()} ft</td><td colspan="3" style="color:var(--muted)">no data</td></tr>`;
+      return;
+    }
+    const tempStr = r.temp != null ? `${r.temp>0?'+':''}${Math.round(r.temp)}°C` : '—';
+    pdfRows.push([`${ft.toLocaleString()} ft${r.extrapolated ? ' *' : ''}`, fmtDir(r.dir), `${Math.round(r.spd)}`, r.temp != null ? `${r.temp>0?'+':''}${Math.round(r.temp)} C` : '-']);
+    rows += `<tr>
+      <td>${ft.toLocaleString()} ft${r.extrapolated ? ' *' : ''}</td>
+      <td>${dirToArrow(r.dir)}${fmtDir(r.dir)}°</td>
+      <td class="spd ${spdClass(r.spd)}">${Math.round(r.spd)} kt</td>
+      <td>${tempStr}</td>
+    </tr>`;
+  });
+
+  const hm = iso => basis === 'zulu' ? shiftIso(iso, -off).slice(11,16) + 'Z' : iso.slice(11,16);
+  const nHours = json.hourly.time.length;
+  const blendNote = (frac > 0 && i0 + 1 < nHours)
+    ? ` (blend of ${hm(json.hourly.time[i0])} and ${hm(json.hourly.time[i0+1])})` : '';
+  const whenStr = (basis === 'zulu'
+    ? dt.replace('T',' ') + 'Z'
+    : dt.replace('T',' ') + ' (' + (json.timezone_abbreviation || 'local') + ')') + blendNote;
+  const day = buildDayView(json, idx, dt, basis);
+
+  const keepScroll = pane.scrollTop;
+  pane.innerHTML = `
+    <div class="src-row">
+      ${renderSourcePicker(activeKey)}
+      <span class="meta">Forecast for ${whenStr}</span>
+      <a href="#" id="pdfLink" class="pdf-link">Download PDF</a>
+    </div>
+    <div class="summary-cards">
+      <div class="card">
+        <div class="card-label">Cloud cover</div>
+        <div class="card-value">${cloudStr} <span class="card-sub">${cloudSub}</span></div>
+      </div>
+      <div class="card">
+        <div class="card-label">Cloud base AGL (est.)</div>
+        <div class="card-value">${cloudBaseStr}</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Visibility</div>
+        <div class="card-value">${visStr}</div>
+      </div>
+      <div class="card">
+        <div class="card-label">DZ elevation</div>
+        <div class="card-value">${Math.round(dzElevationFt).toLocaleString()} ft <span class="card-sub">${Math.round(dzElevationM)} m</span></div>
+      </div>
+      <div class="card">
+        <div class="card-label">QNH at selected time</div>
+        <div class="card-value">${qnhNow != null ? `${Math.round(qnhNow)} hPa` : '—'}</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Surface gusts</div>
+        <div class="card-value">${sfcGust != null ? `${Math.round(sfcGust)} kt` : '—'}</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Magnetic variation</div>
+        <div class="card-value">${magVarStr}</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Freezing level (AGL)</div>
+        <div class="card-value">${flStr}</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Sunrise / sunset <span class="card-sub" style="margin-left:2px">(${basis === 'zulu' ? 'Z' : 'local'})</span></div>
+        <div class="card-value">${sunStr}</div>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Height AGL</th><th>Direction (°T)</th><th>Speed</th><th>Temp</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+    ${day.html}
+  `;
+
+  pane.scrollTop = keepScroll;
+  const plain = str => String(str).replace(/—/g, '-');
+  lastReport = {
+    when: whenStr,
+    source: (SOURCES.find(s => s.key === activeKey) || {}).label || activeKey,
+    cards: [
+      ['Cloud cover', cc != null ? `${Math.round(cc)}%${cloudSub ? ' (' + cloudSub + ')' : ''}` : '-'],
+      ['Cloud base AGL (est.)', plain(cloudBaseStr)],
+      ['Visibility', plain(visStr)],
+      ['DZ elevation', `${Math.round(dzElevationFt).toLocaleString()} ft / ${Math.round(dzElevationM)} m`],
+      ['QNH at selected time', qnhNow != null ? `${Math.round(qnhNow)} hPa` : '-'],
+      ['Surface gusts', sfcGust != null ? `${Math.round(sfcGust)} kt` : '-'],
+      ['Magnetic variation', plain(magVarStr)],
+      ['Freezing level (AGL)', plain(flStr)],
+      [`Sunrise / sunset (${basis === 'zulu' ? 'Z' : 'local'})`, plain(sunStr)]
+    ],
+    rows: pdfRows,
+    day: day.pdf,
+    dayTitle: day.title,
+    stamp: dt.replace(/[-:]/g,'').replace('T','-') + (basis === 'zulu' ? 'Z' : 'L')
+  };
+  const selTh = pane.querySelector('.day-table th.sel');
+  if(selTh){
+    const wrap = selTh.closest('.table-wrap');
+    const delta = selTh.getBoundingClientRect().left - wrap.getBoundingClientRect().left;
+    wrap.scrollLeft += delta - wrap.clientWidth/2 + selTh.offsetWidth/2;
+  }
+  document.getElementById('pdfLink').addEventListener('click', (e)=>{ e.preventDefault(); downloadPDF(); });
+
+  const picker = document.getElementById('sourcePicker');
+  if(picker) picker.addEventListener('change', (e)=>{ renderResults(e.target.value); });
+}
+
+const locKey = loc => `${loc.lat.toFixed(4)},${loc.lon.toFixed(4)}`;
+
+// force = true downloads fresh data (Get Winds button); false reuses recent data for the same
+// location, so changing only the time or time basis is instant.
+async function runFetch(force = true){
+  const statusEl = document.getElementById('status');
+  const dt = document.getElementById('datetime').value;
+  const basis = document.getElementById('timeBasis').value;
+  if(!dt){ statusEl.className='err'; statusEl.textContent = 'Pick a date and time first.'; return; }
+
+  let loc;
+  try{
+    loc = resolveLocation();
+    if(isNaN(loc.lat) || isNaN(loc.lon)) throw new Error('Location did not resolve to valid coordinates.');
+  } catch(err){
+    statusEl.className = 'err';
+    statusEl.textContent = err.message;
+    return;
+  }
+
+  const key = locKey(loc);
+  const moved = key !== cacheKey;
+  if(moved) Object.keys(sourceCache).forEach(k => delete sourceCache[k]);
+  cacheKey = key;
+  updateMap(loc.lat, loc.lon, moved);
+  lastLoc = loc;
+
+  const isFresh = k => sourceCache[k] && (Date.now() - sourceCache[k].at) < CACHE_MAX_AGE_MS;
+  const need = SOURCES.filter(s => force || !isFresh(s.key));
+
+  const fetchBtn = document.getElementById('fetchBtn');
+  const originalLabel = fetchBtn.textContent;
+  if(need.length){
+    statusEl.className = '';
+    statusEl.textContent = 'Fetching winds…';
+    document.getElementById('resultsPane').innerHTML = '';
+    fetchBtn.disabled = true;
+    fetchBtn.textContent = 'Loading…';
+  }
+
+  try{
+    const failures = [];
+    if(need.length){
+      const outcomes = await Promise.allSettled(need.map(s => fetchSource(s.key, loc.lat, loc.lon)));
+      need.forEach((s, i)=>{
+        const outcome = outcomes[i];
+        if(outcome.status === 'fulfilled'){
+          sourceCache[s.key] = { json: outcome.value, at: Date.now() };
+        } else {
+          delete sourceCache[s.key];
+          failures.push(`${s.label} (${outcome.reason && outcome.reason.message ? outcome.reason.message : 'failed'})`);
+        }
+      });
+    }
+
+    lastData = {};
+    let gapMin = 0;
+    SOURCES.forEach(s=>{
+      const c = sourceCache[s.key];
+      if(!c) return;
+      const json = c.json;
+      // forecast hours are in DZ-local time; convert a Zulu request to DZ-local first
+      const targetLocal = basis === 'zulu' ? shiftIso(dt, json.utc_offset_seconds || 0) : dt;
+      const pos = locateTime(json.hourly.time, targetLocal);
+      gapMin = Math.max(gapMin, pos.gapMin);
+      const hb = blendHourly(json.hourly, pos.i0, pos.frac);
+      lastData[s.key] = { json, idx: pos.idx, i0: pos.i0, frac: pos.frac, hb, targetLocal, dt, basis };
+    });
+
+    const firstOk = SOURCES.find(s => lastData[s.key]);
+    if(!firstOk) throw new Error('Both sources failed to load. ' + failures.join('; '));
+    renderResults(lastData[currentSource] ? currentSource : (lastData['best_match'] ? 'best_match' : firstOk.key));
+
+    const reqStr = `${dt.replace('T',' ')}${basis === 'zulu' ? 'Z' : ' local'}`;
+    if(failures.length){
+      statusEl.className = 'err';
+      statusEl.textContent = `Loaded, but ${failures.join('; ')}. Showing the source that worked.`;
+    } else if(gapMin > 90){
+      statusEl.className = 'err';
+      statusEl.textContent = `${reqStr} is outside the forecast range, so the nearest available hour is shown.`;
+    } else {
+      statusEl.className = '';
+      const ageMin = Math.round((Date.now() - Math.min(...Object.values(sourceCache).map(c => c.at)))/60000);
+      statusEl.textContent = need.length
+        ? `Showing ${reqStr}.`
+        : `Showing ${reqStr}, from forecast data loaded ${ageMin} min ago.`;
+    }
+  } catch(err){
+    statusEl.className = 'err';
+    statusEl.textContent = 'Error: ' + err.message;
+  } finally {
+    fetchBtn.disabled = false;
+    fetchBtn.textContent = originalLabel;
+  }
+}
+
+document.getElementById('fetchBtn').addEventListener('click', () => runFetch(true));
+
+// Enter key in any input field fetches
+['latDDM','lonDDM','mgrsInput','datetime'].forEach(id=>{
+  document.getElementById(id).addEventListener('keydown', (e)=>{
+    if(e.key === 'Enter') runFetch(true);
+  });
+});
+
+// changing only the time or the time basis re-uses the data already downloaded for this location
+function refreshFromCache(){
+  if(!Object.keys(lastData).length) return;
+  let loc;
+  try{ loc = resolveLocation(); }catch(e){ return; }
+  if(isNaN(loc.lat) || isNaN(loc.lon) || locKey(loc) !== cacheKey) return;
+  runFetch(false);
+}
+['datetime','timeBasis'].forEach(id=>{
+  document.getElementById(id).addEventListener('change', refreshFromCache);
+});
+
+/* ---------------- PDF export ---------------- */
+function downloadPDF(){
+  const rep = lastReport;
+  if(!rep) return;
+  const statusEl = document.getElementById('status');
+  if(!(window.jspdf && window.jspdf.jsPDF)){
+    // PDF library didn't load (offline or blocked): fall back to the browser's print dialog
+    statusEl.className = '';
+    statusEl.textContent = 'PDF library not available, opening the print dialog. Choose "Save as PDF".';
+    window.print();
+    return;
+  }
+  const doc = new window.jspdf.jsPDF({ unit: 'mm', format: 'a4' });
+  const pageW = doc.internal.pageSize.getWidth();
+  const pageH = doc.internal.pageSize.getHeight();
+  const L = 14, R = 14;
+
+  let locStr = '';
+  if(lastLoc){
+    locStr = `${formatDDM(lastLoc.lat, true)}, ${formatDDM(lastLoc.lon, false)}`;
+    try{ locStr += `   (MGRS ${latLonToMGRS(lastLoc.lat, lastLoc.lon, 5)})`; }catch(e){}
+  }
+
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(17); doc.setTextColor(20);
+  doc.text('DZ Wind Forecasts', L, 16);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5); doc.setTextColor(70);
+  doc.text(`Location: ${locStr}`, L, 23);
+  doc.text(`Forecast for: ${rep.when}`, L, 28);
+  doc.text(`Source: ${rep.source}`, L, 33);
+
+  // summary, two label/value pairs per row
+  const body = [];
+  for(let i = 0; i < rep.cards.length; i += 2){
+    const a = rep.cards[i], b = rep.cards[i+1] || ['', ''];
+    body.push([a[0], a[1], b[0], b[1]]);
+  }
+  const labelStyle = { fontStyle: 'bold', fillColor: [238, 241, 246], cellWidth: 40 };
+  doc.autoTable({
+    startY: 38, body, theme: 'grid',
+    styles: { fontSize: 8.5, cellPadding: 1.8, textColor: 20, lineColor: [200, 205, 212] },
+    columnStyles: { 0: labelStyle, 1: { cellWidth: 51 }, 2: labelStyle, 3: { cellWidth: 51 } },
+    margin: { left: L, right: R }
+  });
+
+  doc.autoTable({
+    startY: doc.lastAutoTable.finalY + 6,
+    head: [['Height AGL', 'Direction (degT)', 'Speed (kt)', 'Temp (C)']],
+    body: rep.rows.map(r => [r[0], r[1] + '\u00B0', r[2], r[3].replace(' C', '')]),
+    theme: 'grid',
+    headStyles: { fillColor: [24, 35, 56], textColor: 255, fontSize: 8.5 },
+    styles: { fontSize: 8, cellPadding: 1.1, textColor: 20, lineColor: [200, 205, 212] },
+    columnStyles: { 0: { cellWidth: 40 }, 1: { halign: 'center' }, 2: { halign: 'center' }, 3: { halign: 'center' } },
+    didParseCell: (data) => {
+      if(data.section === 'head' && data.column.index > 0) data.cell.styles.halign = 'center';
+      // colour the speed column like the on-screen table (darker shades so they read on white paper)
+      if(data.section === 'body' && data.column.index === 2){
+        const v = parseFloat(data.cell.raw);
+        if(!isNaN(v)){
+          data.cell.styles.textColor = v < 10 ? [20, 130, 75] : v < 20 ? [170, 112, 0] : [200, 45, 25];
+          data.cell.styles.fontStyle = 'bold';
+        }
+      }
+    },
+    margin: { left: L, right: R }
+  });
+
+  let y = doc.lastAutoTable.finalY + 9;
+  if(y > pageH - 45){ doc.addPage(); y = 16; }
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(20);
+  doc.text(rep.dayTitle, L, y);
+  const hourCols = rep.day.hours.length;
+  const colW = (pageW - L - R - 17) / hourCols;
+  const columnStyles = { 0: { cellWidth: 17, halign: 'left', fontStyle: 'bold' } };
+  for(let c = 1; c <= hourCols; c++) columnStyles[c] = { cellWidth: colW, halign: 'center' };
+  doc.autoTable({
+    startY: y + 3,
+    head: [['Hour', ...rep.day.hours]],
+    body: [
+      ['Dir (degT)', ...rep.day.dir],
+      ['Wind (kt)', ...rep.day.spd],
+      ['Gust (kt)', ...rep.day.gst]
+    ],
+    theme: 'grid',
+    headStyles: { fillColor: [24, 35, 56], textColor: 255, fontSize: 6.5, halign: 'center' },
+    styles: { fontSize: 6.5, cellPadding: 1, textColor: 20, lineColor: [200, 205, 212], overflow: 'hidden' },
+    columnStyles,
+    didParseCell: (data) => {
+      // shade wind and gust cells by strength, matching the on-screen strip
+      if(data.section === 'body' && data.column.index > 0 && (data.row.index === 1 || data.row.index === 2)){
+        const v = parseFloat(data.cell.raw);
+        if(!isNaN(v)) data.cell.styles.fillColor = v < 10 ? [201, 240, 218] : v < 20 ? [250, 233, 180] : [248, 190, 178];
+      }
+    },
+    margin: { left: L, right: R }
+  });
+
+  // footer on every page
+  const pages = doc.internal.getNumberOfPages();
+  const gen = new Date().toISOString().slice(0, 16).replace('T', ' ') + 'Z';
+  for(let pg = 1; pg <= pages; pg++){
+    doc.setPage(pg);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(120);
+    doc.text(`Data: Open-Meteo. Generated ${gen}`, L, pageH - 8);
+    doc.text(`Page ${pg} of ${pages}`, pageW - R, pageH - 8, { align: 'right' });
+  }
+
+  doc.save(`DZ-wind-forecast-${rep.stamp}.pdf`);
+}
+
+/* ---------------- Shareable link ---------------- */
+function buildShareURL(){
+  const params = new URLSearchParams();
+  params.set('fmt', locFormat.value);
+  if(locFormat.value === 'mgrs'){
+    params.set('loc', document.getElementById('mgrsInput').value);
+  } else {
+    params.set('lat', document.getElementById('latDDM').value);
+    params.set('lon', document.getElementById('lonDDM').value);
+  }
+  params.set('dt', document.getElementById('datetime').value);
+  params.set('tb', document.getElementById('timeBasis').value);
+  const base = location.href.split('#')[0].split('?')[0];
+  return `${base}?${params.toString()}`;
+}
+async function copyText(text){
+  try{
+    if(navigator.clipboard && window.isSecureContext){ await navigator.clipboard.writeText(text); return true; }
+  }catch(e){}
+  try{
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select(); ta.setSelectionRange(0, text.length);
+    const ok = document.execCommand('copy');
+    document.body.removeChild(ta);
+    return ok;
+  }catch(e){ return false; }
+}
+document.getElementById('shareBtn').addEventListener('click', async ()=>{
+  const url = buildShareURL();
+  const statusEl = document.getElementById('status');
+  if(await copyText(url)){
+    statusEl.className = '';
+    statusEl.textContent = 'Link copied to clipboard.';
+  } else {
+    statusEl.className = '';
+    statusEl.textContent = 'Could not copy automatically. Link: ' + url;
+  }
+});
+function loadFromURL(){
+  const params = new URLSearchParams(location.search);
+  if(!params.has('dt') && !params.has('loc') && !params.has('lat')) return false;
+  const fmt = params.get('fmt');
+  if(fmt === 'mgrs' || fmt === 'ddm'){
+    locFormat.value = fmt;
+    locFormat.dispatchEvent(new Event('change'));
+  }
+  if(params.has('loc')) document.getElementById('mgrsInput').value = params.get('loc');
+  if(params.has('lat')) document.getElementById('latDDM').value = params.get('lat');
+  if(params.has('lon')) document.getElementById('lonDDM').value = params.get('lon');
+  if(params.has('tb')) document.getElementById('timeBasis').value = params.get('tb') === 'local' ? 'local' : 'zulu';
+  if(params.has('dt')) document.getElementById('datetime').value = params.get('dt');
+  return true;
+}
+
+// a shared link fills everything in and fetches; otherwise start at the map's default marker
+if(loadFromURL()){
+  runFetch();
+} else {
+  updateMap(51.7500, -1.5836, false);
+  populateFieldsFromLatLon(51.7500, -1.5836);
+}
+</script>
+</body>
+</html>
