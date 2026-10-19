@@ -33,12 +33,22 @@
 
   .controls{ padding:14px 16px; border-bottom:1px solid var(--border); background:var(--panel); }
   .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; }
-  .ctl-groups{ display:flex; flex-wrap:wrap; gap:12px; align-items:stretch; }
+  .ctl-groups{ display:grid; grid-template-columns:minmax(0,max-content) minmax(0,max-content) auto;
+    gap:12px; align-items:start; justify-content:start; }
   .ctl-group{ background:rgba(255,255,255,.025); border:1px solid var(--border); border-radius:10px; padding:10px 12px 12px; }
   .ctl-title{ font-size:12px; font-weight:650; color:var(--accent); margin-bottom:8px; }
-  .ctl-actions{ display:flex; flex-direction:column; justify-content:center; gap:8px; background:none; border:none; padding:0; }
+  .ctl-actions{ display:flex; flex-direction:column; justify-content:center; gap:8px; background:none; border:none; padding:0; align-self:stretch; }
   .ctl-actions button{ min-width:140px; }
-  .dz-preset{ margin-bottom:10px; max-width:260px; }
+  #dzPreset{ width:175px; }
+  #locFormat{ width:130px; }
+  #timeBasis{ width:140px; }
+  /* same height for every control so labels and boxes line up */
+  @media (min-width:641px){ input, select, button{ height:38px; } }
+  /* narrower screens: location on its own row, then time and the buttons beside each other */
+  @media (max-width:1279px){
+    .ctl-groups{ grid-template-columns:minmax(0,max-content) auto; }
+    .ctl-groups > :nth-child(1){ grid-column:1 / -1; }
+  }
   .field{ display:flex; flex-direction:column; gap:4px; }
   .field label{ font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; }
   input, select, button{
@@ -49,9 +59,9 @@
   #datetime{ width:230px; }
   button.primary{ background:var(--accent); border-color:var(--accent); color:#06131f; font-weight:650; cursor:pointer; }
   button.primary:active{ transform:translateY(1px); }
-  .fmt-group{ display:none; gap:10px; flex-wrap:wrap; }
+  .fmt-group{ display:none; gap:5px; }
   .fmt-group.active{ display:flex; }
-  #mgrsInput{ width:220px; }
+  #mgrsInput{ width:195px; }
   #locLabel{ font-size:12.5px; color:var(--muted); margin-top:8px; }
   #locLabel b{ color:var(--text); }
   #status{ font-size:12.5px; color:var(--muted); padding:8px 16px 0; }
@@ -127,7 +137,7 @@
     header h1{ font-size:16px; }
     header .sub{ font-size:12px; }
     .controls{ padding:12px 14px; }
-    .ctl-groups{ flex-direction:column; }
+    .ctl-groups{ grid-template-columns:1fr; }
     .field-btn label{ display:none; }
     .card{ padding:8px 9px; }
     .card-label{ font-size:9.5px; }
@@ -143,7 +153,8 @@
     .ctl-group{ width:100%; }
     .ctl-actions{ flex-direction:row; flex-wrap:wrap; }
     .ctl-actions button{ flex:1 1 140px; }
-    .row{ flex-direction:column; align-items:stretch; gap:12px; }
+    .row{ display:grid; grid-template-columns:1fr 1fr; gap:10px; align-items:end; }
+    .row > #mgrsFields, .row > .field-btn, .row > .field-wide{ grid-column:1 / -1; }
     .field{ width:100%; }
     .fmt-group.active{ flex-direction:column; }
     input, select, button{
@@ -176,13 +187,13 @@
   <div class="ctl-groups">
     <section class="ctl-group">
       <div class="ctl-title">Location</div>
-      <div class="field dz-preset" id="dzPresetField">
-        <label>Drop zone</label>
-        <select id="dzPreset">
-          <option value="">Custom location</option>
-        </select>
-      </div>
       <div class="row">
+        <div class="field" id="dzPresetField">
+          <label>Drop zone</label>
+          <select id="dzPreset">
+            <option value="">Custom location</option>
+          </select>
+        </div>
         <div class="field">
           <label>Format</label>
           <select id="locFormat">
@@ -216,11 +227,11 @@
     <section class="ctl-group">
       <div class="ctl-title">Time</div>
       <div class="row">
-        <div class="field">
+        <div class="field field-wide">
           <label>Date &amp; time</label>
           <input type="datetime-local" id="datetime" step="300">
         </div>
-        <div class="field">
+        <div class="field field-wide">
           <label>Basis</label>
           <select id="timeBasis">
             <option value="zulu" selected>Zulu (GMT)</option>
