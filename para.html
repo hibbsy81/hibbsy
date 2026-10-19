@@ -38,6 +38,7 @@
   .ctl-title{ font-size:12px; font-weight:650; color:var(--accent); margin-bottom:8px; }
   .ctl-actions{ display:flex; flex-direction:column; justify-content:center; gap:8px; background:none; border:none; padding:0; }
   .ctl-actions button{ min-width:140px; }
+  .dz-preset{ margin-bottom:10px; max-width:260px; }
   .field{ display:flex; flex-direction:column; gap:4px; }
   .field label{ font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; }
   input, select, button{
@@ -175,6 +176,12 @@
   <div class="ctl-groups">
     <section class="ctl-group">
       <div class="ctl-title">Location</div>
+      <div class="field dz-preset" id="dzPresetField">
+        <label>Drop zone</label>
+        <select id="dzPreset">
+          <option value="">Custom location</option>
+        </select>
+      </div>
       <div class="row">
         <div class="field">
           <label>Format</label>
@@ -538,6 +545,22 @@ function decimalYearFromISO(isoLocal){
   el.addEventListener('blur', ()=> tidyMGRSInput(true));
 })();
 
+/* ---------------- Preset drop zones ----------------
+   Add your own DZs to this list. Give each one a name and ONE of these position styles:
+     { name: 'Example DZ', mgrs: '30U WC 12345 67890' }
+     { name: 'Example DZ', ddm: ['51 45.000 N', '001 34.977 W'] }     (degrees, decimal minutes)
+     { name: 'Example DZ', lat: 51.75, lon: -1.5833 }                 (decimal degrees, W and S negative)
+   Edit, add or delete entries as you like; the dropdown sorts them alphabetically for you. */
+const PRESET_DZS = [
+  { name: 'Little Rissington',        mgrs: '30U WC 89749 46587' },
+  { name: 'Poole Camp',               mgrs: '30U WB 69023 18968' },
+  { name: 'RAF Brize Norton',         ddm: ['51 45.000 N', '001 34.977 W'] },
+  { name: 'RAF Leeming',              mgrs: '30U WF 95284 17703' },
+  { name: 'Sculthorpe',               mgrs: '31U CU 49820 57956' },
+  { name: 'Weston-on-the-Green',      ddm: ['51 52.717 N', '001 13.200 W'] }
+].sort((a, b) => a.name.localeCompare(b.name));   // always shown in alphabetical order
+let applyingPreset = false;   // true while a preset is filling in the location boxes
+
 /* ---------------- Live Zulu clock in the header ---------------- */
 function tickClock(){
   const d = new Date();
@@ -568,6 +591,8 @@ function updateMap(lat, lon, pan){
 
 // populate the visible input field(s) for whichever format is active
 function populateFieldsFromLatLon(lat, lon){
+  const presetSel = document.getElementById('dzPreset');
+  if(presetSel && !applyingPreset) presetSel.value = '';   // location now comes from somewhere else
   if(locFormat.value === 'mgrs'){
     try{
       document.getElementById('mgrsInput').value = formatMGRS(latLonToMGRS(lat, lon, 5), true);
@@ -1412,6 +1437,50 @@ function refreshFromCache(){
 ['datetime','timeBasis'].forEach(id=>{
   document.getElementById(id).addEventListener('change', refreshFromCache);
 });
+
+/* ---------------- Preset DZ selector ---------------- */
+function presetToLatLon(dz){
+  if(dz.mgrs) return parseMGRS(dz.mgrs);
+  if(dz.ddm) return { lat: parseDDM(dz.ddm[0], true), lon: parseDDM(dz.ddm[1], false) };
+  if(typeof dz.lat === 'number' && typeof dz.lon === 'number') return { lat: dz.lat, lon: dz.lon };
+  throw new Error('no coordinates given');
+}
+(function wirePresetDZs(){
+  const sel = document.getElementById('dzPreset');
+  if(!PRESET_DZS.length){ document.getElementById('dzPresetField').style.display = 'none'; return; }
+  PRESET_DZS.forEach((dz, i)=>{
+    const o = document.createElement('option');
+    o.value = String(i);
+    o.textContent = dz.name;
+    sel.appendChild(o);
+  });
+  sel.addEventListener('change', ()=>{
+    if(sel.value === '') return;
+    const dz = PRESET_DZS[parseInt(sel.value, 10)];
+    const statusEl = document.getElementById('status');
+    let loc;
+    try{
+      loc = presetToLatLon(dz);
+      if(isNaN(loc.lat) || isNaN(loc.lon)) throw new Error('invalid coordinates');
+    }catch(err){
+      statusEl.className = 'err';
+      statusEl.textContent = `Preset "${dz.name}" has a problem: ${err.message}`;
+      sel.value = '';
+      return;
+    }
+    applyingPreset = true;
+    try{
+      updateMap(loc.lat, loc.lon, true);
+      if(dz.mgrs && locFormat.value === 'mgrs') document.getElementById('mgrsInput').value = formatMGRS(dz.mgrs, true);
+      else populateFieldsFromLatLon(loc.lat, loc.lon);
+    } finally { applyingPreset = false; }
+    runFetch(true);
+  });
+  // typing a location by hand goes back to "Custom location"
+  ['latDDM','lonDDM','mgrsInput'].forEach(id=>{
+    document.getElementById(id).addEventListener('input', ()=>{ sel.value = ''; });
+  });
+})();
 
 /* ---------------- PDF export ---------------- */
 function downloadPDF(){
