@@ -195,7 +195,7 @@
 
         <div class="field fmt-group active" id="mgrsFields">
           <label>MGRS</label>
-          <input type="text" id="mgrsInput" placeholder="30UXC1234567890">
+          <input type="text" id="mgrsInput" placeholder="30U WC 12345 67890" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false">
         </div>
 
         <div class="field field-btn">
@@ -520,6 +520,24 @@ function decimalYearFromISO(isoLocal){
   return year + (point - start) / (end - start);
 }
 
+/* ---------------- MGRS box: format as you type ---------------- */
+(function wireMgrsBox(){
+  const el = document.getElementById('mgrsInput');
+  el.addEventListener('input', (e)=>{
+    const raw = el.value;
+    const pos = el.selectionStart == null ? raw.length : el.selectionStart;
+    const before = alnumOnly(raw.slice(0, pos)).length;
+    const f = formatMGRS(raw, e.inputType === 'insertFromPaste');
+    if(f === raw || alnumOnly(f) !== alnumOnly(raw)) return;
+    el.value = f;
+    let idx = 0, seen = 0;
+    while(idx < f.length && seen < before){ if(/[A-Z0-9]/.test(f[idx])) seen++; idx++; }
+    if(pos >= raw.length) idx = f.length;   // typing at the end: keep the caret at the end
+    el.setSelectionRange(idx, idx);
+  });
+  el.addEventListener('blur', ()=> tidyMGRSInput(true));
+})();
+
 /* ---------------- Live Zulu clock in the header ---------------- */
 function tickClock(){
   const d = new Date();
@@ -552,7 +570,7 @@ function updateMap(lat, lon, pan){
 function populateFieldsFromLatLon(lat, lon){
   if(locFormat.value === 'mgrs'){
     try{
-      document.getElementById('mgrsInput').value = latLonToMGRS(lat, lon, 5);
+      document.getElementById('mgrsInput').value = formatMGRS(latLonToMGRS(lat, lon, 5), true);
     }catch(err){
       document.getElementById('status').className = 'err';
       document.getElementById('status').textContent = err.message;
@@ -820,9 +838,44 @@ function latLonToMGRS(lat, lon, precision){
   return `${zoneStr}${band}${sq}${eastingStr}${northingStr}`;
 }
 
+/* ---------------- MGRS input formatting ---------------- */
+// 30UWC8559349340 -> 30U WC 85593 49340. While typing the easting is assumed to be 5 digits;
+// once finished (leaving the box, pasting, or fetching) the digits are split evenly, so
+// shorter references such as 8 digits become 1234 5678.
+const alnumOnly = str => String(str).toUpperCase().replace(/[^A-Z0-9]/g, '');
+function formatMGRS(raw, final){
+  const s = alnumOnly(raw);
+  let i = 0, zone = '', band = '', sq = '', digits = '';
+  while(i < s.length && zone.length < 2 && /\d/.test(s[i])) zone += s[i++];
+  if(i < s.length && /[A-Z]/.test(s[i])) band = s[i++];
+  while(i < s.length && sq.length < 2 && /[A-Z]/.test(s[i])) sq += s[i++];
+  while(i < s.length && digits.length < 10 && /\d/.test(s[i])) digits += s[i++];
+  const parts = [];
+  if(zone || band) parts.push(zone + band);
+  if(sq) parts.push(sq);
+  if(digits){
+    let e = digits, n = '';
+    if(final){
+      if(digits.length % 2 === 0){ e = digits.slice(0, digits.length/2); n = digits.slice(digits.length/2); }
+    } else {
+      e = digits.slice(0, 5); n = digits.slice(5);
+    }
+    parts.push(e);
+    if(n) parts.push(n);
+  }
+  return parts.join(' ');
+}
+// only tidy the box when nothing would be thrown away
+function tidyMGRSInput(final){
+  const el = document.getElementById('mgrsInput');
+  const f = formatMGRS(el.value, final);
+  if(alnumOnly(f) === alnumOnly(el.value) && f !== el.value) el.value = f;
+}
+
 /* ---------------- Location resolution ---------------- */
 function resolveLocation(){
   if(locFormat.value === 'mgrs'){
+    tidyMGRSInput(true);
     const val = document.getElementById('mgrsInput').value.trim();
     if(!val) throw new Error('Enter an MGRS coordinate.');
     return parseMGRS(val);
