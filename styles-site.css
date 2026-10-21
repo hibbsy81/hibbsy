@@ -124,7 +124,7 @@ footer {
 	right: 0;
 	margin: 2px 0 0;
 	padding: 4px 0;
-	width: max-content;     /* new: grows to fit the text */
+	width: max-content;   /* grows to fit the longest link */
 	min-width: 140px;
 	list-style: none;
 	background: var(--bg);
@@ -144,9 +144,9 @@ footer {
 	font-family: var(--font-modern);
 	font-size: 13px;
 	font-weight: 500;
-	text-transform: none;
+	text-transform: none;  /* cancels the global uppercase on links */
 	letter-spacing: 0;
-	white-space: nowrap;    /* new: never wrap the link text */
+	white-space: nowrap;   /* never wrap the link text */
 }
 
 .menu-list a:hover {
