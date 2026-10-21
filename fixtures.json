@@ -1,0 +1,357 @@
+{
+ "updated": "2026-10-21",
+ "fixtures": [
+  {
+   "t": "mc",
+   "iso": "2026-10-24T12:30:00+01:00",
+   "comp": "Premier League",
+   "h": "Aston Villa",
+   "a": "Man City",
+   "ch": [
+    "TNT Sports 1",
+    "TNT Sports Ultimate",
+    "HBO Max"
+   ],
+   "note": "",
+   "tbc": false
+  },
+  {
+   "t": "aw",
+   "iso": "2026-10-24T12:45:00+01:00",
+   "comp": "Women’s Super League",
+   "h": "Tottenham",
+   "a": "Arsenal",
+   "ch": [
+    "BBC One",
+    "BBC iPlayer"
+   ],
+   "note": "",
+   "tbc": false
+  },
+  {
+   "t": "aw",
+   "iso": "2026-10-28T20:00:00+00:00",
+   "comp": "Women’s Champions League",
+   "h": "Arsenal",
+   "a": "Benfica",
+   "ch": [
+    "Disney+"
+   ],
+   "note": "",
+   "tbc": false
+  },
+  {
+   "t": "mc",
+   "iso": "2026-10-28T19:30:00+00:00",
+   "comp": "Carabao Cup, 4th Round",
+   "h": "Man City",
+   "a": "Brighton",
+   "ch": [
+    "Sky Sports+"
+   ],
+   "note": "",
+   "tbc": false
+  },
+  {
+   "t": "mc",
+   "iso": "2026-10-31T15:00:00+00:00",
+   "comp": "Premier League",
+   "h": "Man City",
+   "a": "Brighton",
+   "ch": [],
+   "note": "Not televised",
+   "tbc": false
+  },
+  {
+   "t": "aw",
+   "iso": "2026-11-01T12:00:00+00:00",
+   "comp": "Women’s Super League",
+   "h": "Arsenal",
+   "a": "Aston Villa",
+   "ch": [],
+   "note": "Channel to be confirmed",
+   "tbc": false
+  },
+  {
+   "t": "mc",
+   "iso": "2026-11-04T20:00:00+00:00",
+   "comp": "Champions League",
+   "h": "RB Leipzig",
+   "a": "Man City",
+   "ch": [
+    "TNT Sports 2",
+    "HBO Max"
+   ],
+   "note": "",
+   "tbc": false
+  },
+  {
+   "t": "mc",
+   "iso": "2026-11-07T17:30:00+00:00",
+   "comp": "Premier League",
+   "h": "Nottingham Forest",
+   "a": "Man City",
+   "ch": [
+    "Sky Sports Main Event",
+    "Sky Sports Premier League"
+   ],
+   "note": "",
+   "tbc": false
+  },
+  {
+   "t": "aw",
+   "iso": "2026-11-08T12:00:00+00:00",
+   "comp": "Women’s Super League",
+   "h": "Liverpool",
+   "a": "Arsenal",
+   "ch": [
+    "Sky Sports"
+   ],
+   "note": "Channel unconfirmed",
+   "tbc": false
+  },
+  {
+   "t": "en",
+   "iso": "2026-11-12T19:45:00+00:00",
+   "comp": "Nations League",
+   "h": "England",
+   "a": "Croatia",
+   "ch": [
+    "ITV1",
+    "ITVX",
+    "STV"
+   ],
+   "note": "",
+   "tbc": false
+  },
+  {
+   "t": "aw",
+   "iso": "2026-11-12T17:45:00+00:00",
+   "comp": "Women’s Champions League",
+   "h": "Barcelona",
+   "a": "Arsenal",
+   "ch": [
+    "Disney+"
+   ],
+   "note": "",
+   "tbc": false
+  },
+  {
+   "t": "en",
+   "iso": "2026-11-15T19:45:00+00:00",
+   "comp": "Nations League",
+   "h": "Spain",
+   "a": "England",
+   "ch": [
+    "ITV1",
+    "ITVX",
+    "STV"
+   ],
+   "note": "",
+   "tbc": false
+  },
+  {
+   "t": "aw",
+   "iso": "2026-11-15T16:30:00+00:00",
+   "comp": "Women’s Super League",
+   "h": "Arsenal",
+   "a": "London City Lionesses",
+   "ch": [
+    "Sky Sports Main Event",
+    "Sky Sports Premier League"
+   ],
+   "note": "",
+   "tbc": false
+  },
+  {
+   "t": "aw",
+   "iso": "2026-11-19T20:00:00+00:00",
+   "comp": "Women’s Champions League",
+   "h": "Arsenal",
+   "a": "Lyon",
+   "ch": [
+    "Disney+"
+   ],
+   "note": "",
+   "tbc": false
+  },
+  {
+   "t": "mc",
+   "iso": "2026-11-21T12:30:00+00:00",
+   "comp": "Premier League",
+   "h": "Man City",
+   "a": "Fulham",
+   "ch": [
+    "TNT Sports 1",
+    "TNT Sports Ultimate",
+    "HBO Max"
+   ],
+   "note": "",
+   "tbc": false
+  },
+  {
+   "t": "aw",
+   "iso": "2026-11-22T12:30:00+00:00",
+   "comp": "Women’s Super League",
+   "h": "Arsenal",
+   "a": "West Ham",
+   "ch": [
+    "BBC Two",
+    "BBC iPlayer"
+   ],
+   "note": "Channel unconfirmed",
+   "tbc": false
+  },
+  {
+   "t": "mc",
+   "iso": "2026-11-24T20:00:00+00:00",
+   "comp": "Champions League",
+   "h": "Man City",
+   "a": "Napoli",
+   "ch": [
+    "TNT Sports",
+    "HBO Max"
+   ],
+   "note": "TNT channel to be confirmed",
+   "tbc": false
+  },
+  {
+   "t": "li",
+   "iso": "2026-11-26T12:00:00+00:00",
+   "comp": "World Cup play-off, 1st leg",
+   "h": "Ukraine",
+   "a": "England",
+   "ch": [
+    "ITV"
+   ],
+   "note": "Kick-off time and channel to be confirmed",
+   "tbc": true
+  },
+  {
+   "t": "mc",
+   "iso": "2026-11-29T16:30:00+00:00",
+   "comp": "Premier League",
+   "h": "Arsenal",
+   "a": "Man City",
+   "ch": [
+    "Sky Sports Main Event",
+    "Sky Sports Premier League"
+   ],
+   "note": "",
+   "tbc": false
+  },
+  {
+   "t": "mc",
+   "iso": "2026-12-02T19:30:00+00:00",
+   "comp": "Premier League",
+   "h": "Man City",
+   "a": "Leeds United",
+   "ch": [
+    "Sky Sports"
+   ],
+   "note": "Sky channel to be confirmed",
+   "tbc": false
+  },
+  {
+   "t": "mc",
+   "iso": "2026-12-05T20:00:00+00:00",
+   "comp": "Premier League",
+   "h": "Brentford",
+   "a": "Man City",
+   "ch": [
+    "Sky Sports Main Event",
+    "Sky Sports Premier League"
+   ],
+   "note": "",
+   "tbc": false
+  },
+  {
+   "t": "li",
+   "iso": "2026-12-05T12:00:00+00:00",
+   "comp": "World Cup play-off, 2nd leg",
+   "h": "England",
+   "a": "Ukraine",
+   "ch": [
+    "ITV"
+   ],
+   "note": "Kick-off time and channel to be confirmed",
+   "tbc": true
+  },
+  {
+   "t": "mc",
+   "iso": "2026-12-08T20:00:00+00:00",
+   "comp": "Champions League",
+   "h": "Barcelona",
+   "a": "Man City",
+   "ch": [
+    "TNT Sports",
+    "HBO Max"
+   ],
+   "note": "TNT channel to be confirmed",
+   "tbc": false
+  },
+  {
+   "t": "mc",
+   "iso": "2026-12-12T17:30:00+00:00",
+   "comp": "Premier League",
+   "h": "Man City",
+   "a": "Chelsea",
+   "ch": [
+    "Sky Sports Main Event",
+    "Sky Sports Premier League"
+   ],
+   "note": "",
+   "tbc": false
+  },
+  {
+   "t": "aw",
+   "iso": "2026-12-16T20:00:00+00:00",
+   "comp": "Women’s Champions League",
+   "h": "Inter",
+   "a": "Arsenal",
+   "ch": [
+    "Disney+"
+   ],
+   "note": "",
+   "tbc": false
+  },
+  {
+   "t": "mc",
+   "iso": "2026-12-26T20:00:00+00:00",
+   "comp": "Premier League",
+   "h": "Newcastle United",
+   "a": "Man City",
+   "ch": [
+    "Sky Sports Main Event",
+    "Sky Sports Premier League"
+   ],
+   "note": "",
+   "tbc": false
+  },
+  {
+   "t": "mc",
+   "iso": "2026-12-29T20:15:00+00:00",
+   "comp": "Premier League",
+   "h": "Everton",
+   "a": "Man City",
+   "ch": [
+    "Sky Sports Premier League"
+   ],
+   "note": "",
+   "tbc": false
+  },
+  {
+   "t": "mc",
+   "iso": "2027-01-03T16:30:00+00:00",
+   "comp": "Premier League",
+   "h": "Man City",
+   "a": "Tottenham Hotspur",
+   "ch": [
+    "Sky Sports Premier League",
+    "Sky Sports Main Event"
+   ],
+   "note": "",
+   "tbc": false
+  }
+ ]
+}
