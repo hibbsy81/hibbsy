@@ -1,4 +1,7 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Crect width=%2264%22 height=%2264%22 rx=%2214%22 fill=%22%232563c9%22/%3E%3Cdefs%3E%3CclipPath id=%22c%22%3E%3Ccircle cx=%2232%22 cy=%2232%22 r=%2226%22/%3E%3C/clipPath%3E%3C/defs%3E%3Ccircle cx=%2232%22 cy=%2232%22 r=%2226%22 fill=%22%23fff%22/%3E%3Cg clip-path=%22url%28%23c%29%22 fill=%22%2314213d%22%3E%3Cpolygon points=%2232.0,23.0 40.6,29.2 37.3,39.3 26.7,39.3 23.4,29.2%22/%3E%3Cpolygon points=%2241.5,13.3 40.7,5.4 51.4,5.3 54.7,15.5 46.8,17.2%22/%3E%3Cpolygon points=%2252.7,35.3 60.0,32.0 63.4,42.2 54.7,48.5 50.7,41.5%22/%3E%3Cpolygon points=%2235.3,52.7 40.7,58.6 32.0,65.0 23.3,58.6 28.7,52.7%22/%3E%3Cpolygon points=%2213.3,41.5 9.3,48.5 0.6,42.2 4.0,32.0 11.3,35.3%22/%3E%3Cpolygon points=%2217.2,17.2 9.3,15.5 12.6,5.3 23.3,5.4 22.5,13.3%22/%3E%3Cg stroke=%22%2314213d%22 stroke-width=%222%22 stroke-linecap=%22round%22%3E%3Cline x1=%2232.0%22 y1=%2223.0%22 x2=%2232.0%22 y2=%2213.0%22/%3E%3Cline x1=%2240.6%22 y1=%2229.2%22 x2=%2250.1%22 y2=%2226.1%22/%3E%3Cline x1=%2237.3%22 y1=%2239.3%22 x2=%2243.2%22 y2=%2247.4%22/%3E%3Cline x1=%2226.7%22 y1=%2239.3%22 x2=%2220.8%22 y2=%2247.4%22/%3E%3Cline x1=%2223.4%22 y1=%2229.2%22 x2=%2213.9%22 y2=%2226.1%22/%3E%3C/g%3E%3C/g%3E%3Ccircle cx=%2232%22 cy=%2232%22 r=%2226%22 fill=%22none%22 stroke=%22%2314213d%22 stroke-width=%223%22/%3E%3C/svg%3E">
+</head><body>
 <title>Pitch Plan</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -157,13 +160,14 @@ const longDate=k=>{const d=parseKey(k);return DAYS[d.getDay()]+' '+d.getDate()+'
 
 /* ---------- state ---------- */
 const DEF={profile:{name:'',age:'a2',pos:'mid',wake:'07:00',leave:'08:15',bed:'21:30',who:'f',dur:45,diet:[],setup:false},
-  week:{0:'recover',1:'rest',2:'train',3:'solo',4:'train',5:'rest',6:'match'},overrides:{},weather:{},ticks:{},shuffle:{},rec:{jug:0,left:0,right:0},chal:{}};
+  week:{0:'recover',1:'rest',2:'train',3:'solo',4:'train',5:'rest',6:'match'},overrides:{},weather:{},ticks:{},shuffle:{},rec:{jug:0,left:0,right:0},chal:{},_t:0};
 let S=JSON.parse(JSON.stringify(DEF));
-function load(){try{const v=localStorage.getItem('pitchplan_v1');if(v){const o=JSON.parse(v);S=Object.assign({},DEF,o);S.profile=Object.assign({},DEF.profile,o.profile||{});S.week=Object.assign({},DEF.week,o.week||{});S.rec=Object.assign({},DEF.rec,o.rec||{})}}catch(e){}}
-function save(){try{localStorage.setItem('pitchplan_v1',JSON.stringify(S))}catch(e){}}
+function merge(o){S=Object.assign({},DEF,o);S.profile=Object.assign({},DEF.profile,o.profile||{});S.week=Object.assign({},DEF.week,o.week||{});S.rec=Object.assign({},DEF.rec,o.rec||{})}
+function load(){try{const v=localStorage.getItem('pitchplan_v1');if(v)merge(JSON.parse(v))}catch(e){}}
+function save(fromRemote){if(!fromRemote)S._t=Date.now();try{localStorage.setItem('pitchplan_v1',JSON.stringify(S))}catch(e){}if(!fromRemote&&typeof schedulePush==='function')schedulePush()}
 load();
 const today=dkey(new Date());
-const ui={tab:'today',sel:today,month:[new Date().getFullYear(),new Date().getMonth()],rKind:'morning',rType:null,mType:null,mFilter:'all',plate:{},tipCat:'all',tipMine:false,confirm:false,hPlace:null,hSpace:'tiny',hMin:15};
+const ui={tab:'today',sel:today,month:[new Date().getFullYear(),new Date().getMonth()],rKind:'morning',rType:null,mType:null,mFilter:'all',plate:{},tipCat:'all',tipMine:false,confirm:false,hPlace:null,hSpace:'tiny',hMin:15,msg:'',sync:{state:'off',msg:'Checking whether sync is available…'}};
 const typeOf=k=>S.overrides[k]||S.week[parseKey(k).getDay()];
 
 /* ---------- data: weather ---------- */
@@ -192,14 +196,14 @@ const D=[
  {n:'Cone weave and finish',m:10,k:'t',w:['sun','cloud','wind','cold','hot'],s:['Set 6 cones 1 metre apart','Weave using the inside and outside of both feet, head up on every third cone','Finish with a low shot or a pass into a target']},
  {n:'Wall-pass rhythm',m:8,k:'t',w:['sun','cloud','wind','cold','hot','rain'],s:['One touch, alternating feet: 30 passes','Two touches, then three touches on the move','Finish with 10 hard passes with your weaker foot'],tip:'Lock your ankle and strike through the middle of the ball.'},
  {n:'Square ball mastery',m:8,k:'t',s:['Mark a 1 metre square with tape or shoes','Sole rolls, toe taps, inside-outside taps: 30 seconds each, 15 seconds rest','Finish with 30 seconds of your favourite move'],tip:'Short, light touches. Stay on your toes.'},
- {n:'Juggling ladder',m:6,k:'t',s:['Right foot: 5 attempts','Left foot: 5 attempts','Alternating feet, then thigh and foot: 5 attempts each','Try to beat your record from the Tips page'],tip:'Soft touch. Keep the ball no higher than your head.'},
+ {n:'Keepy-uppy ladder',m:6,k:'t',s:['Right foot: 5 attempts','Left foot: 5 attempts','Alternating feet, then thigh and foot: 5 attempts each','Try to beat your record from the Tips page'],tip:'Soft touch. Keep the ball no higher than your head.'},
  {n:'Turn school',m:10,k:'t',w:['sun','cloud','cold','wind','hot','rain'],s:['Place one cone as your defender','Drag-back, inside hook and Cruyff turn: 5 each side','Add a burst of speed for 3 steps after every turn'],tip:'Disguise it, then accelerate.'},
  {n:'Low and early shooting',m:10,k:'t',w:['sun','cloud','cold','wind','hot','rain'],s:['Mark two target corners with cones','10 shots with each foot, two touches','Another 10 with each foot, one touch'],tip:'Pick your corner before you swing. In the rain, shoot low and hard.'},
  {n:'Wet-ball first touch',m:8,k:'t',w:['rain'],s:['Pass hard along the ground against a wall','Cushion it with the inside of your foot and pull your foot back on contact','Control with the outside of your foot, then pass again'],tip:'Wet balls run faster. Get your body behind the ball.'},
  {n:'Low driven passes in the wind',m:10,k:'t',w:['wind'],who:'f',s:['Pairs 15 metres apart','Drive low passes into the wind, then with it, then across','Count how many land on your partner’s feet'],tip:'Keep it on the floor. The wind makes high balls unpredictable.'},
  {n:'Hallway sock-ball passing',m:8,k:'t',w:['frost','rain'],s:['Roll up socks into a soft ball and clear a space with an adult','Pass along the skirting board and stop it with your sole','Switch feet every minute'],tip:'Indoors, stay soft and gentle. Mind the furniture.'},
  {n:'Futsal footwork',m:10,k:'t',w:['frost','rain','cold'],s:['Mark a 2 metre by 2 metre grid and use a low-bounce ball','Sole drags, step-overs, V-pull-backs and tight turns: 30 seconds each','Rest 15 seconds between moves, 3 rounds'],tip:'A tiny space trains very quick feet.'},
- {n:'Shade skill stations',m:10,k:'t',w:['hot'],s:['Three stations in the shade: juggling, tight cone touches, wall passes','2 minutes at each, then a water break','Go round twice'],tip:'In heat, short blocks with breaks beat one long block.'},
+ {n:'Shade skill stations',m:10,k:'t',w:['hot'],s:['Three stations in the shade: keepy-uppies, tight cone touches, wall passes','2 minutes at each, then a water break','Go round twice'],tip:'In heat, short blocks with breaks beat one long block.'},
  {n:'Two-touch passing pairs',m:10,k:'t',w:['sun','cloud','cold','wind','hot'],who:'f',s:['Pairs 10 metres apart, receive and pass in two touches','Move to one touch','Add a side-step between each pass'],tip:'Receive on your back foot to open up your body.'},
  {n:'Weak-foot challenge',m:8,k:'t',s:['20 wall passes with your weaker foot only','20 dribbling touches with your weaker foot','10 shots with your weaker foot'],tip:'The foot you are worst with improves fastest.'},
  {n:'Receive and look',m:8,k:'t',who:'f',s:['Partner rolls the ball to you from 8 metres','Look over each shoulder before it arrives','Take your first touch away from where you looked, then pass back'],tip:'Good players look more than they touch.'},
@@ -243,7 +247,7 @@ const HOME=[
  {n:'Mobility flow',m:4,p:['in','out'],sp:'tiny',s:['Hip circles, leg swings and a deep squat hold','Hamstring reach and calf stretch, 20 seconds each side','Slow deep breaths to finish'],tip:'Mobile hips and ankles help every touch.'},
  {n:'Picture the game',m:3,p:['in'],sp:'tiny',s:['Sit down, close your eyes and breathe slowly','Picture a good first touch and your next pass','Picture yourself celebrating a teammate’s goal'],tip:'Your brain practises what you picture.'},
  {n:'Garden wall rebound',m:6,p:['out'],sp:'tiny',s:['Stand 3 metres from a wall or fence','Pass and control with the inside of each foot: 25 each','Try one touch, then two touches'],tip:'Ask first before using a wall or fence. Stay clear of windows.'},
- {n:'Juggling ladder',m:5,p:['out','in'],sp:'tiny',s:['Right foot, left foot, alternating: 5 attempts each','Add a thigh touch','Beat your record from the Tips page'],tip:'Soft touch, ball no higher than your head.'},
+ {n:'Keepy-uppy ladder',m:5,p:['out','in'],sp:'tiny',s:['Right foot, left foot, alternating: 5 attempts each','Add a thigh touch','Beat your record from the Tips page'],tip:'Soft touch, ball no higher than your head.'},
  {n:'Cone gates dribbling',m:6,p:['out'],sp:'small',s:['Set 5 gates, a shoe width apart, in a 4 metre line','Dribble through each gate using both feet','3 rounds, faster each time'],tip:'Look up between gates.'},
  {n:'Turn and shoot',m:6,p:['out'],sp:'small',s:['Set a small cone goal against a fence or net','Dribble 3 metres, turn on a cone, then shoot low','10 shots with each foot'],tip:'Low and early. Stay away from windows.'},
  {n:'Short shuttle sprints',m:5,p:['out'],sp:'small',w:['sun','cloud','wind','cold'],s:['Mark 2 cones 5 metres apart','Sprint to a cone, touch it, sprint back: 6 reps','Walk 30 seconds, then repeat once'],tip:'Short and sharp. Stop if the ground is slippery.'},
@@ -280,7 +284,7 @@ function drillLi(d){
    (d.tagw?'<span class="tag">'+d.tagw+'</span>':'<span class="tag">'+whoTag(d)+'</span>')+'</div><ol>'+d.s.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ol>'+
    (d.tip?'<p class="coach"><b>Coaching point</b>'+esc(d.tip)+'</p>':'')+'</li>';
 }
-const RECOVER=['Easy 15 to 20 minute walk or bike ride','10 minute mobility flow: hips, hamstrings, calves, back','Gently foam-roll calves and thighs if you have a roller','Watch a match and follow just your position for 5 minutes, then write down what you noticed','Easy juggling for 5 minutes, no pressure on a record','Write down 3 things you did well this week','Have a long, slow stretch while you watch something','Kick about with friends just for fun'];
+const RECOVER=['Easy 15 to 20 minute walk or bike ride','10 minute mobility flow: hips, hamstrings, calves, back','Gently foam-roll calves and thighs if you have a roller','Watch a match and follow just your position for 5 minutes, then write down what you noticed','Easy keepy-uppies for 5 minutes, no pressure on a record','Write down 3 things you did well this week','Have a long, slow stretch while you watch something','Kick about with friends just for fun'];
 const RESTI=['A proper day off. No training.','Do something you enjoy with friends or family','Aim for an earlier night','Eat well, drink water and enjoy it','Optional: 10 minutes of easy stretching'];
 const MATCHF={gk:'Talk loudly and early, and set your feet before every shot.',def:'Stay side-on, keep your line tight and talk to the players around you.',mid:'Scan before every pass. Your job is to find space.',att:'Make your run, then look for the next one. Take your chances early.'};
 function sessionHTML(k,full){
@@ -292,7 +296,7 @@ function sessionHTML(k,full){
   if(s.type==='rest'){h+='<h3 style="margin-top:14px">Rest day ideas</h3><ul class="kit">'+RESTI.map(x=>'<li>'+x+'</li>').join('')+'</ul>';return h}
   if(s.type==='recover'){h+='<h3 style="margin-top:14px">Recovery ideas</h3><ul class="kit">'+pickN(RECOVER,s.r,4).map(x=>'<li>'+x+'</li>').join('')+'</ul>';return h}
   if(s.type==='match'){
-    const steps=[['3 hours before','Pre-match meal: carbs and a little protein, nothing new'],['90 minutes before','Sip water, check your bag: boots, shin pads, spare socks, towel'],['1 hour before','Top-up snack, like a banana or rice cake'],['45 minutes before','Arrive, change, say hello to the team'],['Warm-up','Coach warm-up, then 3 minutes of juggling to find your touch'],['Kick-off','Play. Use your one goal for the match'],['Within 60 minutes after','Cool down, stretch, eat and drink to recover'],['That evening','Write 3 wins and 1 thing to work on']];
+    const steps=[['3 hours before','Pre-match meal: carbs and a little protein, nothing new'],['90 minutes before','Sip water, check your bag: boots, shin pads, spare socks, towel'],['1 hour before','Top-up snack, like a banana or rice cake'],['45 minutes before','Arrive, change, say hello to the team'],['Warm-up','Coach warm-up, then 3 minutes of keepy-uppies to find your touch'],['Kick-off','Play. Use your one goal for the match'],['Within 60 minutes after','Cool down, stretch, eat and drink to recover'],['That evening','Write 3 wins and 1 thing to work on']];
     h+='<ul class="tl" style="margin-top:12px">'+steps.map(x=>'<li><span class="tm" style="font-size:1rem;line-height:1.3">'+x[0]+'</span><span>'+x[1]+'</span></li>').join('')+'</ul>';
     h+='<p class="coach" style="margin-top:8px"><b>Your position</b>'+MATCHF[S.profile.pos]+'</p>';
     return h;
@@ -309,7 +313,7 @@ const MORN=[
  {id:'wash',p:1,m:10,o:()=>['Wash, brush teeth and get dressed']},
  {id:'eat',p:1,m:20,o:t=>({train:['Breakfast with slow carbs and protein: porridge and banana, or beans on toast. Sip water.'],match:['Pre-match breakfast 3 hours before kick-off: porridge with honey, or toast with jam and a banana. Nothing new.'],solo:['Balanced breakfast: wholegrain carbs, protein and fruit'],recover:['Breakfast with protein and fruit: yoghurt, berries and cereal'],rest:['Balanced breakfast: protein, wholegrain and fruit']}[t])},
  {id:'mind',p:3,m:3,o:t=>t==='match'?['Close your eyes and picture your best first touch','Say your one goal for today out loud']:['Name one thing you want to improve today','Think of one thing you are grateful for','Picture yourself playing well for 1 minute']},
- {id:'touch',p:3,m:5,o:t=>t==='rest'?['Easy 3 minutes of juggling, no pressure']:t==='match'?['3 minutes of light juggling to wake up your touch']:['Juggling: beat your record or do 3 sets of 20','2 minutes of sole rolls then 2 minutes of toe taps','40 wall passes with each foot']},
+ {id:'touch',p:3,m:5,o:t=>t==='rest'?['Easy 3 minutes of keepy-uppies, no pressure']:t==='match'?['3 minutes of light keepy-uppies to wake up your touch']:['Keepy-uppies: beat your record or do 3 sets of 20','2 minutes of sole rolls then 2 minutes of toe taps','40 wall passes with each foot']},
  {id:'bag',p:1,m:5,o:(t,w)=>{const b={train:'Pack boots, shin pads, socks, water bottle and layers.',match:'Check your bag: kit, boots, shin pads, spare socks, towel, water and a snack.',solo:'Pack your ball, cones and water bottle.',recover:'Fill your water bottle and pack for school.',rest:'Fill your water bottle and pack for school.'}[t];const x=w&&WX[w]?' Weather: '+WX[w].kit[0].toLowerCase()+'.':'';return [b+x]}}
 ];
 function buildMorning(k,type){
@@ -489,7 +493,7 @@ const TIPS=[
  ['ideas','','Watch a pro match and follow just one player in your position for 5 minutes.'],
  ['ideas','','Make a scrapbook of skills you want to learn, with your own notes on how they work.']
 ].map(a=>({c:a[0],pos:a[1],t:a[2]}));
-const CHAL=[['c1','Juggle 20 in a row, then try for 30'],['c2','10 minutes of ball mastery on 5 days in a row'],['c3','Teach a friend or sibling a skill move'],['c4','100 wall passes with your weaker foot'],['c5','Eat breakfast and drink 8 drinks every day for a week'],['c6','Be in bed on time every night for a week'],['c7','Watch a match and note 3 things your position does'],['c8','Write down 3 wins after every session this week']];
+const CHAL=[['c1','Do 20 keepy-uppies in a row, then try for 30'],['c2','10 minutes of ball mastery on 5 days in a row'],['c3','Teach a friend or sibling a skill move'],['c4','100 wall passes with your weaker foot'],['c5','Eat breakfast and drink 8 drinks every day for a week'],['c6','Be in bed on time every night for a week'],['c7','Watch a match and note 3 things your position does'],['c8','Write down 3 wins after every session this week']];
 function tipOfDay(){const r=rng('tip'+today);const pool=TIPS.filter(t=>!t.pos||t.pos===S.profile.pos);return pool[Math.floor(r()*pool.length)]}
 
 /* ---------- quotes (wording as published; comments are Pitch Plan's own) ---------- */
@@ -632,7 +636,7 @@ function viewTips(){
   h+='<div class="grid"><section class="card"><h2>Tips and ideas</h2><div class="chips" role="group" aria-label="Tip category">'+cats.map(c=>'<button class="chip" data-a="tipcat" data-v="'+c[0]+'" aria-pressed="'+(ui.tipCat===c[0])+'">'+c[1]+'</button>').join('')+'</div>'+
    '<div class="checks"><label><input type="checkbox" data-a="tipmine"'+(ui.tipMine?' checked':'')+'> Only tips for my position ('+POSN[S.profile.pos].toLowerCase()+')</label></div><div style="margin-top:8px">'+
    shown.map(t=>'<div class="tip"><span class="c">'+TC[t.c]+(t.pos?' · '+POSN[t.pos].split(' ')[0]:'')+'</span><p>'+esc(t.t)+'</p></div>').join('')+'</div></section>';
-  h+='<div style="display:grid;gap:16px;align-content:start"><section class="card"><h3>My records</h3><p class="sub">Juggling personal bests. Saved on this device.</p><div class="form" style="margin-top:10px">'+
+  h+='<div style="display:grid;gap:16px;align-content:start"><section class="card"><h3>My records</h3><p class="sub">Keepy-uppy personal bests. Saved on this device.</p><div class="form" style="margin-top:10px">'+
    [['jug','Both feet'],['left','Left foot'],['right','Right foot']].map(x=>'<div class="field"><label for="rec-'+x[0]+'">'+x[1]+'</label><input id="rec-'+x[0]+'" type="number" min="0" inputmode="numeric" data-rec="'+x[0]+'" value="'+(S.rec[x[0]]||0)+'"></div>').join('')+'</div></section>'+
    '<section class="card"><h3>Weekly challenges</h3><div class="checks" style="display:grid;gap:10px;margin-top:8px">'+CHAL.map(c=>'<label><input type="checkbox" data-chal="'+c[0]+'"'+(S.chal[c[0]]?' checked':'')+'> '+c[1]+'</label>').join('')+'</div><button class="btn alt" style="margin-top:12px" data-a="chalreset">Start a new week</button></section></div></div>';
   return h;
@@ -651,6 +655,12 @@ function viewMe(){
    '<div class="field"><label for="f-bed">Lights out</label><input id="f-bed" type="time" data-f="bed" value="'+P.bed+'"></div></div>'+
    '<div class="field"><span class="lab">Food filters</span><div class="checks">'+Object.keys(DIETN).map(d=>'<label><input type="checkbox" data-diet="'+d+'"'+((P.diet||[]).includes(d)?' checked':'')+'> '+DIETN[d]+'</label>').join('')+'</div><p class="small">Allergies need a real label check. Pitch Plan only suggests swaps.</p></div></section>';
   h+='<section class="card"><h3>Weekly pattern</h3><p class="sub">The type of day for each weekday. You can still change single days in the calendar.</p><div class="form" style="margin-top:10px">'+[1,2,3,4,5,6,0].map(d=>'<div class="field"><label for="w-'+d+'">'+DAYN[d]+'</label><select id="w-'+d+'" data-week="'+d+'">'+opt(TYPES,S.week[d])+'</select></div>').join('')+'</div></section>';
+  h+='<section class="card"><h3>Sync between devices</h3><p class="sub">Open this page’s link on your laptop and iPad, signed in to the same Claude account, and your settings follow you. Changes arrive within a few seconds. If you change the same thing on two devices at once, the newest change wins.</p><p id="sync-status" data-state="'+ui.sync.state+'" style="margin-top:8px;font-weight:600">'+esc(ui.sync.msg)+'</p><div class="row" style="margin-top:10px"><button class="btn alt" data-a="sync-now">Sync now</button></div><p class="small" style="margin-top:8px">The saved copy is private to you. The downloaded footy.html file cannot sync. Use backup and restore there.</p></section>';
+  h+='<section class="card"><h3>Back up and restore</h3><p class="sub">Save your settings to move them to another device or keep them safe.</p>'+
+   '<div class="row" style="margin:10px 0"><button class="btn" data-a="bk-copy">Copy backup</button><button class="btn alt" data-a="bk-dl">Download file</button><label class="btn alt" for="bk-file" style="cursor:pointer;display:inline-flex;align-items:center">Choose backup file</label><input id="bk-file" type="file" accept=".json,application/json,text/plain" style="position:absolute;left:-9999px" data-bkfile="1"></div>'+
+   (ui.msg?'<div class="note" role="status">'+esc(ui.msg)+'</div>':'')+
+   '<div class="field" style="margin-top:10px"><label for="bk-out">Your backup text</label><textarea id="bk-out" readonly rows="3" style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:8px;font:12px/1.4 monospace;color:var(--ink)">'+esc(JSON.stringify(S))+'</textarea></div>'+
+   '<div class="field"><label for="bk-in">Paste a backup here to restore it</label><textarea id="bk-in" rows="3" style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:8px;font:12px/1.4 monospace;color:var(--ink)"></textarea></div><button class="btn warn" data-a="bk-restore">Restore from pasted text</button><p class="small" style="margin-top:8px">Restoring replaces what is saved on this device. In the online version the download button may do nothing. Use Copy backup there instead.</p></section>';
   h+='<section class="card"><h3>Reset</h3><p class="sub">Clears your settings, calendar changes, ticks and records on this device.</p><button class="btn warn" data-a="reset" style="margin-top:8px">'+(ui.confirm?'Tap again to wipe everything':'Reset everything')+'</button></section>';
   return h;
 }
@@ -663,9 +673,53 @@ function render(keepScroll){
   if(keepScroll)window.scrollTo(0,y);
   const c=$('#clock');if(c)c.textContent=longDate(today);
 }
-function go(tab,keep){ui.tab=tab;try{history.replaceState(null,'','#'+tab)}catch(e){};render(keep);if(!keep)window.scrollTo(0,0)}
+function go(tab,keep){ui.tab=tab;ui.msg='';try{history.replaceState(null,'','#'+tab)}catch(e){};render(keep);if(!keep)window.scrollTo(0,0)}
+
+/* ---------- sync between devices (online version, signed in) ---------- */
+const sync={ref:null,timer:null,busy:false,again:false,unsub:null};
+const hhmm=()=>{const d=new Date();return pad(d.getHours())+':'+pad(d.getMinutes())};
+function setSync(state,msg){ui.sync={state:state,msg:msg};const el=$('#sync-status');if(el){el.textContent=msg;el.dataset.state=state}}
+function schedulePush(){if(!sync.ref)return;clearTimeout(sync.timer);sync.timer=setTimeout(push,800)}
+async function push(){
+  if(!sync.ref)return;
+  if(sync.busy){sync.again=true;return}
+  sync.busy=true;
+  try{await sync.ref.set({t:S._t,json:JSON.stringify(S)});setSync('on','Synced at '+hhmm())}
+  catch(e){setSync('err','Could not sync just now ('+((e&&e.code)||'error')+'). Your settings are still saved on this device.')}
+  sync.busy=false;
+  if(sync.again){sync.again=false;push()}
+}
+function onRemote(snap){
+  if(!snap.exists){if(S._t>0)push();else setSync('on','Sync is on. Nothing saved online yet.');return}
+  const d=snap.data()||{};
+  if(typeof d.json!=='string'||typeof d.t!=='number')return;
+  if(d.t>S._t){
+    try{const o=JSON.parse(d.json);merge(o);S._t=d.t;save(true);setSync('on','Updated from another device at '+hhmm());
+      const a=document.activeElement;if(!(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)))render(true)}catch(e){}
+  }else if(d.t<S._t){schedulePush()}
+  else setSync('on','Synced at '+hhmm());
+}
+async function initSync(tries){
+  const c=window.claude;
+  if(!c||!c.use){if((tries||0)<10){setTimeout(()=>initSync((tries||0)+1),500)}else setSync('off','Sync is not available here. Settings are saved on this device only.');return}
+  try{
+    const user=await c.use('user'),db=await c.use('db');
+    const id=user?await user.id():null;
+    if(!db||!id){setSync('off','Sync needs the online version and a Claude sign-in. Settings are saved on this device only.');return}
+    sync.ref=db.doc('data/users/'+id+'/pitchplan');
+    setSync('on','Sync is on. Connecting…');
+    sync.unsub=sync.ref.onSnapshot(onRemote,e=>setSync('err','Sync stopped ('+((e&&e.code)||'error')+'). Reload the page to try again.'));
+  }catch(e){setSync('off','Sync is not available here. Settings are saved on this device only.')}
+}
 
 /* ---------- events ---------- */
+function restore(txt){
+  try{const o=JSON.parse(txt);if(!o||typeof o!=='object'||!o.profile||!o.week)throw 0;
+    merge(o);
+    save();ui.msg='Backup restored.'}catch(e){ui.msg='That does not look like a Pitch Plan backup. Nothing was changed.'}
+  render(true);
+}
+
 document.addEventListener('click',e=>{
   const b=e.target.closest('[data-a]');if(!b||b.tagName==='INPUT')return;
   const a=b.dataset.a,v=b.dataset.v,k=b.dataset.k;
@@ -680,6 +734,12 @@ document.addEventListener('click',e=>{
    case 'day':ui.sel=k;break;
    case 'month':{let [y,m]=ui.month;m+=+v;if(m<0){m=11;y--}if(m>11){m=0;y++}ui.month=[y,m];break}
    case 'shuffle':S.shuffle[k]=(S.shuffle[k]||0)+1;break;
+   case 'bk-copy':{const t=JSON.stringify(S);const done=()=>{ui.msg='Backup copied. Paste it somewhere safe, like a note to yourself.';render(true)};
+      const fb=()=>{const ta=$('#bk-out');if(ta){ta.focus();ta.select()}ui.msg='Select the text in the box and copy it.';render(true);const t2=$('#bk-out');if(t2){t2.focus();t2.select()}};
+      try{navigator.clipboard.writeText(t).then(done,fb)}catch(e){fb()}return}
+   case 'bk-dl':{try{const bl=new Blob([JSON.stringify(S)],{type:'application/json'});const u=URL.createObjectURL(bl);const l=document.createElement('a');l.href=u;l.download='pitch-plan-backup.json';document.body.appendChild(l);l.click();l.remove();ui.msg='Backup file download started. If nothing downloaded, use Copy backup instead.'}catch(x){ui.msg='Download did not work here. Use Copy backup instead.'}render(true);return}
+   case 'bk-restore':{const v=($('#bk-in')||{}).value||'';return restore(v)}
+   case 'sync-now':if(sync.ref){S._t=Date.now();save(true);push();setSync('on','Syncing…')}else setSync('off',ui.sync.msg);return
    case 'rkind':ui.rKind=v;break;
    case 'hplace':ui.hPlace=v;break;
    case 'hspace':ui.hSpace=v;break;
@@ -697,6 +757,7 @@ document.addEventListener('click',e=>{
 });
 document.addEventListener('change',e=>{
   const t=e.target;
+  if(t.dataset.bkfile){const f=t.files&&t.files[0];if(!f)return;const r=new FileReader();r.onload=()=>restore(String(r.result));r.onerror=()=>{ui.msg='Could not read that file.';render(true)};r.readAsText(f);return}
   if(t.dataset.tick){S.ticks[t.dataset.tick]=t.checked;save();return}
   if(t.dataset.chal){S.chal[t.dataset.chal]=t.checked;save();return}
   if(t.dataset.a==='tipmine'){ui.tipMine=t.checked;render(true);return}
@@ -707,7 +768,7 @@ document.addEventListener('change',e=>{
 });
 function fromHash(){const h=(location.hash||'').slice(1);if(VIEWS[h])ui.tab=h}
 window.addEventListener('hashchange',()=>{fromHash();render()});
-fromHash();render();
+fromHash();render();initSync();
 })();
 </script>
 
