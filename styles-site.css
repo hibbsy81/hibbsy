@@ -82,3 +82,60 @@ footer {
 		padding: 24px 16px;
 	}
 }
+
+/* Hamburger menu */
+.menu {
+	position: fixed;
+	top: calc(12px + env(safe-area-inset-top, 0px));
+	right: calc(12px + env(safe-area-inset-right, 0px));
+	z-index: 10;
+}
+
+.menu-toggle {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	gap: 5px;
+	width: 44px;           /* comfortable tap target on phones */
+	height: 44px;
+	padding: 10px;
+	background: transparent;
+	border: 0;
+	cursor: pointer;
+}
+
+.menu-toggle span {
+	display: block;
+	height: 2px;
+	background: var(--ink);
+	border-radius: 1px;
+}
+
+.menu-list {
+	position: absolute;
+	top: 100%;
+	right: 0;
+	margin: 4px 0 0;
+	padding: 6px 0;
+	min-width: 180px;
+	list-style: none;
+	background: var(--bg);
+	border: 1px solid var(--ink-light);
+	border-radius: 4px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.menu-list[hidden] {
+	display: none;
+}
+
+.menu-list a {
+	display: block;
+	padding: 10px 16px;
+	color: var(--ink);
+}
+
+.menu-list a:hover {
+	background: #f4f4f4;
+	text-decoration: none;
+}
