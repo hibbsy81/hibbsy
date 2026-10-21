@@ -1,0 +1,719 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Pitch Plan</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:ital,wght@0,600;0,700;1,700&display=swap">
+<style>
+/* Layout concept: matchday programme. Dark pitch-green header with faint pitch lines, sticky tab bar, cards laid out like a team sheet. */
+:root{
+  --bg:#eef3ee; --surface:#ffffff; --surface2:#e2ece4; --ink:#10261a; --muted:#4a6354; --line:#c8d7cb;
+  --hdr:#0f4d27; --hdr-ink:#ffffff;
+  --pitch:#17803f; --on-pitch:#ffffff; --bib:#c2410c; --bib-soft:#fbe5d6;
+  --t-train:#17803f; --t-match:#c2410c; --t-solo:#2563c9; --t-recover:#7c3aed; --t-rest:#5b6b61; --on-t:#ffffff;
+  --good:#17803f; --warn:#a15c00; --warn-soft:#fdf0d5;
+  --font-d:'Barlow Condensed','Arial Narrow',Arial,sans-serif; --font-b:'Barlow',system-ui,-apple-system,'Segoe UI',Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0c1812; --surface:#13251b; --surface2:#1b3326; --ink:#e7f1e9; --muted:#9bb3a4; --line:#264234;
+  --hdr:#0a2a18; --hdr-ink:#ffffff; --pitch:#3ecf7a; --on-pitch:#06210f; --bib:#ff8a3d; --bib-soft:#3a2412;
+  --t-train:#3ecf7a; --t-match:#ff8a3d; --t-solo:#6aa6ff; --t-recover:#b69bff; --t-rest:#93a79b; --on-t:#06140c;
+  --good:#3ecf7a; --warn:#f2b84b; --warn-soft:#3a2d0f; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0c1812; --surface:#13251b; --surface2:#1b3326; --ink:#e7f1e9; --muted:#9bb3a4; --line:#264234;
+  --hdr:#0a2a18; --hdr-ink:#ffffff; --pitch:#3ecf7a; --on-pitch:#06210f; --bib:#ff8a3d; --bib-soft:#3a2412;
+  --t-train:#3ecf7a; --t-match:#ff8a3d; --t-solo:#6aa6ff; --t-recover:#b69bff; --t-rest:#93a79b; --on-t:#06140c;
+  --good:#3ecf7a; --warn:#f2b84b; --warn-soft:#3a2d0f; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 var(--font-b);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 48px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--hdr)}
+.wrap{max-width:1040px;margin:0 auto}
+h1,h2,h3,h4{font-family:var(--font-d);text-transform:uppercase;letter-spacing:.02em;margin:0;line-height:1.05;text-wrap:balance}
+p{margin:0}
+button,select,input{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--bib);outline-offset:2px}
+.hdr{background:var(--hdr);color:var(--hdr-ink);margin-inline:calc(-1*max(16px,env(safe-area-inset-left,0px))) ;padding:20px max(16px,env(safe-area-inset-right,0px)) 18px max(16px,env(safe-area-inset-left,0px));
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='520' height='140' viewBox='0 0 520 140'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='.13' stroke-width='3'%3E%3Ccircle cx='430' cy='70' r='52'/%3E%3Cline x1='430' y1='-10' x2='430' y2='150'/%3E%3Crect x='486' y='30' width='60' height='80'/%3E%3C/g%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right top}
+.hdr .wrap{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.hdr h1{font-size:clamp(2.2rem,7vw,3.4rem);font-style:italic;font-weight:700}
+.hdr p{opacity:.85;max-width:34ch}
+nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);border-bottom:2px solid var(--line);margin-inline:calc(-1*max(16px,env(safe-area-inset-left,0px)));padding-inline:max(16px,env(safe-area-inset-left,0px))}
+nav .wrap{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
+nav button{background:none;border:0;border-bottom:4px solid transparent;margin-bottom:-2px;padding:12px 14px 8px;font-family:var(--font-d);font-weight:700;font-size:1.15rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);cursor:pointer;white-space:nowrap}
+nav button[aria-current="page"]{color:var(--ink);border-bottom-color:var(--bib)}
+main{padding-top:22px;display:grid;gap:22px}
+.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr))}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:18px;min-width:0}
+.card h2{font-size:1.7rem;margin-bottom:4px}
+.card h3{font-size:1.25rem;margin-bottom:6px}
+.sub{color:var(--muted);font-size:.95rem}
+.sec-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
+.chip{background:var(--surface2);border:1px solid var(--line);border-radius:4px;padding:7px 12px;cursor:pointer;font-weight:500;font-size:.95rem;min-height:38px}
+.chip[aria-pressed="true"]{background:var(--pitch);color:var(--on-pitch);border-color:var(--pitch);font-weight:600}
+.btn{background:var(--pitch);color:var(--on-pitch);border:0;border-radius:4px;padding:9px 16px;font-weight:600;cursor:pointer;min-height:40px}
+.btn.alt{background:transparent;color:var(--ink);border:2px solid var(--ink)}
+.btn.warn{background:var(--bib);color:#fff}
+.pill{display:inline-block;padding:3px 10px;border-radius:3px;font-family:var(--font-d);font-weight:700;text-transform:uppercase;letter-spacing:.05em;font-size:1rem}
+.t-train{background:var(--t-train);color:var(--on-t)}.t-match{background:var(--t-match);color:var(--on-t)}.t-solo{background:var(--t-solo);color:var(--on-t)}.t-recover{background:var(--t-recover);color:var(--on-t)}.t-rest{background:var(--t-rest);color:var(--on-t)}
+.hero{display:grid;gap:14px;grid-template-columns:1fr;border-left:8px solid var(--bib)}
+.hero .date{font-family:var(--font-d);font-style:italic;font-weight:700;font-size:clamp(2.2rem,8vw,3.6rem);line-height:1;text-transform:uppercase}
+.note{background:var(--warn-soft);border-left:5px solid var(--warn);padding:10px 12px;border-radius:3px;font-size:.95rem}
+.note b{color:var(--ink)}
+.kit{margin:8px 0 0;padding-left:20px;font-size:.95rem}
+ol.drills{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:12px}
+.drill{border:1px solid var(--line);border-radius:5px;padding:12px 14px;background:var(--bg)}
+.dh{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.dh h4{font-size:1.3rem;flex:1;min-width:10ch}
+.min{font-family:var(--font-d);font-weight:700;font-size:1.7rem;line-height:1;color:var(--bib);font-variant-numeric:tabular-nums}.min small{font-size:.8rem;margin-left:2px;color:var(--muted)}
+.tag{font-size:.78rem;border:1px solid var(--line);padding:1px 8px;border-radius:3px;color:var(--muted);background:var(--surface)}
+.drill ol{margin:8px 0 6px;padding-left:20px;font-size:.96rem}
+.coach{font-size:.92rem;color:var(--muted)}.coach b{color:var(--ink);text-transform:uppercase;font-family:var(--font-d);letter-spacing:.04em;font-size:1rem;margin-right:4px}
+.tl{list-style:none;margin:0;padding:0}
+.tl li{display:grid;grid-template-columns:3.6rem 1fr;gap:8px;padding:9px 0;border-top:1px solid var(--line);align-items:start}
+.tl li:first-child{border-top:0}
+.tl .tm{font-family:var(--font-d);font-weight:700;font-size:1.35rem;font-variant-numeric:tabular-nums;color:var(--pitch);line-height:1.2}
+.tl label{display:flex;gap:10px;cursor:pointer;align-items:flex-start}
+.tl input{width:22px;height:22px;accent-color:var(--pitch);flex:none;margin-top:1px}
+.tl input:checked+span{text-decoration:line-through;color:var(--muted)}
+.tl .mins{color:var(--muted);font-size:.85rem;white-space:nowrap}
+.tl .end .tm{color:var(--bib)}
+.cal-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+.cal-top h3{font-size:1.6rem;margin:0}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.dow{font-family:var(--font-d);text-align:center;color:var(--muted);font-weight:700;text-transform:uppercase;font-size:.95rem}
+.cell{background:var(--surface);border:1px solid var(--line);border-radius:4px;min-height:58px;padding:4px 2px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;cursor:pointer}
+.cell .dn{font-weight:600;font-variant-numeric:tabular-nums}
+.cell .tb{font-family:var(--font-d);font-weight:700;font-size:.68rem;text-transform:uppercase;letter-spacing:0;padding:1px 3px;border-radius:2px;max-width:100%;overflow:hidden;white-space:nowrap}
+.cell.today .dn{background:var(--ink);color:var(--bg);border-radius:50%;width:26px;height:26px;display:grid;place-items:center}
+.cell.sel{outline:3px solid var(--bib);outline-offset:-1px}
+.cell.out{opacity:.45}
+.legend{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;font-size:.85rem}
+.field{display:grid;gap:4px;margin-bottom:12px}
+.field label,.field .lab{font-weight:600;font-size:.92rem}
+.field select,.field input[type=text],.field input[type=time],.field input[type=number]{background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:9px 10px;min-height:42px;width:100%}
+.form{display:grid;gap:0 18px;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr))}
+.checks{display:flex;flex-wrap:wrap;gap:8px 16px}
+.checks label{display:flex;gap:8px;align-items:center;cursor:pointer}
+.checks input{width:20px;height:20px;accent-color:var(--pitch)}
+.badges{display:flex;gap:4px;flex-wrap:wrap;margin:6px 0}
+.b{font-size:.75rem;font-weight:600;padding:1px 7px;border-radius:3px;border:1px solid var(--pitch);color:var(--pitch)}
+.cover{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
+.cv{padding:6px 10px;border-radius:4px;font-size:.88rem;font-weight:600;border:1px solid var(--line);background:var(--surface2)}
+.cv.ok{background:var(--pitch);color:var(--on-pitch);border-color:var(--pitch)}
+.meal{padding:12px 0;border-top:1px solid var(--line)}
+.meal:first-of-type{border-top:0}
+.meal .slot{font-family:var(--font-d);text-transform:uppercase;font-weight:700;color:var(--bib);letter-spacing:.05em}
+.meal h4{font-size:1.25rem;text-transform:none;font-family:var(--font-b);font-weight:600;letter-spacing:0;line-height:1.25}
+.meal .why{font-size:.92rem;color:var(--muted)}
+.meal .sw{font-size:.9rem;margin-top:4px}
+.mgrid{display:grid;gap:0 24px;grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr))}
+.water{display:flex;gap:6px;flex-wrap:wrap}
+.water button{width:42px;height:54px;border:2px solid var(--t-solo);background:transparent;border-radius:4px 4px 10px 10px;cursor:pointer;position:relative;overflow:hidden}
+.water button[aria-pressed="true"]{background:var(--t-solo)}
+.tip{padding:12px 0;border-top:1px solid var(--line);display:grid;grid-template-columns:5.2rem 1fr;gap:10px}
+.tip:first-child{border-top:0}
+.tip .c{font-family:var(--font-d);font-weight:700;text-transform:uppercase;color:var(--bib);letter-spacing:.04em}
+.potd{background:var(--hdr);color:var(--hdr-ink);border:0}
+.potd .c{color:#ffb98a}
+.potd p{font-size:1.25rem;line-height:1.35;font-weight:500;max-width:46ch}
+.cols2{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
+footer{margin-top:30px;color:var(--muted);font-size:.88rem;border-top:2px solid var(--line);padding-top:14px}
+.small{font-size:.88rem;color:var(--muted)}
+.quote{margin:0;border-left:6px solid var(--bib);padding:4px 0 4px 14px;display:grid;gap:4px;align-content:start}
+.quote blockquote{margin:0;font-size:1.1rem;line-height:1.4;font-weight:500}
+.quote figcaption{font-family:var(--font-d);text-transform:uppercase;letter-spacing:.05em;font-weight:700;color:var(--bib);font-size:1.05rem}
+.quote figcaption::before{content:"— "}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+@media (max-width:480px){.cell{min-height:54px}.tip{grid-template-columns:1fr;gap:2px}}
+@media (prefers-reduced-motion:no-preference){.card{transition:border-color .15s}.card:hover{border-color:var(--pitch)}}
+</style>
+
+<header class="hdr"><div class="wrap"><div><h1>Pitch Plan</h1><p>Routines, training, food and tips, built around your week.</p></div><div class="small" style="color:inherit;opacity:.8" id="clock"></div></div></header>
+<nav aria-label="Sections"><div class="wrap" id="tabs"></div></nav>
+<div class="wrap"><main id="app" aria-live="polite"></main>
+<footer>Pitch Plan is a guide, not medical advice. If something hurts for more than a day, you feel dizzy or sick, or you take a knock to the head, stop and tell a parent, carer or coach. Check any food plan with a parent or carer, and tell them about allergies. Weather is picked by hand here, so choose what it is like outside.</footer></div>
+
+<script>
+(function(){
+"use strict";
+/* ---------- helpers ---------- */
+const $=(s,r)=>(r||document).querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const pad=n=>String(n).padStart(2,'0');
+const dkey=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const parseKey=k=>{const p=k.split('-');return new Date(+p[0],+p[1]-1,+p[2])};
+const toMin=t=>{const p=(t||'00:00').split(':');return (+p[0])*60+(+p[1])};
+const fmt=m=>{m=((m%1440)+1440)%1440;return pad(Math.floor(m/60))+':'+pad(m%60)};
+const hash=s=>{let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0};
+const rng=seed=>{let a=hash(String(seed));return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}};
+const pickN=(arr,r,n)=>{const a=arr.slice(),o=[];while(o.length<(n||1)&&a.length)o.push(a.splice(Math.floor(r()*a.length),1)[0]);return o};
+const shuf=(arr,r)=>pickN(arr,r,arr.length);
+const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],DAYN=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const TYPES={train:'Training day',match:'Match day',solo:'Light skills',recover:'Recovery',rest:'Rest day'};
+const TS={train:'Train',match:'Game',solo:'Light',recover:'Rec',rest:'Rest'};
+const TKEYS=Object.keys(TYPES);
+const longDate=k=>{const d=parseKey(k);return DAYS[d.getDay()]+' '+d.getDate()+' '+MONTHS[d.getMonth()].slice(0,3)};
+
+/* ---------- state ---------- */
+const DEF={profile:{name:'',age:'a2',pos:'mid',wake:'07:00',leave:'08:15',bed:'21:30',who:'f',dur:45,diet:[],setup:false},
+  week:{0:'recover',1:'rest',2:'train',3:'solo',4:'train',5:'rest',6:'match'},overrides:{},weather:{},ticks:{},shuffle:{},rec:{jug:0,left:0,right:0},chal:{}};
+let S=JSON.parse(JSON.stringify(DEF));
+function load(){try{const v=localStorage.getItem('pitchplan_v1');if(v){const o=JSON.parse(v);S=Object.assign({},DEF,o);S.profile=Object.assign({},DEF.profile,o.profile||{});S.week=Object.assign({},DEF.week,o.week||{});S.rec=Object.assign({},DEF.rec,o.rec||{})}}catch(e){}}
+function save(){try{localStorage.setItem('pitchplan_v1',JSON.stringify(S))}catch(e){}}
+load();
+const today=dkey(new Date());
+const ui={tab:'today',sel:today,month:[new Date().getFullYear(),new Date().getMonth()],rKind:'morning',rType:null,mType:null,mFilter:'all',plate:{},tipCat:'all',tipMine:false,confirm:false,hPlace:null,hSpace:'tiny',hMin:15};
+const typeOf=k=>S.overrides[k]||S.week[parseKey(k).getDay()];
+
+/* ---------- data: weather ---------- */
+const WX={
+ sun:{l:'Sunny',note:'Good conditions. Put on sun cream and sip water between drills.',kit:['Sun cream','Water bottle','Cap for before and after']},
+ cloud:{l:'Dry & mild',note:'Ideal training weather. Do the full session.',kit:['Water bottle','Light layer for before and after']},
+ rain:{l:'Rain',note:'A wet ball skids and runs faster. Keep touches tight, shoot low, and get into dry kit straight after.',kit:['Waterproof jacket for before and after','Spare dry socks and a towel','Boots with studs for wet grass','Bag for wet kit']},
+ wind:{l:'Windy',note:'Keep passes low and on the ground. Lofted balls swing in the wind, so use it: hit longer balls with it behind you.',kit:['Layer you can take off','Water bottle','Headband or hair tie']},
+ cold:{l:'Cold',note:'Cold muscles need a longer warm-up. Keep layers on until you start, and put them back on straight after.',kit:['Base layer and gloves','Snood or hat for before and after','Warm top for after']},
+ hot:{l:'Hot',note:'Train early or late in the day, keep blocks short and sip water every 15 minutes. Stop and tell an adult if you feel dizzy or sick.',kit:['Big water bottle','Sun cream and cap','Light, breathable kit']},
+ frost:{l:'Ice / snow',note:'Icy or frozen pitches are not safe. Train indoors in a clear space with a soft or futsal ball. Ask an adult first.',kit:['Non-slip indoor trainers','Soft or futsal ball','A clear space, checked with an adult']}
+};
+const WKEYS=Object.keys(WX);
+const WARM={
+ sun:{n:'Dynamic ball warm-up',m:8,s:['Jog with the ball for 2 minutes, changing pace','Leg swings, lunges with a twist, heel flicks: 10 each','3 sprints at 70% then 90%, walk back']},
+ rain:{n:'Quick-feet warm-up',m:8,s:['Keep moving, wet muscles cool fast','Jog with the ball, sole rolls, side shuffles: 2 minutes each','3 sprints, then 10 high-knee skips']},
+ wind:{n:'Long dynamic warm-up',m:10,s:['Jog 3 minutes, turn your back to the wind to stay warm','Lunges with a twist, leg swings, hip circles: 10 each','4 build-up runs at 60%, 75%, 90%, 90%']},
+ cold:{n:'Long dynamic warm-up',m:12,s:['Jog 4 minutes, keep layers on','Leg swings, lunges with a twist, hip openers, ankle hops: 10 each','4 build-up runs at 60%, 75%, 90%, 90%, then take your top layer off']},
+ hot:{n:'Light warm-up in the shade',m:6,s:['Easy jog and ball rolls for 2 minutes','Leg swings and lunges: 8 each','2 short sprints, then a drink of water']},
+ frost:{n:'Indoor warm-up',m:6,s:['March on the spot, skipping, ankle hops: 30 seconds each','Squats, lunges, hip circles: 10 each','Quick sole taps on the ball in a small square']}
+};
+WARM.cloud=WARM.sun;
+const COOL={n:'Walk, stretch, sip',m:6,s:['Walk or slow jog for 2 minutes','Hold calf, thigh, hip and hamstring stretches for 20 to 30 seconds each','Drink water and change into dry kit']};
+/* drills: n name, m mins, k t/p/g, pos[], w weather[] (omit = any), who s/f/t, a ages[], s steps, tip */
+const D=[
+ {n:'Cone weave and finish',m:10,k:'t',w:['sun','cloud','wind','cold','hot'],s:['Set 6 cones 1 metre apart','Weave using the inside and outside of both feet, head up on every third cone','Finish with a low shot or a pass into a target']},
+ {n:'Wall-pass rhythm',m:8,k:'t',w:['sun','cloud','wind','cold','hot','rain'],s:['One touch, alternating feet: 30 passes','Two touches, then three touches on the move','Finish with 10 hard passes with your weaker foot'],tip:'Lock your ankle and strike through the middle of the ball.'},
+ {n:'Square ball mastery',m:8,k:'t',s:['Mark a 1 metre square with tape or shoes','Sole rolls, toe taps, inside-outside taps: 30 seconds each, 15 seconds rest','Finish with 30 seconds of your favourite move'],tip:'Short, light touches. Stay on your toes.'},
+ {n:'Juggling ladder',m:6,k:'t',s:['Right foot: 5 attempts','Left foot: 5 attempts','Alternating feet, then thigh and foot: 5 attempts each','Try to beat your record from the Tips page'],tip:'Soft touch. Keep the ball no higher than your head.'},
+ {n:'Turn school',m:10,k:'t',w:['sun','cloud','cold','wind','hot','rain'],s:['Place one cone as your defender','Drag-back, inside hook and Cruyff turn: 5 each side','Add a burst of speed for 3 steps after every turn'],tip:'Disguise it, then accelerate.'},
+ {n:'Low and early shooting',m:10,k:'t',w:['sun','cloud','cold','wind','hot','rain'],s:['Mark two target corners with cones','10 shots with each foot, two touches','Another 10 with each foot, one touch'],tip:'Pick your corner before you swing. In the rain, shoot low and hard.'},
+ {n:'Wet-ball first touch',m:8,k:'t',w:['rain'],s:['Pass hard along the ground against a wall','Cushion it with the inside of your foot and pull your foot back on contact','Control with the outside of your foot, then pass again'],tip:'Wet balls run faster. Get your body behind the ball.'},
+ {n:'Low driven passes in the wind',m:10,k:'t',w:['wind'],who:'f',s:['Pairs 15 metres apart','Drive low passes into the wind, then with it, then across','Count how many land on your partner’s feet'],tip:'Keep it on the floor. The wind makes high balls unpredictable.'},
+ {n:'Hallway sock-ball passing',m:8,k:'t',w:['frost','rain'],s:['Roll up socks into a soft ball and clear a space with an adult','Pass along the skirting board and stop it with your sole','Switch feet every minute'],tip:'Indoors, stay soft and gentle. Mind the furniture.'},
+ {n:'Futsal footwork',m:10,k:'t',w:['frost','rain','cold'],s:['Mark a 2 metre by 2 metre grid and use a low-bounce ball','Sole drags, step-overs, V-pull-backs and tight turns: 30 seconds each','Rest 15 seconds between moves, 3 rounds'],tip:'A tiny space trains very quick feet.'},
+ {n:'Shade skill stations',m:10,k:'t',w:['hot'],s:['Three stations in the shade: juggling, tight cone touches, wall passes','2 minutes at each, then a water break','Go round twice'],tip:'In heat, short blocks with breaks beat one long block.'},
+ {n:'Two-touch passing pairs',m:10,k:'t',w:['sun','cloud','cold','wind','hot'],who:'f',s:['Pairs 10 metres apart, receive and pass in two touches','Move to one touch','Add a side-step between each pass'],tip:'Receive on your back foot to open up your body.'},
+ {n:'Weak-foot challenge',m:8,k:'t',s:['20 wall passes with your weaker foot only','20 dribbling touches with your weaker foot','10 shots with your weaker foot'],tip:'The foot you are worst with improves fastest.'},
+ {n:'Receive and look',m:8,k:'t',who:'f',s:['Partner rolls the ball to you from 8 metres','Look over each shoulder before it arrives','Take your first touch away from where you looked, then pass back'],tip:'Good players look more than they touch.'},
+ /* position */
+ {n:'Wall handling ladder',m:8,k:'p',pos:['gk'],s:['Stand 4 metres from a wall','Catch rebounds at chest height, high in a W shape, then low','10 catches at each height'],tip:'Hands behind the ball, fingers spread in a W.'},
+ {n:'Dive and recover',m:8,k:'p',pos:['gk'],w:['sun','cloud','cold','wind','hot'],who:'f',s:['Kneel on soft grass','Partner rolls the ball to either side','Reach, collect the ball, get up fast: 5 each side'],tip:'Hands to the ball first, then body behind it. Wear your gloves.'},
+ {n:'Distribution targets',m:8,k:'p',pos:['gk'],s:['Mark three targets at different distances','Roll, throw overarm and kick to each target: 5 each','Pick the target before you pick up the ball'],tip:'Quick, accurate distribution starts attacks.'},
+ {n:'Claim the cross',m:8,k:'p',pos:['gk'],w:['sun','cloud','cold','hot','wind'],who:'f',s:['Friend crosses from each side','Take off on one foot, knee up, catch at the highest point','Call “Keeper!” loudly before every catch'],tip:'Call early and loud. Catch it at the highest point.'},
+ {n:'Wet-hands handling',m:8,k:'p',pos:['gk'],w:['rain'],s:['Use a wet ball and gloves','Catch rebounds from a wall and hold on every time','Parry wide, never into the middle if you cannot hold it'],tip:'Parry wide when you cannot hold it.'},
+ {n:'Jockey and shuffle',m:8,k:'p',pos:['def'],w:['sun','cloud','cold','wind','hot','rain'],s:['Mark a 3 metre box with cones','Side-shuffle low and side-on, never crossing your feet','Change direction on your own count: 6 rounds of 20 seconds'],tip:'Hips low, on your toes, side-on to the attacker.'},
+ {n:'Delay and win it',m:10,k:'p',pos:['def'],w:['sun','cloud','cold','wind','hot','rain'],who:'f',s:['Friend dribbles at you in a 10 by 10 metre square','Back up slowly, force them to their weaker side','Tackle only when their touch is heavy'],tip:'Patience wins more balls than diving in.'},
+ {n:'Soft-ball heading technique',m:6,k:'p',pos:['def'],a:['a2','a3'],s:['Hold a soft ball and toss it gently to your forehead','Meet it with your forehead, not the top of your head, eyes open, neck strong','Stop after 10 gentle reps'],tip:'Follow your club’s heading rules. Keep it to a few soft reps.'},
+ {n:'Pass out from the back',m:8,k:'p',pos:['def'],w:['sun','cloud','cold','wind','hot','rain'],s:['Wall pass, receive on your back foot and check over your shoulder','Open up and pass long to a cone 20 metres away','10 reps each foot'],tip:'Scan before the ball arrives.'},
+ {n:'Scan, receive, turn',m:8,k:'p',pos:['mid'],s:['Use a wall or a partner','Check over both shoulders before every pass','Receive on your back foot, turn away from imaginary pressure and pass'],tip:'Count how many times you check before each touch.'},
+ {n:'Triangle pass and move',m:10,k:'p',pos:['mid'],who:'f',w:['sun','cloud','cold','wind','hot'],s:['Three cones in a triangle, 8 metres apart','Pass then move to the next cone, two touches','Add a one-touch round, then change direction'],tip:'Pass and move straight away.'},
+ {n:'Switch of play',m:8,k:'p',pos:['mid'],who:'f',w:['sun','cloud','cold','hot'],s:['Stand 25 metres apart','Hit a lofted diagonal pass, 10 each foot','Aim for your partner’s chest'],tip:'Lean back slightly and strike under the ball.'},
+ {n:'Finish from three angles',m:10,k:'p',pos:['att'],w:['sun','cloud','cold','wind','hot','rain'],s:['Set the ball at three angles around the edge of an imaginary box','One touch to set, then finish at a target corner','5 from each angle, then swap feet'],tip:'Pick your corner first. Sometimes a pass in is better than a blast.'},
+ {n:'Hold-up and turn',m:8,k:'p',pos:['att'],s:['Start with your back to a wall','Receive the rebound, shield with your arm and body, then roll off and turn','10 each side'],tip:'Feel where the defender is, use your arm for balance.'},
+ {n:'Take-on moves',m:10,k:'p',pos:['att'],s:['Step-over, scissors and body feint with a cone','6 of each, then add a burst of speed','Finish with a shot'],tip:'One move done really well beats five badly.'},
+ {n:'Runs in behind',m:8,k:'p',pos:['att'],who:'f',w:['sun','cloud','cold','wind','hot'],s:['Partner holds the ball 15 metres away','Check towards them, then spin in behind as they pass','Finish first time, 6 reps each side'],tip:'Show for the ball, then go the other way.'},
+ /* games and fitness */
+ {n:'Sprint and recover',m:8,k:'g',w:['sun','cloud','cold','wind','hot'],s:['Mark 20 metres','6 sprints at full speed, walk back as your rest','Stop if you slow down, quality beats quantity'],tip:'Short and sharp. Full effort on every one.'},
+ {n:'Cone agility T',m:8,k:'g',w:['sun','cloud','cold','wind','hot'],s:['Make a T of 4 cones','Sprint forward, shuffle left, shuffle right, backpedal','5 rounds, rest 30 seconds between'],tip:'Low hips, quick feet, change direction without stopping.'},
+ {n:'Bodyweight circuit',m:10,k:'g',w:['frost','rain','cold','hot'],s:['30 seconds each: squats, lunges, plank, calf raises, bear crawl','Rest 20 seconds between moves','3 rounds'],tip:'Slow and controlled. Strong legs and core help you stay on your feet.'},
+ {n:'1v1 to three',m:10,k:'g',who:'f',w:['sun','cloud','cold','wind','hot'],s:['10 by 10 metre grid, one small goal each','First to 3 wins','Swap roles after every goal'],tip:'Attack the defender’s front foot.'},
+ {n:'Rondo 4v1',m:10,k:'g',who:'t',w:['sun','cloud','cold','wind','hot'],s:['Four players pass around a 6 by 6 metre square','One defender tries to win it, swap when they do','Limit to two touches'],tip:'Move before the ball arrives.'},
+ {n:'3v3 small-sided game',m:12,k:'g',who:'t',w:['sun','cloud','cold','wind','hot','rain'],s:['Two small goals, no goalkeepers','Play 4 minutes, rest 1, play again','Winners stay on'],tip:'Small pitches mean more touches. Ask for the ball.'}
+];
+/* home sessions: p places in/out, sp tiny (about 2 x 2 m) or small (about 4 x 4 m) */
+const HOME=[
+ {n:'Sole-roll box',m:4,p:['in','out'],sp:'tiny',s:['Mark a 1 metre square with tape or shoes','Sole rolls left, right, forwards and back: 30 seconds each','Add toe taps for the last minute'],tip:'Keep the ball under your sole, eyes up every few touches.'},
+ {n:'Toe-tap tempo',m:3,p:['in','out'],sp:'tiny',s:['Alternate toe taps on top of the ball for 20 seconds','Rest 10 seconds, then go faster','4 rounds'],tip:'Light and fast. Stay on the balls of your feet.'},
+ {n:'In-out-roll box',m:4,p:['in','out'],sp:'tiny',s:['Inside tap, outside tap, then roll the ball back with your sole','30 seconds with each foot','Finish with 30 seconds mixing both feet'],tip:'Slow it down first, then speed up.'},
+ {n:'V-pull and drag-back',m:4,p:['in','out'],sp:'tiny',s:['Pull the ball back in a V with your sole, then push it out with the other foot','Drag-back turns on the spot: 10 each foot','Add a quick burst of 2 steps after each turn'],tip:'Disguise the move, then go.'},
+ {n:'Balloon keep-up',m:3,p:['in'],sp:'tiny',s:['Keep a balloon off the floor using feet, thighs and shoulders','Count your best streak','Try only your weaker foot for one round'],tip:'Great for head-up awareness and touch, and nothing can get broken.'},
+ {n:'Soft-ball wall passes',m:5,p:['in'],sp:'tiny',s:['Use a soft ball or rolled socks against a clear wall, away from anything breakable','One touch passes with each foot: 20 each','Two touches: 20 more'],tip:'Pass firmly but gently. Keep it low and under control.'},
+ {n:'Tape-line quick feet',m:4,p:['in'],sp:'tiny',s:['Put two lines of tape 1 metre apart','Fast feet over and back, 20 seconds','Add the ball: touches over the line and back, 3 rounds'],tip:'Quick, small steps. Land on your toes.'},
+ {n:'Single-leg balance and touch',m:4,p:['in','out'],sp:'tiny',s:['Stand on one leg for 30 seconds, eyes forward','Add light taps of the ball with the other foot','Swap legs, 3 rounds each'],tip:'Strong balance protects your ankles and knees.'},
+ {n:'Reaction catches',m:4,p:['in','out'],sp:'tiny',s:['Throw a tennis ball or a rolled sock at a wall and catch it','Add a clap, then a bounce, then one hand','20 catches, then swap hands'],tip:'Good for goalkeepers and everyone else. Quick hands and eyes.'},
+ {n:'Mini bodyweight circuit',m:6,p:['in','out'],sp:'tiny',s:['30 seconds each: squats, lunges, plank, calf raises','Rest 15 seconds between moves','2 rounds'],tip:'Slow and controlled beats rushed.'},
+ {n:'Mobility flow',m:4,p:['in','out'],sp:'tiny',s:['Hip circles, leg swings and a deep squat hold','Hamstring reach and calf stretch, 20 seconds each side','Slow deep breaths to finish'],tip:'Mobile hips and ankles help every touch.'},
+ {n:'Picture the game',m:3,p:['in'],sp:'tiny',s:['Sit down, close your eyes and breathe slowly','Picture a good first touch and your next pass','Picture yourself celebrating a teammate’s goal'],tip:'Your brain practises what you picture.'},
+ {n:'Garden wall rebound',m:6,p:['out'],sp:'tiny',s:['Stand 3 metres from a wall or fence','Pass and control with the inside of each foot: 25 each','Try one touch, then two touches'],tip:'Ask first before using a wall or fence. Stay clear of windows.'},
+ {n:'Juggling ladder',m:5,p:['out','in'],sp:'tiny',s:['Right foot, left foot, alternating: 5 attempts each','Add a thigh touch','Beat your record from the Tips page'],tip:'Soft touch, ball no higher than your head.'},
+ {n:'Cone gates dribbling',m:6,p:['out'],sp:'small',s:['Set 5 gates, a shoe width apart, in a 4 metre line','Dribble through each gate using both feet','3 rounds, faster each time'],tip:'Look up between gates.'},
+ {n:'Turn and shoot',m:6,p:['out'],sp:'small',s:['Set a small cone goal against a fence or net','Dribble 3 metres, turn on a cone, then shoot low','10 shots with each foot'],tip:'Low and early. Stay away from windows.'},
+ {n:'Short shuttle sprints',m:5,p:['out'],sp:'small',w:['sun','cloud','wind','cold'],s:['Mark 2 cones 5 metres apart','Sprint to a cone, touch it, sprint back: 6 reps','Walk 30 seconds, then repeat once'],tip:'Short and sharp. Stop if the ground is slippery.'},
+ {n:'Shadow dribble',m:5,p:['out','in'],sp:'small',s:['Pretend a defender is shadowing you in a 3 metre square','Change direction on your own count, using inside and outside of both feet','Finish with a burst across the square'],tip:'Keep the ball glued to your foot.'}
+];
+const POSN={gk:'Goalkeeper',def:'Defender',mid:'Midfielder',att:'Forward / winger'};
+const AGEN={a1:'Under 12 (ages 8 to 11)',a2:'12 to 14',a3:'15 to 18'};
+const SLEEP={a1:[9,11],a2:[8.5,10.5],a3:[8,10]};
+
+/* ---------- session builder ---------- */
+function weatherOf(k){return S.weather[k]||'cloud'}
+function buildSession(k){
+  const type=typeOf(k),w=weatherOf(k),P=S.profile,sh=S.shuffle['s'+k]||0;
+  const r=rng(['s',k,type,w,P.pos,P.who,P.dur,P.age,sh].join('|'));
+  if(type==='rest'||type==='recover'||type==='match')return {type,w,r};
+  const who=type==='solo'?'s':P.who;
+  const ok={s:['s'],f:['s','f'],t:['s','f','t']}[who];
+  const pool=D.filter(d=>(!d.a||d.a.includes(P.age))&&ok.includes(d.who||'s')&&(!d.w||d.w.includes(w)));
+  const dur=type==='solo'?Math.min(P.dur,30):P.dur;
+  const warm=WARM[w],cool=COOL;
+  let left=dur-warm.m-cool.m,items=[];
+  const posD=pickN(pool.filter(d=>d.k==='p'&&d.pos.includes(P.pos)),r,1)[0];
+  const game=type==='train'?pickN(pool.filter(d=>d.k==='g'),r,1)[0]:null;
+  if(posD){items.push(posD);left-=posD.m}
+  if(game&&left>=game.m){items.push(game);left-=game.m}
+  for(const d of shuf(pool.filter(d=>d.k==='t'),r)){if(d.m<=left){items.unshift(d);left-=d.m}}
+  const order={t:0,p:1,g:2};items.sort((a,b)=>order[a.k]-order[b.k]);
+  const all=[Object.assign({tagw:'Warm-up'},warm)].concat(items,[Object.assign({tagw:'Cool-down'},cool)]);
+  return {type,w,all,total:all.reduce((s,d)=>s+d.m,0),r};
+}
+function whoTag(d){return d.who==='t'?'Group':d.who==='f'?'With a mate':'Solo'}
+function drillLi(d){
+  return '<li class="drill"><div class="dh"><span class="min">'+d.m+'<small>min</small></span><h4>'+esc(d.n)+'</h4>'+
+   (d.tagw?'<span class="tag">'+d.tagw+'</span>':'<span class="tag">'+whoTag(d)+'</span>')+'</div><ol>'+d.s.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ol>'+
+   (d.tip?'<p class="coach"><b>Coaching point</b>'+esc(d.tip)+'</p>':'')+'</li>';
+}
+const RECOVER=['Easy 15 to 20 minute walk or bike ride','10 minute mobility flow: hips, hamstrings, calves, back','Gently foam-roll calves and thighs if you have a roller','Watch a match and follow just your position for 5 minutes, then write down what you noticed','Easy juggling for 5 minutes, no pressure on a record','Write down 3 things you did well this week','Have a long, slow stretch while you watch something','Kick about with friends just for fun'];
+const RESTI=['A proper day off. No training.','Do something you enjoy with friends or family','Aim for an earlier night','Eat well, drink water and enjoy it','Optional: 10 minutes of easy stretching'];
+const MATCHF={gk:'Talk loudly and early, and set your feet before every shot.',def:'Stay side-on, keep your line tight and talk to the players around you.',mid:'Scan before every pass. Your job is to find space.',att:'Make your run, then look for the next one. Take your chances early.'};
+function sessionHTML(k,full){
+  const s=buildSession(k),wx=WX[s.w],name=TYPES[s.type];
+  let h='<div class="sec-head"><h3>'+(s.type==='match'?'Match-day plan':s.type==='rest'||s.type==='recover'?name:'Your session')+'</h3>'+
+    '<button class="btn alt" data-a="shuffle" data-k="s'+k+'">Shuffle drills</button></div>';
+  if(!S.weather[k])h+='<p class="small">Weather: pick it above. Until then this assumes dry and mild.</p>';
+  h+='<div class="note"><b>'+wx.l+'.</b> '+wx.note+'</div><ul class="kit">'+wx.kit.map(x=>'<li>'+x+'</li>').join('')+'</ul>';
+  if(s.type==='rest'){h+='<h3 style="margin-top:14px">Rest day ideas</h3><ul class="kit">'+RESTI.map(x=>'<li>'+x+'</li>').join('')+'</ul>';return h}
+  if(s.type==='recover'){h+='<h3 style="margin-top:14px">Recovery ideas</h3><ul class="kit">'+pickN(RECOVER,s.r,4).map(x=>'<li>'+x+'</li>').join('')+'</ul>';return h}
+  if(s.type==='match'){
+    const steps=[['3 hours before','Pre-match meal: carbs and a little protein, nothing new'],['90 minutes before','Sip water, check your bag: boots, shin pads, spare socks, towel'],['1 hour before','Top-up snack, like a banana or rice cake'],['45 minutes before','Arrive, change, say hello to the team'],['Warm-up','Coach warm-up, then 3 minutes of juggling to find your touch'],['Kick-off','Play. Use your one goal for the match'],['Within 60 minutes after','Cool down, stretch, eat and drink to recover'],['That evening','Write 3 wins and 1 thing to work on']];
+    h+='<ul class="tl" style="margin-top:12px">'+steps.map(x=>'<li><span class="tm" style="font-size:1rem;line-height:1.3">'+x[0]+'</span><span>'+x[1]+'</span></li>').join('')+'</ul>';
+    h+='<p class="coach" style="margin-top:8px"><b>Your position</b>'+MATCHF[S.profile.pos]+'</p>';
+    return h;
+  }
+  h+='<p class="small" style="margin-top:8px">'+s.total+' minutes in total, '+({s:'solo',f:'with a mate',t:'with a group'}[s.type==='solo'?'s':S.profile.who])+', for a '+POSN[S.profile.pos].toLowerCase()+'.</p>';
+  h+='<ol class="drills">'+s.all.map(drillLi).join('')+'</ol>';
+  return h;
+}
+
+/* ---------- routines ---------- */
+const MORN=[
+ {id:'wake',p:1,m:3,o:()=>['Drink a big glass of water straight after waking up','Open the curtains for daylight and drink a glass of water','Water first: one glass, slowly']},
+ {id:'move',p:2,m:6,o:t=>t==='rest'?['Slow stretch: arms overhead, side bends, hamstring reach','5 minute gentle yoga flow']:['Mobility flow: cat-cow, hip circles, deep squat hold, leg swings','10 star jumps then 3 slow lunges each side','Ankle circles, hamstring sweeps, 10 bodyweight squats']},
+ {id:'wash',p:1,m:10,o:()=>['Wash, brush teeth and get dressed']},
+ {id:'eat',p:1,m:20,o:t=>({train:['Breakfast with slow carbs and protein: porridge and banana, or eggs on toast. Sip water.'],match:['Pre-match breakfast 3 hours before kick-off: porridge with honey, or toast and a boiled egg. Nothing new.'],solo:['Balanced breakfast: wholegrain carbs, protein and fruit'],recover:['Breakfast with protein and fruit: yoghurt, berries and cereal'],rest:['Balanced breakfast: protein, wholegrain and fruit']}[t])},
+ {id:'mind',p:3,m:3,o:t=>t==='match'?['Close your eyes and picture your best first touch','Say your one goal for today out loud']:['Name one thing you want to improve today','Think of one thing you are grateful for','Picture yourself playing well for 1 minute']},
+ {id:'touch',p:3,m:5,o:t=>t==='rest'?['Easy 3 minutes of juggling, no pressure']:t==='match'?['3 minutes of light juggling to wake up your touch']:['Juggling: beat your record or do 3 sets of 20','2 minutes of sole rolls then 2 minutes of toe taps','40 wall passes with each foot']},
+ {id:'bag',p:1,m:5,o:(t,w)=>{const b={train:'Pack boots, shin pads, socks, water bottle and layers.',match:'Check your bag: kit, boots, shin pads, spare socks, towel, water and a snack.',solo:'Pack your ball, cones and water bottle.',recover:'Fill your water bottle and pack for school.',rest:'Fill your water bottle and pack for school.'}[t];const x=w&&WX[w]?' Weather: '+WX[w].kit[0].toLowerCase()+'.':'';return [b+x]}}
+];
+function buildMorning(k,type){
+  const P=S.profile,w=S.weather[k]||null,r=rng('m'+k+type+(S.shuffle['m'+k]||0));
+  let items=MORN.map(s=>({id:s.id,p:s.p,m:s.m,t:pickN(s.o(type,w),r,1)[0]}));
+  const wake=toMin(P.wake),leave=toMin(P.leave);let avail=leave-wake;
+  if(avail<=0)avail+=1440;
+  const sum=()=>items.reduce((a,b)=>a+b.m,0);
+  while(sum()>avail&&items.some(i=>i.p>1)){const mx=Math.max(...items.map(i=>i.p));const idx=items.map(i=>i.p).lastIndexOf(mx);items.splice(idx,1)}
+  let t=wake;const rows=items.map(i=>{const row={id:i.id,time:fmt(t),t:i.t,m:i.m};t+=i.m;return row});
+  const spare=avail-sum();
+  if(spare>=5){rows.push({id:'spare',time:fmt(t),t:'Spare time: relax, or check the bag once more',m:spare});t+=spare}
+  rows.push({id:'leave',time:fmt(leave),t:'Out of the door',m:0,end:true});
+  return {rows,warn:sum()>avail?'Your wake-up and leave times leave '+avail+' minutes but the essentials take '+sum()+'. Wake up earlier or leave later.':'',dropped:MORN.length-items.length};
+}
+const NIGHT=[
+ {id:'refuel',m:5,when:t=>t==='train'||t==='match'||t==='solo',o:()=>['Recovery snack and a drink if you have not eaten since training: chocolate milk and a banana works well','Have a glass of water and a small snack']},
+ {id:'shower',m:12,o:()=>['Shower and wash','Warm shower, then fresh pyjamas']},
+ {id:'stretch',m:8,o:t=>t==='rest'?['5 minutes of slow stretching']:['Stretch calves, quads, hamstrings and hips: 30 seconds each','10 minute mobility flow and a few deep breaths']},
+ {id:'pack',m:7,o:t=>[{train:'Pack tomorrow’s kit, boots and water bottle, and put them by the door',match:'Lay out your kit, boots, shin pads and snack for the match',solo:'Put your ball and cones by the door',recover:'Check tomorrow’s school bag',rest:'Check tomorrow’s school bag'}[t]]},
+ {id:'reflect',m:5,o:()=>['Write down 3 wins and 1 thing to work on','Say out loud one thing you did well today','Plan one small goal for tomorrow']},
+ {id:'wind',m:20,o:()=>['Phone on charge outside the bedroom. Read for 15 minutes.','Draw a play or drill in a notebook, no screens','Listen to a calm playlist or a football podcast at low volume','Read a football book or magazine']},
+ {id:'breathe',m:3,o:()=>['Box breathing: in 4, hold 4, out 4, hold 4, five times','Breathe in for 4 and out for 6, ten times']}
+];
+function buildNight(k,type){
+  const P=S.profile,r=rng('n'+k+type+(S.shuffle['n'+k]||0));
+  const items=NIGHT.filter(s=>!s.when||s.when(type)).map(s=>({id:s.id,m:s.m,t:pickN(s.o(type),r,1)[0]}));
+  let t=toMin(P.bed);const total=items.reduce((a,b)=>a+b.m,0);t-=total;
+  const rows=items.map(i=>{const row={id:i.id,time:fmt(t),t:i.t,m:i.m};t+=i.m;return row});
+  rows.push({id:'lights',time:fmt(toMin(P.bed)),t:'Lights out',m:0,end:true});
+  const wake=toMin(P.wake);let hrs=((wake-toMin(P.bed)+1440)%1440)/60;
+  const [lo,hi]=SLEEP[P.age];
+  let msg='Lights out at '+fmt(toMin(P.bed))+' and up at '+fmt(wake)+' is about '+hrs.toFixed(1).replace('.0','')+' hours of sleep. Players your age need about '+lo+' to '+hi+'.';
+  let warn=hrs<lo?'That is short. Try lights out at '+fmt(wake-Math.round(lo*60))+' or earlier.':'';
+  return {rows,msg,warn};
+}
+function tlHTML(rows,kind,k){
+  return '<ul class="tl">'+rows.map(x=>{
+    const key=today+'|'+kind+'|'+x.id,on=S.ticks[key]?' checked':'';
+    return '<li class="'+(x.end?'end':'')+'"><span class="tm">'+x.time+'</span>'+
+      (x.end?'<span><b>'+esc(x.t)+'</b></span>':'<label><input type="checkbox" data-tick="'+key+'"'+on+'><span>'+esc(x.t)+' <span class="mins">'+x.m+' min</span></span></label>')+'</li>'}).join('')+'</ul>';
+}
+
+/* ---------- meals ---------- */
+const G={c:'Carbs for energy',p:'Protein to repair',v:'Fruit and veg',k:'Calcium',f:'Healthy fats'};
+const GIDEA={c:'rice, pasta, bread or oats',p:'chicken, eggs, beans, lentils or tofu',v:'any colourful veg or fruit',k:'milk, yoghurt, cheese or a fortified alternative',f:'avocado, seeds or olive oil'};
+const BLOCK={veg:['meat','pork','fish'],dairy:['dairy'],gluten:['gluten'],nuts:['nuts'],egg:['egg'],pork:['pork']};
+const DIETN={veg:'Vegetarian',dairy:'Dairy-free',gluten:'Gluten-free',nuts:'Nut-free',egg:'Egg-free',pork:'No pork'};
+/* [name, slots, groups, contains, ingredients, why, swaps] */
+const M=[
+ ['Porridge with banana and milk','b match',['c','k','v'],['dairy'],'Oats, milk, banana, drizzle of honey','Slow-release oats keep energy steady, and milk adds calcium.',{dairy:'Use fortified oat or soy drink'}],
+ ['Scrambled eggs on wholemeal toast with grilled tomatoes','b',['c','p','v'],['egg','gluten'],'Eggs, wholemeal bread, tomatoes','Protein to repair muscle and carbs to start the day.',{egg:'Swap for beans on toast',gluten:'Use gluten-free bread'}],
+ ['Yoghurt bowl with berries and nut-free granola','b s',['c','k','v'],['dairy','gluten'],'Yoghurt, berries, nut-free granola','Quick and light, with calcium and vitamin C.',{dairy:'Use fortified soy yoghurt',gluten:'Use gluten-free oats instead of granola'}],
+ ['Peanut butter and banana on wholemeal toast','b pre',['c','p','v','f'],['nuts','gluten'],'Wholemeal bread, peanut butter, banana','Carbs, protein and fats in one go. Good 1 to 2 hours before training.',{nuts:'Use sunflower seed butter',gluten:'Use gluten-free bread'}],
+ ['Beans on toast with a glass of orange juice','b',['c','p','v'],['gluten'],'Baked beans, wholemeal toast, orange juice','Beans bring protein and fibre. Orange juice helps your body use the iron.',{gluten:'Use gluten-free bread'}],
+ ['Overnight oats with milk, chia seeds and apple','b',['c','k','v','f'],['dairy'],'Oats, milk, chia seeds, grated apple','Made the night before, so it is ready when you wake up.',{dairy:'Use fortified oat or soy drink'}],
+ ['Banana, spinach and oat smoothie','b pre post',['c','k','v'],['dairy'],'Banana, spinach, oats, milk','Easy to drink when you are not hungry. Works before or after training.',{dairy:'Use fortified soy drink'}],
+ ['Wholegrain cereal with milk and strawberries','b',['c','k','v'],['dairy','gluten'],'Wholegrain cereal, milk, strawberries','Fast and filling. Check it is not full of sugar.',{dairy:'Use fortified oat or soy drink',gluten:'Use a gluten-free cereal'}],
+ ['Toast with jam and a boiled egg','match',['c','p'],['egg','gluten'],'White or wholemeal toast, jam, boiled egg','Low in fat and easy to digest before a match.',{egg:'Add a small yoghurt',gluten:'Use gluten-free bread'}],
+ ['Pasta with tomato sauce and chicken','match d',['c','p','v'],['meat','gluten'],'Pasta, tomato sauce, chicken, a little cheese on top','A small bowl 3 hours before kick-off fills the tank without feeling heavy.',{meat:'Use chickpeas or lentils',gluten:'Use gluten-free pasta'}],
+ ['Rice with scrambled egg and peas','match l',['c','p','v'],['egg'],'Rice, eggs, peas','Plain, familiar and easy to digest.',{egg:'Use tofu'}],
+ ['Chicken and salad wholemeal wrap with fruit','l',['c','p','v'],['meat','gluten'],'Wholemeal wrap, chicken, salad, an apple','Protein and carbs for the afternoon.',{meat:'Use hummus and falafel',gluten:'Use a gluten-free wrap'}],
+ ['Cheese and ham sandwich with carrot sticks and an apple','l',['c','p','k','v'],['dairy','pork','gluten'],'Bread, cheese, ham, carrots, apple','A classic that covers carbs, protein and calcium.',{dairy:'Use dairy-free cheese',pork:'Swap ham for turkey or egg',gluten:'Use gluten-free bread'}],
+ ['Lentil and veg soup with a bread roll','l d',['c','p','v'],['gluten'],'Red lentils, carrots, onion, tomatoes, bread','Lentils give protein and iron. Great on cold days.',{gluten:'Use gluten-free bread'}],
+ ['Hummus and veg wrap with a yoghurt pot','l',['c','p','k','v','f'],['dairy','gluten'],'Wrap, hummus, peppers, cucumber, yoghurt','Plant protein, healthy fats and calcium in one lunch.',{dairy:'Use fortified soy yoghurt',gluten:'Use a gluten-free wrap'}],
+ ['Egg-fried rice with mixed veg','l d',['c','p','v'],['egg'],'Rice, egg, peas, carrots, sweetcorn','Uses up leftover rice and veg.',{egg:'Use tofu'}],
+ ['Spaghetti bolognese with hidden veg','d',['c','p','v'],['meat','gluten'],'Spaghetti, mince, grated carrot, courgette, tomatoes','The classic training-day dinner: carbs to refill, protein to repair.',{meat:'Use lentils instead of mince',gluten:'Use gluten-free pasta'}],
+ ['Chicken, rice and stir-fried veg','d',['c','p','v'],['meat'],'Chicken, rice, peppers, broccoli, carrots','Simple, quick and balanced.',{meat:'Use tofu'}],
+ ['Veggie chilli with rice','d',['c','p','k','v'],['dairy'],'Kidney beans, tomatoes, peppers, rice, spoon of yoghurt','Beans give protein and iron, rice refills your energy.',{dairy:'Skip the yoghurt and add avocado'}],
+ ['Chickpea and spinach curry with rice','d',['c','p','v','f'],[],'Chickpeas, spinach, tomatoes, coconut milk, rice','Plant protein, iron and healthy fats.',{}],
+ ['Roast chicken, potatoes and green veg','d',['c','p','v'],['meat'],'Chicken, potatoes, carrots, peas, broccoli','Good after a long day, and the leftovers make tomorrow’s lunch.',{meat:'Use a lentil bake or veggie sausages'}],
+ ['Turkey meatballs with pasta and tomato sauce','d',['c','p','v'],['meat','gluten'],'Turkey mince, pasta, tomato sauce, spinach','Carbs and lean protein, perfect the night before a match.',{meat:'Use lentil balls',gluten:'Use gluten-free pasta'}],
+ ['Apple slices with peanut butter','s',['v','p','f'],['nuts'],'Apple, peanut butter','A filling mid-afternoon snack.',{nuts:'Use sunflower seed butter'}],
+ ['Cheese and wholegrain crackers','s',['c','k','p'],['dairy','gluten'],'Cheese, wholegrain crackers','Carbs, protein and calcium in a small snack.',{dairy:'Use dairy-free cheese',gluten:'Use gluten-free crackers'}],
+ ['Yoghurt pot with fruit','s pre',['k','p','v'],['dairy'],'Yoghurt, berries or banana','Light and quick before training.',{dairy:'Use fortified soy yoghurt'}],
+ ['Hummus, carrot sticks and pitta','s',['c','p','v','f'],['gluten'],'Hummus, carrots, pitta bread','Fills you up between meals.',{gluten:'Use gluten-free crackers'}],
+ ['Rice cakes with banana and honey','pre s',['c','v'],[],'Rice cakes, banana, honey','Fast carbs 1 to 2 hours before training.',{}],
+ ['Banana and a slice of toast with honey','pre',['c','v'],['gluten'],'Banana, toast, honey','Easy on the stomach and quick energy.',{gluten:'Use gluten-free bread'}],
+ ['Dried apricots and a small yoghurt','pre s',['c','k','v'],['dairy'],'Dried apricots, yoghurt','Quick sugars and calcium, easy to carry.',{dairy:'Use fortified soy yoghurt'}],
+ ['Chocolate milk and a banana','post',['c','p','k','v'],['dairy'],'Chocolate milk, banana','Carbs and protein within an hour of finishing help your muscles recover.',{dairy:'Use fortified chocolate soy drink'}],
+ ['Turkey and salad sandwich','post',['c','p','v'],['meat','gluten'],'Bread, turkey, salad','A real recovery snack, easy to pack.',{meat:'Use hummus and salad',gluten:'Use gluten-free bread'}],
+ ['Eggs on toast with tomatoes','post',['c','p','v'],['egg','gluten'],'Eggs, toast, tomatoes','Protein, carbs and vitamins.',{egg:'Use beans on toast',gluten:'Use gluten-free bread'}],
+ ['Yoghurt, cereal and berries','post',['c','p','k','v'],['dairy','gluten'],'Yoghurt, cereal, berries','Light, cold and easy after a hot session.',{dairy:'Use fortified soy yoghurt',gluten:'Use gluten-free cereal'}]
+].map(a=>({n:a[0],slots:a[1].split(' '),g:a[2],has:a[3],ing:a[4],why:a[5],sw:a[6]}));
+const SLOTS={b:'Breakfast',l:'Lunch',d:'Dinner',s:'Snack',pre:'Before training',post:'After training',match:'Match-day meal'};
+function mealOK(m){
+  const blocked=[];(S.profile.diet||[]).forEach(d=>blocked.push(...BLOCK[d]));
+  const bad=m.has.filter(h=>blocked.includes(h));
+  return bad.every(h=>m.sw[h]);
+}
+function mealSwaps(m){
+  const blocked=[];(S.profile.diet||[]).forEach(d=>blocked.push(...BLOCK[d]));
+  return m.has.filter(h=>blocked.includes(h)&&m.sw[h]).map(h=>m.sw[h]);
+}
+const PLAN={
+ train:[['b','Breakfast','Before school or training'],['l','Lunch',''],['pre','Pre-training snack','1 to 2 hours before training'],['post','Recovery snack','Within 30 to 60 minutes after training'],['d','Dinner','']],
+ match:[['match','Pre-match meal','About 3 hours before kick-off'],['pre','Top-up snack','About 1 hour before kick-off'],['post','Recovery snack','Within 30 to 60 minutes after the final whistle'],['d','Recovery meal','Within 2 hours after the match']],
+ solo:[['b','Breakfast',''],['l','Lunch',''],['pre','Pre-skills snack','1 hour before'],['d','Dinner','']],
+ recover:[['b','Breakfast',''],['l','Lunch',''],['s','Snack',''],['d','Dinner','']],
+ rest:[['b','Breakfast',''],['l','Lunch',''],['s','Snack',''],['d','Dinner','']]
+};
+function buildMealDay(type,key){
+  const plan=PLAN[type];let best=null;
+  for(let a=0;a<40;a++){
+    const r=rng('d'+key+type+(S.shuffle['d'+key]||0)+a+(S.profile.diet||[]).join());
+    const picks=plan.map(p=>{const pool=M.filter(m=>m.slots.includes(p[0])&&mealOK(m));return {slot:p,meal:pool.length?pickN(pool,r,1)[0]:null}});
+    const cov=new Set();picks.forEach(x=>x.meal&&x.meal.g.forEach(g=>cov.add(g)));
+    if(!best||cov.size>best.cov.size)best={picks,cov};
+    if(cov.size===5)break;
+  }
+  return best;
+}
+function mealCard(m,slot,sub){
+  const sw=mealSwaps(m);
+  return '<div class="meal">'+(slot?'<div class="slot">'+slot+(sub?' <span class="small" style="text-transform:none;letter-spacing:0;font-family:var(--font-b);font-weight:400">'+sub+'</span>':'')+'</div>':'')+
+   '<h4>'+esc(m.n)+'</h4><div class="badges">'+m.g.map(g=>'<span class="b">'+G[g]+'</span>').join('')+'</div>'+
+   '<p class="small">'+esc(m.ing)+'</p><p class="why">'+esc(m.why)+'</p>'+(sw.length?'<p class="sw"><b>Swap:</b> '+sw.map(esc).join('; ')+'</p>':'')+'</div>';
+}
+function coverHTML(cov){
+  return '<div class="cover" role="list">'+Object.keys(G).map(g=>'<span role="listitem" class="cv'+(cov.has(g)?' ok':'')+'">'+(cov.has(g)?'✓ ':'Missing: ')+G[g]+'</span>').join('')+'</div>';
+}
+function mealDayHTML(type,key,head){
+  const d=buildMealDay(type,key);
+  let h='<div class="sec-head"><h3>'+head+'</h3><button class="btn alt" data-a="shuffle" data-k="d'+key+'">Shuffle meals</button></div>';
+  h+=coverHTML(d.cov);
+  if(d.cov.size<5){const miss=Object.keys(G).filter(g=>!d.cov.has(g));h+='<div class="note">To fill the gaps, add '+miss.map(g=>'<b>'+G[g].toLowerCase()+'</b> ('+GIDEA[g]+')').join(' and ')+'.</div>'}
+  h+='<div class="mgrid">'+d.picks.map(x=>x.meal?mealCard(x.meal,x.slot[1],x.slot[2]):'<div class="meal"><div class="slot">'+x.slot[1]+'</div><p class="small">No meal fits your food filters here yet. Try different filters in Me.</p></div>').join('')+'</div>';
+  return h;
+}
+function waterHTML(){
+  let h='<div class="water" role="group" aria-label="Drinks today">';
+  for(let i=0;i<8;i++){const key='w|'+today+'|'+i,on=S.ticks[key];h+='<button data-a="water" data-i="'+i+'" aria-pressed="'+(on?'true':'false')+'" aria-label="Drink '+(i+1)+'"></button>'}
+  const n=[...Array(8).keys()].filter(i=>S.ticks['w|'+today+'|'+i]).length;
+  return h+'</div><p class="small" style="margin-top:6px">'+n+' of 8 drinks today. Water or milk. Pale yellow wee means you are doing well. Drink more on training and match days.</p>';
+}
+
+/* ---------- tips ---------- */
+const TC={skill:'Skills',mind:'Mindset',sleep:'Sleep',food:'Food',recover:'Recovery',match:'Match day',health:'Staying healthy',ideas:'Ideas'};
+const TIPS=[
+ ['skill','','Take 100 touches a day. Ten minutes with a ball at home beats one long session a week.'],
+ ['skill','','Start each session with your weaker foot. It improves fastest when you are fresh.'],
+ ['skill','','Look up before the ball arrives. Check over both shoulders for every pass you receive.'],
+ ['skill','','Master one skill move properly and use it in games, instead of knowing five badly.'],
+ ['skill','','Dribble with the inside and outside of your foot to keep the ball close.'],
+ ['skill','','Pass with the inside of your foot, lock your ankle and follow through towards your target.'],
+ ['skill','gk','Set your feet before every shot. Moving as the ball is struck makes it harder to react.'],
+ ['skill','gk','Catch with a W shape: thumbs close, fingers spread, hands behind the ball.'],
+ ['skill','def','Stay side-on when defending so you can turn either way. Make the attacker choose.'],
+ ['skill','def','Do not dive in. Delay, wait for the heavy touch, then win it.'],
+ ['skill','mid','Scan before every touch. Midfielders who see more play quicker.'],
+ ['skill','mid','Receive on your back foot, with your body open, so you can play forward.'],
+ ['skill','att','Make a run, then make the next one. Movement before the pass is what creates the space.'],
+ ['skill','att','Look at the goalkeeper’s position, not just the ball. Pick your corner before you shoot.'],
+ ['mind','','Nervous before a game? That is energy. Breathe in for 4, out for 6, three times.'],
+ ['mind','','After a mistake, take one breath, forget it, and focus on the next action.'],
+ ['mind','','Set one small goal per match, like “scan before each pass”. It is easier to control than a goal count.'],
+ ['mind','','Picture your first good touch the night before. Your brain rehearses it.'],
+ ['mind','','Talk on the pitch. Calling for the ball and naming pressure helps your team and your confidence.'],
+ ['mind','','Celebrate teammates’ good plays. People remember who lifts the team.'],
+ ['sleep','','Sleep is when muscles repair and skills settle in. Under-13s need about 9 to 11 hours, teenagers about 8 to 10.'],
+ ['sleep','','Put your phone on charge outside the bedroom, at least an hour before lights out.'],
+ ['sleep','','Try to go to bed and wake up at about the same time every day, weekends too.'],
+ ['food','','Eat breakfast every day. Skipping it hurts focus at school and energy at training.'],
+ ['food','','Drink water all day, not just at training. Pale yellow wee means you are hydrated.'],
+ ['food','','Do not try new foods on match day. Stick to meals you know.'],
+ ['food','','Fill your plate with carbs for energy, protein to repair and plenty of fruit and veg.'],
+ ['food','','Eat within an hour after training. Chocolate milk and a banana is a classic.'],
+ ['food','','Skip energy drinks. They are not suitable for under-16s. Water and milk are your best sports drinks.'],
+ ['recover','','Take a rest day each week. Growing bodies repair on days off, and that is when you get better.'],
+ ['recover','','A 20 minute walk or bike ride the day after a hard session helps stiff legs.'],
+ ['recover','','Stretch calves, quads, hamstrings and hips for 10 minutes after training while your muscles are warm.'],
+ ['match','','Arrive 45 minutes early. Rushing makes you tense.'],
+ ['match','','Know your two jobs when you win the ball and your two jobs when you lose it.'],
+ ['match','','Pack your bag the night before, not the morning of.'],
+ ['match','','After the game, ask your coach: what is one thing I should work on?'],
+ ['health','','If something hurts for more than a day, or you are limping, tell a parent or coach. Do not play through it.'],
+ ['health','','If you take a knock to the head, stop and tell an adult straight away. Do not carry on.'],
+ ['health','','Growth spurts make knees and heels sore and can make you clumsy. Tell your coach and ease off if it hurts.'],
+ ['health','','Play other sports too. Variety builds balance and cuts down on overuse injuries.'],
+ ['ideas','','Film a 2 minute clip of your dribbling with permission from a parent. Watch it back and spot one thing to improve.'],
+ ['ideas','','Start a training diary: the date, what you worked on, and how you felt out of 5.'],
+ ['ideas','','Watch a pro match and follow just one player in your position for 5 minutes.'],
+ ['ideas','','Make a scrapbook of skills you want to learn, with your own notes on how they work.']
+].map(a=>({c:a[0],pos:a[1],t:a[2]}));
+const CHAL=[['c1','Juggle 20 in a row, then try for 30'],['c2','10 minutes of ball mastery on 5 days in a row'],['c3','Teach a friend or sibling a skill move'],['c4','100 wall passes with your weaker foot'],['c5','Eat breakfast and drink 8 drinks every day for a week'],['c6','Be in bed on time every night for a week'],['c7','Watch a match and note 3 things your position does'],['c8','Write down 3 wins after every session this week']];
+function tipOfDay(){const r=rng('tip'+today);const pool=TIPS.filter(t=>!t.pos||t.pos===S.profile.pos);return pool[Math.floor(r()*pool.length)]}
+
+/* ---------- quotes (wording as published; comments are Pitch Plan's own) ---------- */
+const QUOTES=[
+ ['I am building a fire, and everyday I train, I add more fuel. At just the right moment, I light the match.','Mia Hamm','Small sessions add up. Every ten minutes at home is fuel for match day.'],
+ ['The vision of a champion is bent over, drenched in sweat, at the point of exhaustion, when nobody else is looking.','Mia Hamm','The work nobody sees is the work that shows on the pitch.'],
+ ['Whatever brings you down will eventually make you stronger.','Alex Morgan','A bad game or a bad day is information. Use it.'],
+ ['There’s really no secret to success. You make your own success.','Alex Morgan','Do your routine, do your drills, do them again tomorrow.'],
+ ['I’m not gonna sugarcoat it: It sucks to lose sometimes.','Alex Morgan','It is fine to be gutted. Then pick one thing to fix for next time.'],
+ ['I want young girls to dream about being professional soccer players instead of just watching the boys go out and play.','Alex Morgan','Your dream is as real as anyone’s. Keep turning up.'],
+ ['You should never be afraid of looking athletic or building too much muscle.','Alex Morgan','Strong legs and a strong core help you stay on your feet. Do the circuits.'],
+ ['The past doesn’t matter. Take today.','Becky Sauerbrunn','Missed one? Lost one? Reset and play the next ball.'],
+ ['Soccer isn’t brain surgery, have fun.','Michelle Akers','Enjoy it. You play your best when you are not scared to try things.'],
+ ['I worked on my weaknesses and made them my strengths.','Sydney Leroux','This is why the weak-foot challenge is in your sessions.'],
+ ['Do what you love. If you love something, you aren’t going to care about the sacrifices you’re making to do whatever it is.','Kelley O’Hara','Early nights and healthy meals feel easier when you love the game.'],
+ ['I have never once dribbled the whole field and scored a goal by myself.','Abby Wambach','Football is a team game. Pass, move and celebrate each other.'],
+ ['It’s about standing up and being counted and saying you’re proud of who you are.','Megan Rapinoe','Be yourself on and off the pitch.'],
+ ['I want football to be the best thing in my life but not the only thing.','Leah Williamson','Friends, school and rest matter too, and they make you a better player.'],
+ ['I’m a “prove it to deserve it” person.','Leah Williamson','Show it in training and the coach will see it.'],
+ ['Being an “active listener” is a good trait for a leader to have, it shows that you really value what’s being said to you.','Leah Williamson','Listen to your coach and your teammates. Leaders do.'],
+ ['We need to make it easier for girls from different backgrounds to access football.','Leah Williamson','Invite a friend along to a session. Football is better with more people in it.']
+].map(a=>({q:a[0],who:a[1],c:a[2]}));
+function quoteOfDay(){const r=rng('quote'+today+(S.shuffle.q||0));return QUOTES[Math.floor(r()*QUOTES.length)]}
+function quoteHTML(q,big){return '<figure class="quote"><blockquote>“'+esc(q.q)+'”</blockquote><figcaption>'+esc(q.who)+'</figcaption><p class="small"><b>For you:</b> '+esc(q.c)+'</p></figure>'}
+
+/* ---------- home sessions ---------- */
+function buildHome(){
+  const k=today,w=weatherOf(k);
+  const auto=(w==='rain'||w==='frost'||w==='cold')?'in':'out';
+  const place=ui.hPlace||auto,sp=ui.hSpace,mins=ui.hMin;
+  const r=rng(['h',k,place,sp,mins,w,S.shuffle['h'+k]||0].join('|'));
+  const pool=HOME.filter(d=>d.p.includes(place)&&(sp==='small'||d.sp==='tiny')&&(!d.w||d.w.includes(w)));
+  let left=mins-4;const items=[];
+  const balls=shuf(pool,r);
+  for(const d of balls){if(d.m<=left){items.push(d);left-=d.m}}
+  const warm={tagw:'Warm-up',n:place==='in'?'Indoor warm-up':'Outdoor warm-up',m:2,s:['March on the spot, high knees, ankle hops: 30 seconds each','Hip circles and leg swings: 10 each']};
+  const cool={tagw:'Cool-down',n:'Slow down',m:2,s:['Walk it off, calf and thigh stretches 20 seconds each','Drink some water']};
+  const all=[warm].concat(items,[cool]);
+  return {all,place,auto,total:all.reduce((a,b)=>a+b.m,0),w};
+}
+function viewHome(){
+  const k=today,h=buildHome(),wx=WX[h.w];
+  let o='<section class="card"><div class="sec-head"><h2>At home</h2><button class="btn alt" data-a="shuffle" data-k="h'+k+'">Shuffle</button></div><p class="sub">Short sessions for small spaces. Pick the weather and the space you have.</p>'+
+   '<div class="lab small" style="margin-top:8px">Weather</div>'+weatherChips(k)+
+   '<div class="lab small">Where</div><div class="chips" role="group" aria-label="Where"><button class="chip" data-a="hplace" data-v="in" aria-pressed="'+(h.place==='in')+'">Indoors</button><button class="chip" data-a="hplace" data-v="out" aria-pressed="'+(h.place==='out')+'">Outdoors</button></div>'+
+   '<div class="lab small">Space</div><div class="chips" role="group" aria-label="Space"><button class="chip" data-a="hspace" data-v="tiny" aria-pressed="'+(ui.hSpace==='tiny')+'">Tiny: about 2 by 2 metres</button><button class="chip" data-a="hspace" data-v="small" aria-pressed="'+(ui.hSpace==='small')+'">Small: about 4 by 4 metres</button></div>'+
+   '<div class="lab small">Time</div><div class="chips" role="group" aria-label="Time">'+[10,15,20,30].map(n=>'<button class="chip" data-a="hmin" data-v="'+n+'" aria-pressed="'+(ui.hMin===n)+'">'+n+' minutes</button>').join('')+'</div>'+
+   '<div class="note"><b>'+wx.l+'.</b> '+wx.note+(!ui.hPlace?' '+(h.auto==='in'?'Indoors is suggested today.':'Outdoors is fine today.'):'')+'</div>'+
+   (h.place==='in'?'<ul class="kit"><li>Ask an adult and clear a space first</li><li>Use a soft or low-bounce ball, or rolled socks</li><li>Wear trainers or grippy socks, never slippy socks on a hard floor</li><li>No shooting indoors</li></ul>':'<ul class="kit"><li>Keep away from windows, cars and flowerbeds</li><li>Ask before using a wall or fence</li><li>Wear trainers on wet or uneven ground</li></ul>')+
+   '<p class="small" style="margin-top:8px">'+h.total+' minutes in total.</p><ol class="drills">'+h.all.map(drillLi).join('')+'</ol></section>';
+  return o;
+}
+
+/* ---------- views ---------- */
+function weatherChips(k){
+  return '<div class="chips" role="group" aria-label="Weather">'+WKEYS.map(w=>'<button class="chip" data-a="weather" data-k="'+k+'" data-v="'+w+'" aria-pressed="'+(S.weather[k]===w?'true':'false')+'">'+WX[w].l+'</button>').join('')+'</div>';
+}
+function typeChips(k){
+  const cur=typeOf(k);
+  return '<div class="chips" role="group" aria-label="Day type">'+TKEYS.map(t=>'<button class="chip" data-a="type" data-k="'+k+'" data-v="'+t+'" aria-pressed="'+(cur===t?'true':'false')+'">'+TYPES[t]+'</button>').join('')+'</div>';
+}
+function viewToday(){
+  const k=today,type=typeOf(k),P=S.profile;
+  const hr=new Date().getHours();const greet=hr<12?'Good morning':hr<18?'Good afternoon':'Good evening';
+  let h='';
+  if(!P.setup)h+='<div class="card note"><b>Start here.</b> Tell Pitch Plan your age group, position and wake-up time in <a href="#me" style="color:inherit;font-weight:600">Me</a> and everything below will fit you.</div>';
+  h+='<section class="card hero"><div><span class="sub">'+greet+(P.name?', '+esc(P.name):'')+'</span><div class="date">'+longDate(k)+'</div></div>'+
+    '<div class="row"><span class="pill t-'+type+'">'+TYPES[type]+'</span><span class="small">'+POSN[P.pos]+' · '+AGEN[P.age]+'</span></div>'+
+    '<div><div class="lab" style="font-weight:600">What is the weather like?</div>'+weatherChips(k)+'</div></section>';
+  h+='<div class="grid">';
+  h+='<section class="card">'+sessionHTML(k)+'</section>';
+  h+='<section class="card"><div class="sec-head"><h3>Eat today</h3></div>'+mealDayHTML(type,k,'Meal plan').replace(/<div class="sec-head"><h3>Meal plan<\/h3>/,'<div class="sec-head"><h3 class="small" style="font-family:var(--font-b);text-transform:none;letter-spacing:0">'+TYPES[type]+'</h3>')+'<h3 style="margin-top:14px">Drinks</h3>'+waterHTML()+'</section>';
+  const m=buildMorning(k,type),n=buildNight(k,type);
+  h+='<section class="card"><div class="sec-head"><h3>Morning routine</h3><button class="btn alt" data-a="go" data-v="routines" data-kind="morning">Open</button></div>'+(m.warn?'<div class="note">'+m.warn+'</div>':'')+tlHTML(m.rows,'morning',k)+'</section>';
+  h+='<section class="card"><div class="sec-head"><h3>Night routine</h3><button class="btn alt" data-a="go" data-v="routines" data-kind="night">Open</button></div><p class="small">'+n.msg+'</p>'+(n.warn?'<div class="note">'+n.warn+'</div>':'')+tlHTML(n.rows,'night',k)+'</section>';
+  h+='</div>';
+  const t=tipOfDay();
+  h+='<section class="card potd tip" style="grid-template-columns:5.2rem 1fr"><span class="c">'+TC[t.c]+'</span><p>'+esc(t.t)+'</p></section>';
+  h+='<section class="card"><div class="sec-head"><h3>Words from the pros</h3><button class="btn alt" data-a="shuffle" data-k="q">Another</button></div>'+quoteHTML(quoteOfDay())+'</section>';
+  h+='<section class="card"><div class="sec-head"><h3>Short on space or time?</h3><button class="btn" data-a="go" data-v="home">Home session</button></div><p class="sub">Ten to thirty minute sessions for a hallway, bedroom, garage or garden.</p></section>';
+  return h;
+}
+function viewRoutines(){
+  const k=today,type=ui.rType||typeOf(k),kind=ui.rKind;
+  let h='<section class="card"><div class="sec-head"><h2>Routines</h2><button class="btn alt" data-a="shuffle" data-k="'+(kind==='morning'?'m':'n')+k+'">Shuffle ideas</button></div>'+
+   '<div class="chips" role="group" aria-label="Routine"><button class="chip" data-a="rkind" data-v="morning" aria-pressed="'+(kind==='morning')+'">Morning</button><button class="chip" data-a="rkind" data-v="night" aria-pressed="'+(kind==='night')+'">Night</button></div>'+
+   '<div class="lab small">Type of day</div><div class="chips" role="group" aria-label="Day type for routine">'+TKEYS.map(t=>'<button class="chip" data-a="rtype" data-v="'+t+'" aria-pressed="'+(type===t)+'">'+TYPES[t]+'</button>').join('')+'</div>';
+  if(kind==='morning'){
+    const m=buildMorning(k,type);
+    h+='<p class="sub">Up at '+S.profile.wake+', out of the door at '+S.profile.leave+'. Change these in Me.</p>'+(m.warn?'<div class="note">'+m.warn+'</div>':'')+(m.dropped?'<p class="small">Skipped '+m.dropped+' optional step'+(m.dropped>1?'s':'')+' to fit your morning.</p>':'')+tlHTML(m.rows,'morning',k);
+  }else{
+    const n=buildNight(k,type);
+    h+='<p class="sub">'+n.msg+'</p>'+(n.warn?'<div class="note">'+n.warn+'</div>':'')+tlHTML(n.rows,'night',k);
+  }
+  return h+'</section>';
+}
+function viewCalendar(){
+  const [y,m]=ui.month;const first=new Date(y,m,1);const off=(first.getDay()+6)%7;const dim=new Date(y,m+1,0).getDate();
+  let cells='';
+  ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach(d=>cells+='<div class="dow">'+d+'</div>');
+  for(let i=0;i<off;i++)cells+='<div></div>';
+  for(let d=1;d<=dim;d++){
+    const k=y+'-'+pad(m+1)+'-'+pad(d),t=typeOf(k);
+    cells+='<button class="cell'+(k===today?' today':'')+(k===ui.sel?' sel':'')+'" data-a="day" data-k="'+k+'" aria-label="'+DAYN[parseKey(k).getDay()]+' '+d+' '+MONTHS[m]+', '+TYPES[t]+'" aria-pressed="'+(k===ui.sel)+'"><span class="dn">'+d+'</span><span class="tb t-'+t+'">'+TS[t]+'</span></button>';
+  }
+  const k=ui.sel,t=typeOf(k),dow=parseKey(k).getDay();
+  let h='<div class="grid"><section class="card"><div class="cal-top"><button class="btn alt" data-a="month" data-v="-1" aria-label="Previous month">‹</button><h3>'+MONTHS[m]+' '+y+'</h3><button class="btn alt" data-a="month" data-v="1" aria-label="Next month">›</button></div><div class="cal">'+cells+'</div>'+
+   '<div class="legend">'+TKEYS.map(x=>'<span class="pill t-'+x+'" style="font-size:.85rem">'+TYPES[x]+'</span>').join('')+'</div><p class="small" style="margin-top:8px">Tap a day to choose its type, set the weather and see the session. Training days repeat each week from the pattern in Me.</p></section>';
+  h+='<section class="card"><h2>'+DAYN[dow]+' '+parseKey(k).getDate()+' '+MONTHS[parseKey(k).getMonth()]+'</h2><div class="row"><span class="pill t-'+t+'">'+TYPES[t]+'</span></div>'+
+    '<div class="lab small" style="margin-top:8px">Day type</div>'+typeChips(k)+
+    '<div class="row"><button class="btn alt" data-a="repeat" data-k="'+k+'">Repeat every '+DAYN[dow]+'</button>'+(S.overrides[k]?'<button class="btn alt" data-a="clear" data-k="'+k+'">Back to weekly pattern</button>':'')+'</div>'+
+    '<div class="lab small" style="margin-top:12px">Weather</div>'+weatherChips(k)+sessionHTML(k)+
+    '<div class="row" style="margin-top:14px"><button class="btn" data-a="go" data-v="meals" data-type="'+t+'">Meals for this day</button><button class="btn alt" data-a="go" data-v="routines" data-type="'+t+'" data-kind="morning">Routines for this day</button></div></section></div>';
+  return h;
+}
+function viewMeals(){
+  const type=ui.mType||typeOf(today),P=S.profile;
+  let h='<div class="grid"><section class="card"><h2>Day plan</h2><p class="sub">Every day should cover carbs, protein, fruit and veg, calcium and a little healthy fat. Meals are not about counting anything. Eat until you are comfortably full.</p>'+
+   '<div class="chips" role="group" aria-label="Day type for meals">'+TKEYS.map(t=>'<button class="chip" data-a="mtype" data-v="'+t+'" aria-pressed="'+(type===t)+'">'+TYPES[t]+'</button>').join('')+'</div>'+
+   ((P.diet||[]).length?'<p class="small">Filters on: '+P.diet.map(d=>DIETN[d]).join(', ')+'. Change them in Me.</p>':'<p class="small">No food filters set. Add allergies or diets in Me.</p>')+
+   mealDayHTML(type,'meals-'+type,'Plan for '+TYPES[type].toLowerCase())+'</section>';
+  h+='<div style="display:grid;gap:16px;align-content:start">';
+  const have=Object.keys(ui.plate).filter(x=>ui.plate[x]);
+  const miss=Object.keys(G).filter(g=>!ui.plate[g]);
+  const core=['c','p','v'].every(g=>ui.plate[g]);
+  h+='<section class="card"><h3>Check my plate</h3><p class="sub">Tick what is on your plate or in your lunch box.</p><div class="chips">'+Object.keys(G).map(g=>'<button class="chip" data-a="plate" data-v="'+g+'" aria-pressed="'+(!!ui.plate[g])+'">'+G[g]+'</button>').join('')+'</div>'+
+   (core?'<div class="note" style="background:transparent;border-color:var(--good)"><b>Good plate.</b> Carbs, protein and veg are all there.'+(miss.length?' For a bonus add '+miss.map(g=>G[g].toLowerCase()).join(' and ')+'.':' Nothing missing.')+'</div>':'<div class="note">Add '+['c','p','v'].filter(g=>!ui.plate[g]).map(g=>'<b>'+G[g].toLowerCase()+'</b> ('+GIDEA[g]+')').join(' and ')+'.</div>')+'</section>';
+  h+='<section class="card"><h3>Drinks today</h3>'+waterHTML()+'</section></div></div>';
+  h+='<section class="card"><div class="sec-head"><h2>Meal ideas</h2></div><div class="chips" role="group" aria-label="Meal type">'+[['all','All']].concat(Object.keys(SLOTS).map(s=>[s,SLOTS[s]])).map(x=>'<button class="chip" data-a="mfilter" data-v="'+x[0]+'" aria-pressed="'+(ui.mFilter===x[0])+'">'+x[1]+'</button>').join('')+'</div><div class="mgrid">'+
+   M.filter(m=>mealOK(m)&&(ui.mFilter==='all'||m.slots.includes(ui.mFilter))).map(m=>mealCard(m,m.slots.map(s=>SLOTS[s]).join(' · '))).join('')+'</div></section>';
+  return h;
+}
+function viewTips(){
+  const cats=[['all','All']].concat(Object.keys(TC).map(c=>[c,TC[c]]));
+  const list=TIPS.filter(t=>(ui.tipCat==='all'||t.c===ui.tipCat)&&(!ui.tipMine||!t.pos||t.pos===S.profile.pos)&&(ui.tipMine?true:true));
+  const shown=list.filter(t=>!t.pos||!ui.tipMine||t.pos===S.profile.pos);
+  const t0=tipOfDay();
+  let h='<section class="card potd tip" style="grid-template-columns:5.2rem 1fr"><span class="c">Tip of the day</span><p>'+esc(t0.t)+'</p></section>';
+  h+='<section class="card"><h2>Words from women footballers</h2><p class="sub" style="margin-bottom:8px">Quotes from players including Mia Hamm, Alex Morgan, Leah Williamson and Megan Rapinoe, with a note on what they mean for your training.</p><div class="cols2">'+QUOTES.map(q=>quoteHTML(q)).join('')+'</div><p class="small" style="margin-top:10px">Quote wording is as published at girlssoccernetwork.com and brainyquote.com.</p></section>';
+  h+='<div class="grid"><section class="card"><h2>Tips and ideas</h2><div class="chips" role="group" aria-label="Tip category">'+cats.map(c=>'<button class="chip" data-a="tipcat" data-v="'+c[0]+'" aria-pressed="'+(ui.tipCat===c[0])+'">'+c[1]+'</button>').join('')+'</div>'+
+   '<div class="checks"><label><input type="checkbox" data-a="tipmine"'+(ui.tipMine?' checked':'')+'> Only tips for my position ('+POSN[S.profile.pos].toLowerCase()+')</label></div><div style="margin-top:8px">'+
+   shown.map(t=>'<div class="tip"><span class="c">'+TC[t.c]+(t.pos?' · '+POSN[t.pos].split(' ')[0]:'')+'</span><p>'+esc(t.t)+'</p></div>').join('')+'</div></section>';
+  h+='<div style="display:grid;gap:16px;align-content:start"><section class="card"><h3>My records</h3><p class="sub">Juggling personal bests. Saved on this device.</p><div class="form" style="margin-top:10px">'+
+   [['jug','Both feet'],['left','Left foot'],['right','Right foot']].map(x=>'<div class="field"><label for="rec-'+x[0]+'">'+x[1]+'</label><input id="rec-'+x[0]+'" type="number" min="0" inputmode="numeric" data-rec="'+x[0]+'" value="'+(S.rec[x[0]]||0)+'"></div>').join('')+'</div></section>'+
+   '<section class="card"><h3>Weekly challenges</h3><div class="checks" style="display:grid;gap:10px;margin-top:8px">'+CHAL.map(c=>'<label><input type="checkbox" data-chal="'+c[0]+'"'+(S.chal[c[0]]?' checked':'')+'> '+c[1]+'</label>').join('')+'</div><button class="btn alt" style="margin-top:12px" data-a="chalreset">Start a new week</button></section></div></div>';
+  return h;
+}
+function viewMe(){
+  const P=S.profile;
+  const opt=(o,v)=>Object.keys(o).map(x=>'<option value="'+x+'"'+(x===v?' selected':'')+'>'+o[x]+'</option>').join('');
+  let h='<section class="card"><h2>Me</h2><p class="sub">Everything is saved on this device only.</p><div class="form" style="margin-top:12px">'+
+   '<div class="field"><label for="f-name">Name (optional)</label><input id="f-name" type="text" data-f="name" value="'+esc(P.name)+'" maxlength="30"></div>'+
+   '<div class="field"><label for="f-age">Age group</label><select id="f-age" data-f="age">'+opt(AGEN,P.age)+'</select></div>'+
+   '<div class="field"><label for="f-pos">Position</label><select id="f-pos" data-f="pos">'+opt(POSN,P.pos)+'</select></div>'+
+   '<div class="field"><label for="f-who">I usually train</label><select id="f-who" data-f="who">'+opt({s:'On my own',f:'With a mate',t:'With a group'},P.who)+'</select></div>'+
+   '<div class="field"><label for="f-dur">Session length</label><select id="f-dur" data-f="dur">'+[30,45,60,75].map(n=>'<option value="'+n+'"'+(+P.dur===n?' selected':'')+'>'+n+' minutes</option>').join('')+'</select></div>'+
+   '<div class="field"><label for="f-wake">Wake-up time</label><input id="f-wake" type="time" data-f="wake" value="'+P.wake+'"></div>'+
+   '<div class="field"><label for="f-leave">Out of the door at</label><input id="f-leave" type="time" data-f="leave" value="'+P.leave+'"></div>'+
+   '<div class="field"><label for="f-bed">Lights out</label><input id="f-bed" type="time" data-f="bed" value="'+P.bed+'"></div></div>'+
+   '<div class="field"><span class="lab">Food filters</span><div class="checks">'+Object.keys(DIETN).map(d=>'<label><input type="checkbox" data-diet="'+d+'"'+((P.diet||[]).includes(d)?' checked':'')+'> '+DIETN[d]+'</label>').join('')+'</div><p class="small">Allergies need a real label check. Pitch Plan only suggests swaps.</p></div></section>';
+  h+='<section class="card"><h3>Weekly pattern</h3><p class="sub">The type of day for each weekday. You can still change single days in the calendar.</p><div class="form" style="margin-top:10px">'+[1,2,3,4,5,6,0].map(d=>'<div class="field"><label for="w-'+d+'">'+DAYN[d]+'</label><select id="w-'+d+'" data-week="'+d+'">'+opt(TYPES,S.week[d])+'</select></div>').join('')+'</div></section>';
+  h+='<section class="card"><h3>Reset</h3><p class="sub">Clears your settings, calendar changes, ticks and records on this device.</p><button class="btn warn" data-a="reset" style="margin-top:8px">'+(ui.confirm?'Tap again to wipe everything':'Reset everything')+'</button></section>';
+  return h;
+}
+const VIEWS={today:viewToday,routines:viewRoutines,calendar:viewCalendar,home:viewHome,meals:viewMeals,tips:viewTips,me:viewMe};
+const TABN={today:'Today',routines:'Routines',calendar:'Calendar',home:'At home',meals:'Meals',tips:'Tips',me:'Me'};
+function render(keepScroll){
+  const y=window.scrollY;
+  $('#tabs').innerHTML=Object.keys(TABN).map(t=>'<button data-a="tab" data-v="'+t+'"'+(ui.tab===t?' aria-current="page"':'')+'>'+TABN[t]+'</button>').join('');
+  $('#app').innerHTML=VIEWS[ui.tab]();
+  if(keepScroll)window.scrollTo(0,y);
+  const c=$('#clock');if(c)c.textContent=longDate(today);
+}
+function go(tab,keep){ui.tab=tab;try{history.replaceState(null,'','#'+tab)}catch(e){};render(keep);if(!keep)window.scrollTo(0,0)}
+
+/* ---------- events ---------- */
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-a]');if(!b||b.tagName==='INPUT')return;
+  const a=b.dataset.a,v=b.dataset.v,k=b.dataset.k;
+  if(a!=='reset')ui.confirm=false;
+  switch(a){
+   case 'tab':return go(v);
+   case 'go':if(b.dataset.type){if(v==='meals')ui.mType=b.dataset.type;else ui.rType=b.dataset.type}if(b.dataset.kind)ui.rKind=b.dataset.kind;return go(v);
+   case 'weather':if(S.weather[k]===v)delete S.weather[k];else S.weather[k]=v;break;
+   case 'type':S.overrides[k]=v;break;
+   case 'clear':delete S.overrides[k];break;
+   case 'repeat':S.week[parseKey(k).getDay()]=typeOf(k);delete S.overrides[k];break;
+   case 'day':ui.sel=k;break;
+   case 'month':{let [y,m]=ui.month;m+=+v;if(m<0){m=11;y--}if(m>11){m=0;y++}ui.month=[y,m];break}
+   case 'shuffle':S.shuffle[k]=(S.shuffle[k]||0)+1;break;
+   case 'rkind':ui.rKind=v;break;
+   case 'hplace':ui.hPlace=v;break;
+   case 'hspace':ui.hSpace=v;break;
+   case 'hmin':ui.hMin=+v;break;
+   case 'rtype':ui.rType=v;break;
+   case 'mtype':ui.mType=v;break;
+   case 'mfilter':ui.mFilter=v;break;
+   case 'plate':ui.plate[v]=!ui.plate[v];break;
+   case 'water':{const key='w|'+today+'|'+b.dataset.i;S.ticks[key]=!S.ticks[key];break}
+   case 'tipcat':ui.tipCat=v;break;
+   case 'chalreset':S.chal={};break;
+   case 'reset':if(!ui.confirm){ui.confirm=true;break}S=JSON.parse(JSON.stringify(DEF));ui.confirm=false;ui.sel=today;ui.rType=ui.mType=null;break;
+  }
+  save();render(true);
+});
+document.addEventListener('change',e=>{
+  const t=e.target;
+  if(t.dataset.tick){S.ticks[t.dataset.tick]=t.checked;save();return}
+  if(t.dataset.chal){S.chal[t.dataset.chal]=t.checked;save();return}
+  if(t.dataset.a==='tipmine'){ui.tipMine=t.checked;render(true);return}
+  if(t.dataset.rec){S.rec[t.dataset.rec]=Math.max(0,parseInt(t.value,10)||0);save();return}
+  if(t.dataset.f){const f=t.dataset.f;let v=t.value;if(f==='dur')v=+v;S.profile[f]=v;S.profile.setup=true;save();render(true);return}
+  if(t.dataset.week){S.week[t.dataset.week]=t.value;save();render(true);return}
+  if(t.dataset.diet){const d=S.profile.diet||[];S.profile.diet=t.checked?d.concat(t.dataset.diet):d.filter(x=>x!==t.dataset.diet);S.profile.setup=true;save();render(true)}
+});
+function fromHash(){const h=(location.hash||'').slice(1);if(VIEWS[h])ui.tab=h}
+window.addEventListener('hashchange',()=>{fromHash();render()});
+fromHash();render();
+})();
+</script>
+
+</body></html>
