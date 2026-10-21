@@ -1,6 +1,4 @@
-<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Crect width=%2264%22 height=%2264%22 rx=%2214%22 fill=%22%232563c9%22/%3E%3Cdefs%3E%3CclipPath id=%22c%22%3E%3Ccircle cx=%2232%22 cy=%2232%22 r=%2226%22/%3E%3C/clipPath%3E%3C/defs%3E%3Ccircle cx=%2232%22 cy=%2232%22 r=%2226%22 fill=%22%23fff%22/%3E%3Cg clip-path=%22url%28%23c%29%22 fill=%22%2310261a%22%3E%3Cpolygon points=%2232.0,23.0 40.6,29.2 37.3,39.3 26.7,39.3 23.4,29.2%22/%3E%3Cpolygon points=%2241.5,13.3 40.7,5.4 51.4,5.3 54.7,15.5 46.8,17.2%22/%3E%3Cpolygon points=%2252.7,35.3 60.0,32.0 63.4,42.2 54.7,48.5 50.7,41.5%22/%3E%3Cpolygon points=%2235.3,52.7 40.7,58.6 32.0,65.0 23.3,58.6 28.7,52.7%22/%3E%3Cpolygon points=%2213.3,41.5 9.3,48.5 0.6,42.2 4.0,32.0 11.3,35.3%22/%3E%3Cpolygon points=%2217.2,17.2 9.3,15.5 12.6,5.3 23.3,5.4 22.5,13.3%22/%3E%3Cg stroke=%22%2310261a%22 stroke-width=%222%22 stroke-linecap=%22round%22%3E%3Cline x1=%2232.0%22 y1=%2223.0%22 x2=%2232.0%22 y2=%2213.0%22/%3E%3Cline x1=%2240.6%22 y1=%2229.2%22 x2=%2250.1%22 y2=%2226.1%22/%3E%3Cline x1=%2237.3%22 y1=%2239.3%22 x2=%2243.2%22 y2=%2247.4%22/%3E%3Cline x1=%2226.7%22 y1=%2239.3%22 x2=%2220.8%22 y2=%2247.4%22/%3E%3Cline x1=%2223.4%22 y1=%2229.2%22 x2=%2213.9%22 y2=%2226.1%22/%3E%3C/g%3E%3C/g%3E%3Ccircle cx=%2232%22 cy=%2232%22 r=%2226%22 fill=%22none%22 stroke=%22%2310261a%22 stroke-width=%223%22/%3E%3C/svg%3E"></head><body>
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Pitch Plan</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -8,23 +6,23 @@
 <style>
 /* Layout concept: matchday programme. Dark pitch-green header with faint pitch lines, sticky tab bar, cards laid out like a team sheet. */
 :root{
-  --bg:#eef3ee; --surface:#ffffff; --surface2:#e2ece4; --ink:#10261a; --muted:#4a6354; --line:#c8d7cb;
-  --hdr:#0f4d27; --hdr-ink:#ffffff;
-  --pitch:#17803f; --on-pitch:#ffffff; --bib:#c2410c; --bib-soft:#fbe5d6;
-  --t-train:#17803f; --t-match:#c2410c; --t-solo:#2563c9; --t-recover:#7c3aed; --t-rest:#5b6b61; --on-t:#ffffff;
-  --good:#17803f; --warn:#a15c00; --warn-soft:#fdf0d5;
+  --bg:#eef3fb; --surface:#ffffff; --surface2:#e1eafa; --ink:#14213d; --muted:#4a5878; --line:#cdd8ee;
+  --hdr:#1e3a8a; --hdr-ink:#ffffff;
+  --pitch:#1d4ed8; --on-pitch:#ffffff; --bib:#c2185b; --bib-soft:#fde4ef;
+  --t-train:#1d4ed8; --t-match:#c2185b; --t-solo:#0369a1; --t-recover:#a21caf; --t-rest:#5b6b8a; --on-t:#ffffff;
+  --good:#1d4ed8; --warn:#c2185b; --warn-soft:#fde4ef;
   --font-d:'Barlow Condensed','Arial Narrow',Arial,sans-serif; --font-b:'Barlow',system-ui,-apple-system,'Segoe UI',Arial,sans-serif;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#0c1812; --surface:#13251b; --surface2:#1b3326; --ink:#e7f1e9; --muted:#9bb3a4; --line:#264234;
-  --hdr:#0a2a18; --hdr-ink:#ffffff; --pitch:#3ecf7a; --on-pitch:#06210f; --bib:#ff8a3d; --bib-soft:#3a2412;
-  --t-train:#3ecf7a; --t-match:#ff8a3d; --t-solo:#6aa6ff; --t-recover:#b69bff; --t-rest:#93a79b; --on-t:#06140c;
-  --good:#3ecf7a; --warn:#f2b84b; --warn-soft:#3a2d0f; color-scheme:dark}}
+  --bg:#0b1226; --surface:#131d3a; --surface2:#1b284d; --ink:#e8eefc; --muted:#9fb0d6; --line:#27386a;
+  --hdr:#0a1a4a; --hdr-ink:#ffffff; --pitch:#6ea8ff; --on-pitch:#06122e; --bib:#ff7eb6; --bib-soft:#3a1428;
+  --t-train:#6ea8ff; --t-match:#ff7eb6; --t-solo:#5ed0ff; --t-recover:#e39bff; --t-rest:#9aa9cc; --on-t:#06122e;
+  --good:#6ea8ff; --warn:#ff7eb6; --warn-soft:#3a1428; color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#0c1812; --surface:#13251b; --surface2:#1b3326; --ink:#e7f1e9; --muted:#9bb3a4; --line:#264234;
-  --hdr:#0a2a18; --hdr-ink:#ffffff; --pitch:#3ecf7a; --on-pitch:#06210f; --bib:#ff8a3d; --bib-soft:#3a2412;
-  --t-train:#3ecf7a; --t-match:#ff8a3d; --t-solo:#6aa6ff; --t-recover:#b69bff; --t-rest:#93a79b; --on-t:#06140c;
-  --good:#3ecf7a; --warn:#f2b84b; --warn-soft:#3a2d0f; color-scheme:dark}
+  --bg:#0b1226; --surface:#131d3a; --surface2:#1b284d; --ink:#e8eefc; --muted:#9fb0d6; --line:#27386a;
+  --hdr:#0a1a4a; --hdr-ink:#ffffff; --pitch:#6ea8ff; --on-pitch:#06122e; --bib:#ff7eb6; --bib-soft:#3a1428;
+  --t-train:#6ea8ff; --t-match:#ff7eb6; --t-solo:#5ed0ff; --t-recover:#e39bff; --t-rest:#9aa9cc; --on-t:#06122e;
+  --good:#6ea8ff; --warn:#ff7eb6; --warn-soft:#3a1428; color-scheme:dark}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font:16px/1.5 var(--font-b);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 48px}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--hdr)}
@@ -116,7 +114,7 @@ ol.drills{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:12px}
 .tip:first-child{border-top:0}
 .tip .c{font-family:var(--font-d);font-weight:700;text-transform:uppercase;color:var(--bib);letter-spacing:.04em}
 .potd{background:var(--hdr);color:var(--hdr-ink);border:0}
-.potd .c{color:#ffb98a}
+.potd .c{color:#ffc2dc}
 .potd p{font-size:1.25rem;line-height:1.35;font-weight:500;max-width:46ch}
 .cols2{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
 footer{margin-top:30px;color:var(--muted);font-size:.88rem;border-top:2px solid var(--line);padding-top:14px}
@@ -561,6 +559,7 @@ function viewToday(){
   h+='<section class="card hero"><div><span class="sub">'+greet+(P.name?', '+esc(P.name):'')+'</span><div class="date">'+longDate(k)+'</div></div>'+
     '<div class="row"><span class="pill t-'+type+'">'+TYPES[type]+'</span><span class="small">'+POSN[P.pos]+' · '+AGEN[P.age]+'</span></div>'+
     '<div><div class="lab" style="font-weight:600">What is the weather like?</div>'+weatherChips(k)+'</div></section>';
+  h+='<section class="card"><div class="sec-head"><h3>Words from the pros</h3><button class="btn alt" data-a="shuffle" data-k="q">Another</button></div>'+quoteHTML(quoteOfDay())+'</section>';
   h+='<div class="grid">';
   h+='<section class="card">'+sessionHTML(k)+'</section>';
   h+='<section class="card"><div class="sec-head"><h3>Eat today</h3></div>'+mealDayHTML(type,k,'Meal plan').replace(/<div class="sec-head"><h3>Meal plan<\/h3>/,'<div class="sec-head"><h3 class="small" style="font-family:var(--font-b);text-transform:none;letter-spacing:0">'+TYPES[type]+'</h3>')+'<h3 style="margin-top:14px">Drinks</h3>'+waterHTML()+'</section>';
@@ -570,7 +569,6 @@ function viewToday(){
   h+='</div>';
   const t=tipOfDay();
   h+='<section class="card potd tip" style="grid-template-columns:5.2rem 1fr"><span class="c">'+TC[t.c]+'</span><p>'+esc(t.t)+'</p></section>';
-  h+='<section class="card"><div class="sec-head"><h3>Words from the pros</h3><button class="btn alt" data-a="shuffle" data-k="q">Another</button></div>'+quoteHTML(quoteOfDay())+'</section>';
   h+='<section class="card"><div class="sec-head"><h3>Short on space or time?</h3><button class="btn" data-a="go" data-v="home">Home session</button></div><p class="sub">Ten to thirty minute sessions for a hallway, bedroom, garage or garden.</p></section>';
   return h;
 }
