@@ -12,17 +12,22 @@ PAGES = {
     "li": "england-women-on-tv.html",
     "mc": "manchester-city-on-tv.html",   # (?)
     "en": "england-on-tv.html",           # (?)
+    "mu": "manchester-united-women-on-tv.html",  # (?)
+    "cw": "chelsea-women-on-tv.html",
 }
 LON = ZoneInfo("Europe/London")
 DATE = re.compile(r"^(?:Mon|Tues|Wednes|Thurs|Fri|Satur|Sun)day\s+(\d{1,2})(?:st|nd|rd|th)?\s+([A-Za-z]+)\s+(\d{4})$")
 TIME = re.compile(r"^(\d{1,2}:\d{2}|TBC|TBA)$", re.I)
 MATCH = re.compile(r"^(.+?)\s+v\s+(.+)$")
-CHAN = re.compile(r"^(BBC (?:One|Two|Three|Four|Sport Web|iPlayer)|BBC Red Button|ITV[1-4X]?|S4C|Sky Sports[\w \+]*|Sky Showcase|TNT Sports[\w ]*|HBO Max|Prime Video|Amazon Prime Video|DAZN|Disney\+|Premier Sports[\w ]*|Channel 4|Channel 5|W Network|ESPN|YouTube|Viaplay[\w ]*)$", re.I)
-FREE_MAP = {"BBC Sport Web": "BBC iPlayer"}
+CHAN = re.compile(r"^(BBC (?:One|Two|Three|Four|Sport Web|iPlayer)|BBC Red Button|ITV[1-4X]?|S4C|Sky Sports[\w \+]*|Sky Showcase|Sky Mix|WSL YouTube|Sky Sports Ultra HDR|TNT Sports[\w ]*|HBO Max|Prime Video|Amazon Prime Video|DAZN|Disney\+|Premier Sports[\w ]*|Channel 4|Channel 5|W Network|ESPN|YouTube|Viaplay[\w ]*)$", re.I)
+FREE_MAP = {"BBC Sport Web": "BBC iPlayer", "BBC Sport Website": "BBC iPlayer"}
+SKIP = {"Sky Mix", "Sky Sports Ultra HDR"}
 TEAM = {
     "aw": lambda h, a: "Arsenal" in h + a,
     "li": lambda h, a: "England" in h + a and not re.search(r"U\d\d", h + a),
     "mc": lambda h, a: "Manchester City" in h + a or "Man City" in h + a,
+    "mu": lambda h, a: "Manchester United" in h + a or "Man Utd" in h + a,
+    "cw": lambda h, a: "Chelsea" in h + a,
     "en": lambda h, a: "England" in h + a and "Women" not in h + a and not re.search(r"U\d\d", h + a),
 }
 
@@ -46,7 +51,7 @@ def parse(text, key):
                     comp = lines[j]; j += 1
                 while j < len(lines) and CHAN.match(lines[j]):
                     c = FREE_MAP.get(lines[j], lines[j])
-                    if c not in chans: chans.append(c)
+                    if c not in chans and c not in SKIP: chans.append(c)
                     j += 1
                 tbc = not re.match(r"\d", t)
                 hh, mi = (12, 0) if tbc else map(int, t.split(":"))
