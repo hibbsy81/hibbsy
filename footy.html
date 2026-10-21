@@ -1,4 +1,5 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body>
 <title>Pitch Plan</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -307,7 +308,7 @@ const MORN=[
  {id:'wake',p:1,m:3,o:()=>['Drink a big glass of water straight after waking up','Open the curtains for daylight and drink a glass of water','Water first: one glass, slowly']},
  {id:'move',p:2,m:6,o:t=>t==='rest'?['Slow stretch: arms overhead, side bends, hamstring reach','5 minute gentle yoga flow']:['Mobility flow: cat-cow, hip circles, deep squat hold, leg swings','10 star jumps then 3 slow lunges each side','Ankle circles, hamstring sweeps, 10 bodyweight squats']},
  {id:'wash',p:1,m:10,o:()=>['Wash, brush teeth and get dressed']},
- {id:'eat',p:1,m:20,o:t=>({train:['Breakfast with slow carbs and protein: porridge and banana, or eggs on toast. Sip water.'],match:['Pre-match breakfast 3 hours before kick-off: porridge with honey, or toast and a boiled egg. Nothing new.'],solo:['Balanced breakfast: wholegrain carbs, protein and fruit'],recover:['Breakfast with protein and fruit: yoghurt, berries and cereal'],rest:['Balanced breakfast: protein, wholegrain and fruit']}[t])},
+ {id:'eat',p:1,m:20,o:t=>({train:['Breakfast with slow carbs and protein: porridge and banana, or beans on toast. Sip water.'],match:['Pre-match breakfast 3 hours before kick-off: porridge with honey, or toast with jam and a banana. Nothing new.'],solo:['Balanced breakfast: wholegrain carbs, protein and fruit'],recover:['Breakfast with protein and fruit: yoghurt, berries and cereal'],rest:['Balanced breakfast: protein, wholegrain and fruit']}[t])},
  {id:'mind',p:3,m:3,o:t=>t==='match'?['Close your eyes and picture your best first touch','Say your one goal for today out loud']:['Name one thing you want to improve today','Think of one thing you are grateful for','Picture yourself playing well for 1 minute']},
  {id:'touch',p:3,m:5,o:t=>t==='rest'?['Easy 3 minutes of juggling, no pressure']:t==='match'?['3 minutes of light juggling to wake up your touch']:['Juggling: beat your record or do 3 sets of 20','2 minutes of sole rolls then 2 minutes of toe taps','40 wall passes with each foot']},
  {id:'bag',p:1,m:5,o:(t,w)=>{const b={train:'Pack boots, shin pads, socks, water bottle and layers.',match:'Check your bag: kit, boots, shin pads, spare socks, towel, water and a snack.',solo:'Pack your ball, cones and water bottle.',recover:'Fill your water bottle and pack for school.',rest:'Fill your water bottle and pack for school.'}[t];const x=w&&WX[w]?' Weather: '+WX[w].kit[0].toLowerCase()+'.':'';return [b+x]}}
@@ -355,32 +356,28 @@ function tlHTML(rows,kind,k){
 
 /* ---------- meals ---------- */
 const G={c:'Carbs for energy',p:'Protein to repair',v:'Fruit and veg',k:'Calcium',f:'Healthy fats'};
-const GIDEA={c:'rice, pasta, bread or oats',p:'chicken, eggs, beans, lentils or tofu',v:'any colourful veg or fruit',k:'milk, yoghurt, cheese or a fortified alternative',f:'avocado, seeds or olive oil'};
+const GIDEA={c:'rice, pasta, bread or oats',p:'chicken, beans, lentils or tofu',v:'any colourful veg or fruit',k:'milk, yoghurt, cheese or a fortified alternative',f:'avocado, seeds or olive oil'};
 const BLOCK={veg:['meat','pork','fish'],dairy:['dairy'],gluten:['gluten'],nuts:['nuts'],egg:['egg'],pork:['pork']};
 const DIETN={veg:'Vegetarian',dairy:'Dairy-free',gluten:'Gluten-free',nuts:'Nut-free',egg:'Egg-free',pork:'No pork'};
 /* [name, slots, groups, contains, ingredients, why, swaps] */
 const M=[
  ['Porridge with banana and milk','b match',['c','k','v'],['dairy'],'Oats, milk, banana, drizzle of honey','Slow-release oats keep energy steady, and milk adds calcium.',{dairy:'Use fortified oat or soy drink'}],
- ['Scrambled eggs on wholemeal toast with grilled tomatoes','b',['c','p','v'],['egg','gluten'],'Eggs, wholemeal bread, tomatoes','Protein to repair muscle and carbs to start the day.',{egg:'Swap for beans on toast',gluten:'Use gluten-free bread'}],
  ['Yoghurt bowl with berries and nut-free granola','b s',['c','k','v'],['dairy','gluten'],'Yoghurt, berries, nut-free granola','Quick and light, with calcium and vitamin C.',{dairy:'Use fortified soy yoghurt',gluten:'Use gluten-free oats instead of granola'}],
  ['Peanut butter and banana on wholemeal toast','b pre',['c','p','v','f'],['nuts','gluten'],'Wholemeal bread, peanut butter, banana','Carbs, protein and fats in one go. Good 1 to 2 hours before training.',{nuts:'Use sunflower seed butter',gluten:'Use gluten-free bread'}],
  ['Beans on toast with a glass of orange juice','b',['c','p','v'],['gluten'],'Baked beans, wholemeal toast, orange juice','Beans bring protein and fibre. Orange juice helps your body use the iron.',{gluten:'Use gluten-free bread'}],
  ['Overnight oats with milk, chia seeds and apple','b',['c','k','v','f'],['dairy'],'Oats, milk, chia seeds, grated apple','Made the night before, so it is ready when you wake up.',{dairy:'Use fortified oat or soy drink'}],
  ['Banana, spinach and oat smoothie','b pre post',['c','k','v'],['dairy'],'Banana, spinach, oats, milk','Easy to drink when you are not hungry. Works before or after training.',{dairy:'Use fortified soy drink'}],
  ['Wholegrain cereal with milk and strawberries','b',['c','k','v'],['dairy','gluten'],'Wholegrain cereal, milk, strawberries','Fast and filling. Check it is not full of sugar.',{dairy:'Use fortified oat or soy drink',gluten:'Use a gluten-free cereal'}],
- ['Toast with jam and a boiled egg','match',['c','p'],['egg','gluten'],'White or wholemeal toast, jam, boiled egg','Low in fat and easy to digest before a match.',{egg:'Add a small yoghurt',gluten:'Use gluten-free bread'}],
  ['Pasta with tomato sauce and chicken','match d',['c','p','v'],['meat','gluten'],'Pasta, tomato sauce, chicken, a little cheese on top','A small bowl 3 hours before kick-off fills the tank without feeling heavy.',{meat:'Use chickpeas or lentils',gluten:'Use gluten-free pasta'}],
- ['Rice with scrambled egg and peas','match l',['c','p','v'],['egg'],'Rice, eggs, peas','Plain, familiar and easy to digest.',{egg:'Use tofu'}],
  ['Chicken and salad wholemeal wrap with fruit','l',['c','p','v'],['meat','gluten'],'Wholemeal wrap, chicken, salad, an apple','Protein and carbs for the afternoon.',{meat:'Use hummus and falafel',gluten:'Use a gluten-free wrap'}],
  ['Cheese and ham sandwich with carrot sticks and an apple','l',['c','p','k','v'],['dairy','pork','gluten'],'Bread, cheese, ham, carrots, apple','A classic that covers carbs, protein and calcium.',{dairy:'Use dairy-free cheese',pork:'Swap ham for turkey or egg',gluten:'Use gluten-free bread'}],
  ['Lentil and veg soup with a bread roll','l d',['c','p','v'],['gluten'],'Red lentils, carrots, onion, tomatoes, bread','Lentils give protein and iron. Great on cold days.',{gluten:'Use gluten-free bread'}],
  ['Hummus and veg wrap with a yoghurt pot','l',['c','p','k','v','f'],['dairy','gluten'],'Wrap, hummus, peppers, cucumber, yoghurt','Plant protein, healthy fats and calcium in one lunch.',{dairy:'Use fortified soy yoghurt',gluten:'Use a gluten-free wrap'}],
- ['Egg-fried rice with mixed veg','l d',['c','p','v'],['egg'],'Rice, egg, peas, carrots, sweetcorn','Uses up leftover rice and veg.',{egg:'Use tofu'}],
  ['Spaghetti bolognese with hidden veg','d',['c','p','v'],['meat','gluten'],'Spaghetti, mince, grated carrot, courgette, tomatoes','The classic training-day dinner: carbs to refill, protein to repair.',{meat:'Use lentils instead of mince',gluten:'Use gluten-free pasta'}],
  ['Chicken, rice and stir-fried veg','d',['c','p','v'],['meat'],'Chicken, rice, peppers, broccoli, carrots','Simple, quick and balanced.',{meat:'Use tofu'}],
  ['Veggie chilli with rice','d',['c','p','k','v'],['dairy'],'Kidney beans, tomatoes, peppers, rice, spoon of yoghurt','Beans give protein and iron, rice refills your energy.',{dairy:'Skip the yoghurt and add avocado'}],
  ['Chickpea and spinach curry with rice','d',['c','p','v','f'],[],'Chickpeas, spinach, tomatoes, coconut milk, rice','Plant protein, iron and healthy fats.',{}],
- ['Roast chicken, potatoes and green veg','d',['c','p','v'],['meat'],'Chicken, potatoes, carrots, peas, broccoli','Good after a long day, and the leftovers make tomorrow’s lunch.',{meat:'Use a lentil bake or veggie sausages'}],
+ ['Roast chicken, potatoes and green veg','d',['c','p','v'],['meat'],'Chicken, potatoes, carrots, green beans, broccoli','Good after a long day, and the leftovers make tomorrow’s lunch.',{meat:'Use a lentil bake or veggie sausages'}],
  ['Turkey meatballs with pasta and tomato sauce','d',['c','p','v'],['meat','gluten'],'Turkey mince, pasta, tomato sauce, spinach','Carbs and lean protein, perfect the night before a match.',{meat:'Use lentil balls',gluten:'Use gluten-free pasta'}],
  ['Apple slices with peanut butter','s',['v','p','f'],['nuts'],'Apple, peanut butter','A filling mid-afternoon snack.',{nuts:'Use sunflower seed butter'}],
  ['Cheese and wholegrain crackers','s',['c','k','p'],['dairy','gluten'],'Cheese, wholegrain crackers','Carbs, protein and calcium in a small snack.',{dairy:'Use dairy-free cheese',gluten:'Use gluten-free crackers'}],
@@ -391,7 +388,6 @@ const M=[
  ['Dried apricots and a small yoghurt','pre s',['c','k','v'],['dairy'],'Dried apricots, yoghurt','Quick sugars and calcium, easy to carry.',{dairy:'Use fortified soy yoghurt'}],
  ['Chocolate milk and a banana','post',['c','p','k','v'],['dairy'],'Chocolate milk, banana','Carbs and protein within an hour of finishing help your muscles recover.',{dairy:'Use fortified chocolate soy drink'}],
  ['Turkey and salad sandwich','post',['c','p','v'],['meat','gluten'],'Bread, turkey, salad','A real recovery snack, easy to pack.',{meat:'Use hummus and salad',gluten:'Use gluten-free bread'}],
- ['Eggs on toast with tomatoes','post',['c','p','v'],['egg','gluten'],'Eggs, toast, tomatoes','Protein, carbs and vitamins.',{egg:'Use beans on toast',gluten:'Use gluten-free bread'}],
  ['Yoghurt, cereal and berries','post',['c','p','k','v'],['dairy','gluten'],'Yoghurt, cereal, berries','Light, cold and easy after a hot session.',{dairy:'Use fortified soy yoghurt',gluten:'Use gluten-free cereal'}]
 ].map(a=>({n:a[0],slots:a[1].split(' '),g:a[2],has:a[3],ing:a[4],why:a[5],sw:a[6]}));
 const SLOTS={b:'Breakfast',l:'Lunch',d:'Dinner',s:'Snack',pre:'Before training',post:'After training',match:'Match-day meal'};
