@@ -577,6 +577,7 @@ function decimalYearFromISO(isoLocal){
      { name: 'Example DZ', lat: 51.75, lon: -1.5833 }                 (decimal degrees, W and S negative)
    Edit, add or delete entries as you like; the dropdown sorts them alphabetically for you. */
 const PRESET_DZS = [
+  { name: 'Bodmin',                   mgrs: '30U UA 81884 95470' },
   { name: 'Little Rissington',        mgrs: '30U WC 89749 46587' },
   { name: 'Poole Camp',               mgrs: '30U WB 69023 18968' },
   { name: 'RAF Brize Norton',         ddm: ['51 45.000 N', '001 34.977 W'] },
@@ -1197,6 +1198,7 @@ function buildDayView(json, entryIdx, dt, basis){
 let currentSource = null;
 let lastReport = null;
 let lastLoc = null;
+let lastPresetName = '';   // name of the preset DZ in use, or '' for a custom location
 
 function renderResults(activeKey){
   currentSource = activeKey;
@@ -1319,6 +1321,7 @@ function renderResults(activeKey){
   pane.scrollTop = keepScroll;
   const plain = str => String(str).replace(/—/g, '-');
   lastReport = {
+    dzName: lastPresetName,
     when: whenStr,
     source: (SOURCES.find(s => s.key === activeKey) || {}).label || activeKey,
     cards: [
@@ -1366,11 +1369,17 @@ async function runFetch(force = true){
     return;
   }
 
+  const presetSel = document.getElementById('dzPreset');
+  lastPresetName = (presetSel && presetSel.value !== '' && PRESET_DZS[parseInt(presetSel.value, 10)])
+    ? PRESET_DZS[parseInt(presetSel.value, 10)].name : '';
+
   const key = locKey(loc);
   const moved = key !== cacheKey;
   if(moved) Object.keys(sourceCache).forEach(k => delete sourceCache[k]);
   cacheKey = key;
   updateMap(loc.lat, loc.lon, moved);
+  // keep the MGRS exactly as entered, so the PDF doesn't show a 1 m rounding difference
+  loc.mgrsText = locFormat.value === 'mgrs' ? alnumOnly(document.getElementById('mgrsInput').value) : '';
   lastLoc = loc;
 
   const isFresh = k => sourceCache[k] && (Date.now() - sourceCache[k].at) < CACHE_MAX_AGE_MS;
@@ -1525,15 +1534,21 @@ function downloadPDF(){
   let locStr = '';
   if(lastLoc){
     locStr = `${formatDDM(lastLoc.lat, true)}, ${formatDDM(lastLoc.lon, false)}`;
-    try{ locStr += `   (MGRS ${latLonToMGRS(lastLoc.lat, lastLoc.lon, 5)})`; }catch(e){}
+    try{ locStr += `   (MGRS ${lastLoc.mgrsText || latLonToMGRS(lastLoc.lat, lastLoc.lon, 5)})`; }catch(e){}
   }
 
   doc.setFont('helvetica', 'bold'); doc.setFontSize(17); doc.setTextColor(20);
   doc.text('DZ Wind Forecasts', L, 16);
+  let hy = 23;
+  if(rep.dzName){
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(20);
+    doc.text(`Drop zone: ${rep.dzName}`, L, hy);
+    hy += 6;
+  }
   doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5); doc.setTextColor(70);
-  doc.text(`Location: ${locStr}`, L, 23);
-  doc.text(`Forecast for: ${rep.when}`, L, 28);
-  doc.text(`Source: ${rep.source}`, L, 33);
+  doc.text(`Location: ${locStr}`, L, hy);
+  doc.text(`Forecast for: ${rep.when}`, L, hy + 5);
+  doc.text(`Source: ${rep.source}`, L, hy + 10);
 
   // summary, two label/value pairs per row
   const body = [];
@@ -1543,7 +1558,7 @@ function downloadPDF(){
   }
   const labelStyle = { fontStyle: 'bold', fillColor: [238, 241, 246], cellWidth: 40 };
   doc.autoTable({
-    startY: 38, body, theme: 'grid',
+    startY: hy + 15, body, theme: 'grid',
     styles: { fontSize: 8.5, cellPadding: 1.8, textColor: 20, lineColor: [200, 205, 212] },
     columnStyles: { 0: labelStyle, 1: { cellWidth: 51 }, 2: labelStyle, 3: { cellWidth: 51 } },
     margin: { left: L, right: R }
