@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>hibbs (.org.uk)</title>
-    <link rel="stylesheet" href="/styles-site.css">
+    <link rel="stylesheet" href="/styles-site.css?v=6">
 </head>
 <body>
 
@@ -12,8 +12,10 @@
         <button class="menu-toggle" id="menuToggle" aria-label="Menu" aria-expanded="false" aria-controls="menuList">
             <span></span><span></span><span></span>
         </button>
-        <ul class="menu-list" id="menuList" hidden>
+        <ul class="menu-list" id="menuList">
             <li><a href="para.html">DZ Wind Forecast</a></li>
+            <li><a href="sports.html">Football Tracker</a></li>
+            <li><a href="https://webmail.hibbs.org.uk/">Webmail</a></li>
         </ul>
     </nav>
 
@@ -27,13 +29,12 @@
         const list = document.getElementById('menuList');
 
         function setMenu(open) {
-            toggle.setAttribute('aria-expanded', open);
-            list.hidden = !open;
+            toggle.setAttribute('aria-expanded', String(open));
         }
 
         toggle.addEventListener('click', (e) => {
             e.stopPropagation();
-            setMenu(list.hidden);
+            setMenu(toggle.getAttribute('aria-expanded') !== 'true');
         });
         document.addEventListener('click', (e) => {
             if (!list.contains(e.target)) setMenu(false);
