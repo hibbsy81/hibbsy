@@ -17,7 +17,7 @@ LON = ZoneInfo("Europe/London")
 DATE = re.compile(r"^(?:Mon|Tues|Wednes|Thurs|Fri|Satur|Sun)day\s+(\d{1,2})(?:st|nd|rd|th)?\s+([A-Za-z]+)\s+(\d{4})$")
 TIME = re.compile(r"^(\d{1,2}:\d{2}|TBC|TBA)$", re.I)
 MATCH = re.compile(r"^(.+?)\s+v\s+(.+)$")
-CHAN = re.compile(r"^(BBC (?:One|Two|Three|Four|Sport Web|iPlayer)|BBC Red Button|ITV[1-4X]?|STV|S4C|Sky Sports[\w \+]*|Sky Showcase|TNT Sports[\w ]*|HBO Max|Prime Video|Amazon Prime Video|DAZN|Disney\+|Premier Sports[\w ]*|Channel 4|Channel 5|W Network|ESPN|YouTube|Viaplay[\w ]*)$", re.I)
+CHAN = re.compile(r"^(BBC (?:One|Two|Three|Four|Sport Web|iPlayer)|BBC Red Button|ITV[1-4X]?|S4C|Sky Sports[\w \+]*|Sky Showcase|TNT Sports[\w ]*|HBO Max|Prime Video|Amazon Prime Video|DAZN|Disney\+|Premier Sports[\w ]*|Channel 4|Channel 5|W Network|ESPN|YouTube|Viaplay[\w ]*)$", re.I)
 FREE_MAP = {"BBC Sport Web": "BBC iPlayer"}
 TEAM = {
     "aw": lambda h, a: "Arsenal" in h + a,
