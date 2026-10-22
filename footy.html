@@ -90,6 +90,9 @@ ol.drills{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:12px}
 .cell.today .dn{background:var(--ink);color:var(--bg);border-radius:50%;width:26px;height:26px;display:grid;place-items:center}
 .cell.sel{outline:3px solid var(--bib);outline-offset:-1px}
 .cell.out{opacity:.45}
+.cell{position:relative}
+.cell.team::after{content:'';position:absolute;top:4px;right:4px;width:8px;height:8px;border-radius:50%;background:var(--bib);border:1px solid var(--surface)}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--bib)}
 .legend{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;font-size:.85rem}
 .field{display:grid;gap:4px;margin-bottom:12px}
 .field label,.field .lab{font-weight:600;font-size:.92rem}
@@ -159,16 +162,19 @@ const TKEYS=Object.keys(TYPES);
 const longDate=k=>{const d=parseKey(k);return DAYS[d.getDay()]+' '+d.getDate()+' '+MONTHS[d.getMonth()].slice(0,3)};
 
 /* ---------- state ---------- */
-const DEF={profile:{name:'',age:'a2',pos:'mid',wake:'07:00',leave:'08:15',bed:'21:30',who:'f',dur:45,diet:[],setup:false},
-  week:{0:'recover',1:'rest',2:'train',3:'solo',4:'train',5:'rest',6:'match'},overrides:{},weather:{},ticks:{},shuffle:{},rec:{jug:0,left:0,right:0},chal:{},picks:{},_t:0};
+const DEF={profile:{name:'',age:'a2',pos:'mid',wake:'07:00',leave:'08:15',bed:'21:30',who:'f',dur:45,travel:20,early:15,diet:[],setup:false},
+  week:{0:'recover',1:'rest',2:'train',3:'solo',4:'train',5:'rest',6:'match'},overrides:{},weather:{},ticks:{},shuffle:{},rec:{jug:0,left:0,right:0},chal:{},picks:{},team:{week:{},dates:{}},_t:0};
 let S=JSON.parse(JSON.stringify(DEF));
-function merge(o){S=Object.assign({},DEF,o);S.profile=Object.assign({},DEF.profile,o.profile||{});S.week=Object.assign({},DEF.week,o.week||{});S.rec=Object.assign({},DEF.rec,o.rec||{})}
+function merge(o){S=Object.assign({},DEF,o);S.profile=Object.assign({},DEF.profile,o.profile||{});S.week=Object.assign({},DEF.week,o.week||{});S.rec=Object.assign({},DEF.rec,o.rec||{});S.team=Object.assign({},DEF.team,o.team||{});S.team.week=S.team.week||{};S.team.dates=S.team.dates||{}}
 function load(){try{const v=localStorage.getItem('pitchplan_v1');if(v)merge(JSON.parse(v))}catch(e){}}
 function save(fromRemote){if(!fromRemote)S._t=Date.now();try{localStorage.setItem('pitchplan_v1',JSON.stringify(S))}catch(e){}if(!fromRemote&&typeof schedulePush==='function')schedulePush()}
 load();
 const today=dkey(new Date());
 const ui={tab:'today',sel:today,month:[new Date().getFullYear(),new Date().getMonth()],rKind:'morning',rType:null,mType:null,mFilter:'all',plate:{},tipCat:'all',tipMine:false,confirm:false,hPlace:null,hSpace:'tiny',hMin:15,msg:'',swapIdx:null,sync:{state:'off',msg:'Checking whether sync is available…'}};
 const typeOf=k=>S.overrides[k]||S.week[parseKey(k).getDay()];
+const DEFTEAM={start:'18:00',end:'19:30'};
+function teamOf(k){const t=S.team;if(t.dates&&Object.prototype.hasOwnProperty.call(t.dates,k))return t.dates[k]||null;return (t.week&&t.week[parseKey(k).getDay()])||null}
+function tmin(tm){const st=toMin(tm.start);let en=toMin(tm.end);if(en<=st)en=st+90;return {st:st,en:en}}
 
 /* ---------- data: weather ---------- */
 const WX={
@@ -263,10 +269,11 @@ function buildSession(k){
   const type=typeOf(k),w=weatherOf(k),P=S.profile,sh=S.shuffle['s'+k]||0;
   const r=rng(['s',k,type,w,P.pos,P.who,P.dur,P.age,sh].join('|'));
   if(type==='rest'||type==='recover'||type==='match')return {type,w,r};
-  const who=type==='solo'?'s':P.who;
+  const tm=type==='train'?teamOf(k):null;
+  const who=(tm||type==='solo')?'s':P.who;
   const ok={s:['s'],f:['s','f'],t:['s','f','t']}[who];
   const pool=D.filter(d=>(!d.a||d.a.includes(P.age))&&ok.includes(d.who||'s')&&(!d.w||d.w.includes(w)));
-  const dur=type==='solo'?Math.min(P.dur,30):P.dur;
+  const dur=tm?Math.min(P.dur,20):type==='solo'?Math.min(P.dur,30):P.dur;
   const warm=WARM[w],cool=COOL;
   let left=dur-warm.m-cool.m,items=[];
   const posD=pickN(pool.filter(d=>d.k==='p'&&d.pos.includes(P.pos)),r,1)[0];
@@ -276,7 +283,7 @@ function buildSession(k){
   for(const d of shuf(pool.filter(d=>d.k==='t'),r)){if(d.m<=left){items.unshift(d);left-=d.m}}
   const order={t:0,p:1,g:2};items.sort((a,b)=>order[a.k]-order[b.k]);
   const all=[Object.assign({tagw:'Warm-up'},warm)].concat(items,[Object.assign({tagw:'Cool-down'},cool)]);
-  return {type,w,all,total:all.reduce((s,d)=>s+d.m,0),r};
+  return {type,w,all,total:all.reduce((s,d)=>s+d.m,0),r,team:tm};
 }
 function whoTag(d){return d.who==='t'?'Group':d.who==='f'?'With a mate':'Solo'}
 function drillLi(d){
@@ -293,10 +300,12 @@ function sessionHTML(k,full){
     '<button class="btn alt" data-a="shuffle" data-k="s'+k+'">Shuffle drills</button></div>';
   if(!S.weather[k])h+='<p class="small">Weather: pick it above. Until then this assumes dry and mild.</p>';
   h+='<div class="note"><b>'+wx.l+'.</b> '+wx.note+'</div><ul class="kit">'+wx.kit.map(x=>'<li>'+x+'</li>').join('')+'</ul>';
+  if(s.team)h+='<div class="note"><b>Team training '+s.team.start+' to '+s.team.end+'.</b> Your coach runs the session, so this is a short top-up for before you leave or when you get home.</div>';
   if(s.type==='rest'){h+='<h3 style="margin-top:14px">Rest day ideas</h3><ul class="kit">'+RESTI.map(x=>'<li>'+x+'</li>').join('')+'</ul>';return h}
   if(s.type==='recover'){h+='<h3 style="margin-top:14px">Recovery ideas</h3><ul class="kit">'+pickN(RECOVER,s.r,4).map(x=>'<li>'+x+'</li>').join('')+'</ul>';return h}
   if(s.type==='match'){
-    const steps=[['3 hours before','Pre-match meal: carbs and a little protein, nothing new'],['90 minutes before','Sip water, check your bag: boots, shin pads, spare socks, towel'],['1 hour before','Top-up snack, like a banana or rice cake'],['45 minutes before','Arrive, change, say hello to the team'],['Warm-up','Coach warm-up, then 3 minutes of keepy-uppies to find your touch'],['Kick-off','Play. Use your one goal for the match'],['Within 60 minutes after','Cool down, stretch, eat and drink to recover'],['That evening','Write 3 wins and 1 thing to work on']];
+    const mt=teamOf(k),mm=mt?tmin(mt):null,at=(o,l)=>mm?fmt(mm.st+o)+' ('+l+')':l;
+    const steps=[[at(-180,'3 hours before'),'Pre-match meal: carbs and a little protein, nothing new'],[at(-90,'90 minutes before'),'Sip water, check your bag: boots, shin pads, spare socks, towel'],[at(-60,'1 hour before'),'Top-up snack, like a banana or rice cake'],[at(-45,'45 minutes before'),'Arrive, change, say hello to the team'],[at(-20,'Warm-up'),'Coach warm-up, then 3 minutes of keepy-uppies to find your touch'],[mm?fmt(mm.st)+' (Kick-off)':'Kick-off','Play. Use your one goal for the match'],[mm?fmt(mm.en+15)+' (After)':'Within 60 minutes after','Cool down, stretch, eat and drink to recover'],['That evening','Write 3 wins and 1 thing to work on']];
     h+='<ul class="tl" style="margin-top:12px">'+steps.map(x=>'<li><span class="tm" style="font-size:1rem;line-height:1.3">'+x[0]+'</span><span>'+x[1]+'</span></li>').join('')+'</ul>';
     h+='<p class="coach" style="margin-top:8px"><b>Your position</b>'+MATCHF[S.profile.pos]+'</p>';
     return h;
@@ -319,15 +328,17 @@ const MORN=[
 function buildMorning(k,type){
   const P=S.profile,w=S.weather[k]||null,r=rng('m'+k+type+(S.shuffle['m'+k]||0));
   let items=MORN.map(s=>({id:s.id,p:s.p,m:s.m,t:pickN(s.o(type,w),r,1)[0]}));
-  const wake=toMin(P.wake),leave=toMin(P.leave);let avail=leave-wake;
+  const tm=teamOf(k),earlyTeam=!!tm&&toMin(tm.start)<720;
+  const wake=toMin(P.wake),leave=earlyTeam?toMin(tm.start)-(+P.travel||0)-(+P.early||0):toMin(P.leave);let avail=leave-wake;
   if(avail<=0)avail+=1440;
+  if(earlyTeam){const e=items.find(i=>i.id==='eat');if(e)e.t='Light breakfast you can digest easily: toast with jam and a banana, or porridge. Nothing heavy before training.'}
   const sum=()=>items.reduce((a,b)=>a+b.m,0);
   while(sum()>avail&&items.some(i=>i.p>1)){const mx=Math.max(...items.map(i=>i.p));const idx=items.map(i=>i.p).lastIndexOf(mx);items.splice(idx,1)}
   let t=wake;const rows=items.map(i=>{const row={id:i.id,time:fmt(t),t:i.t,m:i.m};t+=i.m;return row});
   const spare=avail-sum();
   if(spare>=5){rows.push({id:'spare',time:fmt(t),t:'Spare time: relax, or check the bag once more',m:spare});t+=spare}
-  rows.push({id:'leave',time:fmt(leave),t:'Out of the door',m:0,end:true});
-  return {rows,warn:sum()>avail?'Your wake-up and leave times leave '+avail+' minutes but the essentials take '+sum()+'. Wake up earlier or leave later.':'',dropped:MORN.length-items.length};
+  rows.push({id:'leave',time:fmt(leave),t:earlyTeam?'Out of the door for training':'Out of the door',m:0,end:true});
+  return {rows,warn:sum()>avail?'Your wake-up and leave times leave '+avail+' minutes but the essentials take '+sum()+'. Try waking up at '+fmt(leave-sum())+'.':'',dropped:MORN.length-items.length,team:earlyTeam?tm:null};
 }
 const NIGHT=[
  {id:'refuel',m:5,when:t=>t==='train'||t==='match'||t==='solo',o:()=>['Recovery snack and a drink if you have not eaten since training: chocolate milk and a banana works well','Have a glass of water and a small snack']},
@@ -348,7 +359,33 @@ function buildNight(k,type){
   const [lo,hi]=SLEEP[P.age];
   let msg='Lights out at '+fmt(toMin(P.bed))+' and up at '+fmt(wake)+' is about '+hrs.toFixed(1).replace('.0','')+' hours of sleep. Players your age need about '+lo+' to '+hi+'.';
   let warn=hrs<lo?'That is short. Try lights out at '+fmt(wake-Math.round(lo*60))+' or earlier.':'';
+  const tm=teamOf(k);
+  if(tm){const tt=tmin(tm);if(tt.en>=960){const home=tt.en+(+P.travel||0),free=home+50,start=toMin(P.bed)-total;
+    if(start<free)warn=(warn?warn+' ':'')+'Team training ends at '+fmt(tt.en)+', so you get home about '+fmt(home)+'. Dinner and this routine are tight. Lights out at '+fmt(free+total)+' would fit, or skip the optional steps.'}}
   return {rows,msg,warn};
+}
+function buildTeam(k){
+  const tm=teamOf(k);if(!tm)return null;
+  const P=S.profile,travel=+P.travel||0,early=+P.early||0,type=typeOf(k),match=type==='match';
+  const tt=tmin(tm),st=tt.st,en=tt.en,wake=toMin(P.wake),rows=[];
+  const add=(id,time,t,m,end)=>rows.push({id:id,time:fmt(time),_t:time,t:t,m:m||0,end:!!end});
+  const leave=st-travel-early;
+  const meal=st-180;
+  if(meal<wake+15)add('eat',wake+15,'Light breakfast as soon as you can: toast with jam and a banana, or porridge. Nothing heavy.',15);
+  else add('eat',meal,'Finish your '+(match?'pre-match':'main')+' meal about now: carbs and a little protein, nothing new.',20);
+  if(st-90>=wake+45&&st-90>meal+20)add('snack',st-90,'Snack and a drink of water: banana, rice cakes or a yoghurt.',10);
+  add('bag',Math.max(leave-10,wake),'Final bag check: boots, shin pads, spare socks, water bottle'+(match?', towel and snack':'')+'.',5);
+  add('leave',leave,'Leave home',0,true);
+  add('arrive',st-early,'Arrive, change and say hello to the team.',early);
+  add('start',st,match?'Kick-off':'Session starts',0,true);
+  add('finish',en,match?'Full time':'Session ends',0,true);
+  add('post',en+15,'Recovery snack and a drink within 30 to 60 minutes: chocolate milk and a banana, or a sandwich.',10);
+  add('home',en+travel,'Home',0,true);
+  add('dinner',en+travel+10,'Dinner, then shower and unwind.',40);
+  rows.sort((a,b)=>a._t-b._t);
+  let warn='';
+  if(leave<wake+30)warn='You need to leave at '+fmt(leave)+'. Wake up by '+fmt(leave-45)+' to fit your morning.';
+  return {rows,warn,tm,match,travel,early};
 }
 function tlHTML(rows,kind,k){
   return '<ul class="tl">'+rows.map(x=>{
@@ -441,7 +478,9 @@ function mealDayHTML(type,key,head){
   h+=coverHTML(d.cov);
   if(d.cov.size<5){const miss=Object.keys(G).filter(g=>!d.cov.has(g));h+='<div class="note">To fill the gaps, add '+miss.map(g=>'<b>'+G[g].toLowerCase()+'</b> ('+GIDEA[g]+')').join(' and ')+'.</div>'}
   h+='<p class="small">Not keen on a meal? Tap Swap and choose another from the meal ideas.</p>';
-  h+='<div class="mgrid">'+d.picks.map((x,i)=>x.meal?mealCard(x.meal,x.slot[1],x.slot[2],'<div class="row" style="margin-top:8px">'+(x.mine?'<span class="tag" style="border-color:var(--pitch);color:var(--pitch)">Your pick</span>':'')+'<button class="chip" data-a="swap-start" data-i="'+i+'" data-code="'+x.slot[0]+'">Swap</button>'+(x.mine?'<button class="chip" data-a="swap-undo" data-i="'+i+'" data-key="'+key+'">Undo</button>':'')+'</div>'):'<div class="meal"><div class="slot">'+x.slot[1]+'</div><p class="small">No meal fits your food filters here yet. Try different filters in Me.</p></div>').join('')+'</div>';
+  const tmx=/^\d{4}-\d\d-\d\d$/.test(key)?teamOf(key):null,tq=tmx?tmin(tmx):null;
+  const subOf=sl=>{if(!tq)return sl[2];if(sl[0]==='pre')return 'around '+fmt(tq.st-90)+' (1 to 2 hours before)';if(sl[0]==='post')return 'by '+fmt(tq.en+45)+' (within 30 to 60 minutes after)';if(sl[0]==='match')return 'finish by '+fmt(tq.st-180);if(type==='match'&&sl[0]==='d')return 'by '+fmt(tq.en+120);return sl[2]};
+  h+='<div class="mgrid">'+d.picks.map((x,i)=>x.meal?mealCard(x.meal,x.slot[1],subOf(x.slot),'<div class="row" style="margin-top:8px">'+(x.mine?'<span class="tag" style="border-color:var(--pitch);color:var(--pitch)">Your pick</span>':'')+'<button class="chip" data-a="swap-start" data-i="'+i+'" data-code="'+x.slot[0]+'">Swap</button>'+(x.mine?'<button class="chip" data-a="swap-undo" data-i="'+i+'" data-key="'+key+'">Undo</button>':'')+'</div>'):'<div class="meal"><div class="slot">'+x.slot[1]+'</div><p class="small">No meal fits your food filters here yet. Try different filters in Me.</p></div>').join('')+'</div>';
   if(nMine)h+='<div class="row" style="margin-top:8px"><button class="chip" data-a="swap-reset" data-key="'+key+'">Put back the suggested meals</button></div>';
   return h;
 }
@@ -568,11 +607,13 @@ function viewToday(){
   let h='';
   if(!P.setup)h+='<div class="card note"><b>Start here.</b> Tell Pitch Plan your age group, position and wake-up time in <a href="#me" style="color:inherit;font-weight:600">Me</a> and everything below will fit you.</div>';
   h+='<section class="card hero"><div><span class="sub">'+greet+(P.name?', '+esc(P.name):'')+'</span><div class="date">'+longDate(k)+'</div></div>'+
-    '<div class="row"><span class="pill t-'+type+'">'+TYPES[type]+'</span><span class="small">'+POSN[P.pos]+' · '+AGEN[P.age]+'</span></div>'+
+    '<div class="row"><span class="pill t-'+type+'">'+TYPES[type]+'</span>'+(teamOf(k)?'<span class="pill" style="background:var(--surface2);color:var(--ink)">Team '+teamOf(k).start+' to '+teamOf(k).end+'</span>':'')+'<span class="small">'+POSN[P.pos]+' · '+AGEN[P.age]+'</span></div>'+
     '<div><div class="lab" style="font-weight:600">What is the weather like?</div>'+weatherChips(k)+'</div></section>';
   h+='<section class="card"><div class="sec-head"><h3>Words from the pros</h3><button class="btn alt" data-a="shuffle" data-k="q">Another</button></div>'+quoteHTML(quoteOfDay())+'</section>';
   h+='<div class="grid">';
   h+='<section class="card">'+sessionHTML(k)+'</section>';
+  const tb=buildTeam(k);
+  if(tb)h+='<section class="card"><div class="sec-head"><h3>Team '+(tb.match?'match':'session')+' timeline</h3></div>'+(tb.warn?'<div class="note">'+tb.warn+'</div>':'')+tlHTML(tb.rows,'team',k)+'</section>';
   h+='<section class="card"><div class="sec-head"><h3>Eat today</h3></div>'+mealDayHTML(type,k,'Meal plan').replace(/<div class="sec-head"><h3>Meal plan<\/h3>/,'<div class="sec-head"><h3 class="small" style="font-family:var(--font-b);text-transform:none;letter-spacing:0">'+TYPES[type]+'</h3>')+'<h3 style="margin-top:14px">Drinks</h3>'+waterHTML()+'</section>';
   const m=buildMorning(k,type),n=buildNight(k,type);
   h+='<section class="card"><div class="sec-head"><h3>Morning routine</h3><button class="btn alt" data-a="go" data-v="routines" data-kind="morning">Open</button></div>'+(m.warn?'<div class="note">'+m.warn+'</div>':'')+tlHTML(m.rows,'morning',k)+'</section>';
@@ -585,12 +626,16 @@ function viewToday(){
 }
 function viewRoutines(){
   const k=today,type=ui.rType||typeOf(k),kind=ui.rKind;
-  let h='<section class="card"><div class="sec-head"><h2>Routines</h2><button class="btn alt" data-a="shuffle" data-k="'+(kind==='morning'?'m':'n')+k+'">Shuffle ideas</button></div>'+
-   '<div class="chips" role="group" aria-label="Routine"><button class="chip" data-a="rkind" data-v="morning" aria-pressed="'+(kind==='morning')+'">Morning</button><button class="chip" data-a="rkind" data-v="night" aria-pressed="'+(kind==='night')+'">Night</button></div>'+
+  let h='<section class="card"><div class="sec-head"><h2>Routines</h2><button class="btn alt" data-a="shuffle" data-k="'+(kind==='night'?'n':'m')+k+'">Shuffle ideas</button></div>'+
+   '<div class="chips" role="group" aria-label="Routine"><button class="chip" data-a="rkind" data-v="morning" aria-pressed="'+(kind==='morning')+'">Morning</button><button class="chip" data-a="rkind" data-v="team" aria-pressed="'+(kind==='team')+'">Team session</button><button class="chip" data-a="rkind" data-v="night" aria-pressed="'+(kind==='night')+'">Night</button></div>'+
    '<div class="lab small">Type of day</div><div class="chips" role="group" aria-label="Day type for routine">'+TKEYS.map(t=>'<button class="chip" data-a="rtype" data-v="'+t+'" aria-pressed="'+(type===t)+'">'+TYPES[t]+'</button>').join('')+'</div>';
   if(kind==='morning'){
     const m=buildMorning(k,type);
-    h+='<p class="sub">Up at '+S.profile.wake+', out of the door at '+S.profile.leave+'. Change these in Me.</p>'+(m.warn?'<div class="note">'+m.warn+'</div>':'')+(m.dropped?'<p class="small">Skipped '+m.dropped+' optional step'+(m.dropped>1?'s':'')+' to fit your morning.</p>':'')+tlHTML(m.rows,'morning',k);
+    h+='<p class="sub">Up at '+S.profile.wake+', out of the door at '+(m.team?fmt(toMin(m.team.start)-(+S.profile.travel||0)-(+S.profile.early||0))+' for team training':S.profile.leave)+'. Change these in Me.</p>'+(m.warn?'<div class="note">'+m.warn+'</div>':'')+(m.dropped?'<p class="small">Skipped '+m.dropped+' optional step'+(m.dropped>1?'s':'')+' to fit your morning.</p>':'')+tlHTML(m.rows,'morning',k);
+  }else if(kind==='team'){
+    const tb=buildTeam(k);
+    if(!tb)h+='<div class="note">No team session set for today. Add one in the <a href="#calendar" style="color:inherit;font-weight:600">Calendar</a>, or set your weekly team days in <a href="#me" style="color:inherit;font-weight:600">Me</a>.</div>';
+    else h+='<p class="sub">Team '+(tb.match?'match':'training')+' '+tb.tm.start+' to '+tb.tm.end+'. Travel '+tb.travel+' minutes, arriving '+tb.early+' minutes early.</p>'+(tb.warn?'<div class="note">'+tb.warn+'</div>':'')+tlHTML(tb.rows,'team',k);
   }else{
     const n=buildNight(k,type);
     h+='<p class="sub">'+n.msg+'</p>'+(n.warn?'<div class="note">'+n.warn+'</div>':'')+tlHTML(n.rows,'night',k);
@@ -604,14 +649,18 @@ function viewCalendar(){
   for(let i=0;i<off;i++)cells+='<div></div>';
   for(let d=1;d<=dim;d++){
     const k=y+'-'+pad(m+1)+'-'+pad(d),t=typeOf(k);
-    cells+='<button class="cell'+(k===today?' today':'')+(k===ui.sel?' sel':'')+'" data-a="day" data-k="'+k+'" aria-label="'+DAYN[parseKey(k).getDay()]+' '+d+' '+MONTHS[m]+', '+TYPES[t]+'" aria-pressed="'+(k===ui.sel)+'"><span class="dn">'+d+'</span><span class="tb t-'+t+'">'+TS[t]+'</span></button>';
+    const tcell=teamOf(k);
+    cells+='<button class="cell'+(k===today?' today':'')+(k===ui.sel?' sel':'')+(tcell?' team':'')+'" data-a="day" data-k="'+k+'" aria-label="'+DAYN[parseKey(k).getDay()]+' '+d+' '+MONTHS[m]+', '+TYPES[t]+(tcell?', team session '+tcell.start+' to '+tcell.end:'')+'" aria-pressed="'+(k===ui.sel)+'"><span class="dn">'+d+'</span><span class="tb t-'+t+'">'+TS[t]+'</span></button>';
   }
   const k=ui.sel,t=typeOf(k),dow=parseKey(k).getDay();
   let h='<div class="grid"><section class="card"><div class="cal-top"><button class="btn alt" data-a="month" data-v="-1" aria-label="Previous month">‹</button><h3>'+MONTHS[m]+' '+y+'</h3><button class="btn alt" data-a="month" data-v="1" aria-label="Next month">›</button></div><div class="cal">'+cells+'</div>'+
-   '<div class="legend">'+TKEYS.map(x=>'<span class="pill t-'+x+'" style="font-size:.85rem">'+TYPES[x]+'</span>').join('')+'</div><p class="small" style="margin-top:8px">Tap a day to choose its type, set the weather and see the session. Training days repeat each week from the pattern in Me.</p></section>';
+   '<div class="legend">'+TKEYS.map(x=>'<span class="pill t-'+x+'" style="font-size:.85rem">'+TYPES[x]+'</span>').join('')+'<span class="small" style="display:inline-flex;align-items:center;gap:6px"><span class="dot"></span>Team session</span></div><p class="small" style="margin-top:8px">Tap a day to choose its type, set the weather and see the session. Training days repeat each week from the pattern in Me.</p></section>';
   h+='<section class="card"><h2>'+DAYN[dow]+' '+parseKey(k).getDate()+' '+MONTHS[parseKey(k).getMonth()]+'</h2><div class="row"><span class="pill t-'+t+'">'+TYPES[t]+'</span></div>'+
     '<div class="lab small" style="margin-top:8px">Day type</div>'+typeChips(k)+
     '<div class="row"><button class="btn alt" data-a="repeat" data-k="'+k+'">Repeat every '+DAYN[dow]+'</button>'+(S.overrides[k]?'<button class="btn alt" data-a="clear" data-k="'+k+'">Back to weekly pattern</button>':'')+'</div>'+
+    (()=>{const tm=teamOf(k);return '<div style="margin-top:12px"><div class="checks"><label><input type="checkbox" data-teamdate="'+k+'"'+(tm?' checked':'')+'> I have team '+(t==='match'?'match':'training')+' on this day</label></div>'+
+      (tm?'<div class="form" style="margin-top:8px"><div class="field"><label for="td-s">'+(t==='match'?'Kick-off':'Starts')+'</label><input id="td-s" type="time" data-tdf="start" data-k="'+k+'" value="'+tm.start+'"></div><div class="field"><label for="td-e">Ends</label><input id="td-e" type="time" data-tdf="end" data-k="'+k+'" value="'+tm.end+'"></div></div>':'')+
+      (Object.prototype.hasOwnProperty.call(S.team.dates,k)?'<button class="chip" data-a="team-clear" data-k="'+k+'">Use my weekly team pattern</button>':'')+'</div>'})()+
     '<div class="lab small" style="margin-top:12px">Weather</div>'+weatherChips(k)+sessionHTML(k)+
     '<div class="row" style="margin-top:14px"><button class="btn" data-a="go" data-v="meals" data-type="'+t+'">Meals for this day</button><button class="btn alt" data-a="go" data-v="routines" data-type="'+t+'" data-kind="morning">Routines for this day</button></div></section></div>';
   return h;
@@ -664,6 +713,8 @@ function viewMe(){
    '<div class="field"><label for="f-leave">Out of the door at</label><input id="f-leave" type="time" data-f="leave" value="'+P.leave+'"></div>'+
    '<div class="field"><label for="f-bed">Lights out</label><input id="f-bed" type="time" data-f="bed" value="'+P.bed+'"></div></div>'+
    '<div class="field"><span class="lab">Food filters</span><div class="checks">'+Object.keys(DIETN).map(d=>'<label><input type="checkbox" data-diet="'+d+'"'+((P.diet||[]).includes(d)?' checked':'')+'> '+DIETN[d]+'</label>').join('')+'</div><p class="small">Allergies need a real label check. Pitch Plan only suggests swaps.</p></div></section>';
+  h+='<section class="card"><h3>Team training</h3><p class="sub">Tell Pitch Plan when you train or play with your team and it plans your morning, meals and evening around it. You can also set single days in the Calendar.</p><div class="form" style="margin-top:12px"><div class="field"><label for="f-travel">Travel time (minutes each way)</label><input id="f-travel" type="number" min="0" max="120" inputmode="numeric" data-f="travel" value="'+(+P.travel||0)+'"></div><div class="field"><label for="f-early">Arrive early (minutes)</label><select id="f-early" data-f="early">'+[0,10,15,20,30].map(n=>'<option value="'+n+'"'+(+P.early===n?' selected':'')+'>'+n+'</option>').join('')+'</select></div></div><div class="lab small">Weekly team days</div>'+
+   [1,2,3,4,5,6,0].map(d=>{const tw=S.team.week[d];return '<div class="row" style="padding:8px 0;border-top:1px solid var(--line)"><label style="display:flex;gap:8px;align-items:center;min-width:8.5rem;cursor:pointer"><input type="checkbox" style="width:20px;height:20px;accent-color:var(--pitch)" data-tw="'+d+'"'+(tw?' checked':'')+'> '+DAYN[d]+'</label>'+(tw?'<label class="small" for="tws-'+d+'">From</label><input id="tws-'+d+'" type="time" data-twf="start" data-d="'+d+'" value="'+tw.start+'" style="background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:6px;min-height:38px"><label class="small" for="twe-'+d+'">to</label><input id="twe-'+d+'" type="time" data-twf="end" data-d="'+d+'" value="'+tw.end+'" style="background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:6px;min-height:38px">':'<span class="small">No team session</span>')+'</div>'}).join('')+'</section>';
   h+='<section class="card"><h3>Weekly pattern</h3><p class="sub">The type of day for each weekday. You can still change single days in the calendar.</p><div class="form" style="margin-top:10px">'+[1,2,3,4,5,6,0].map(d=>'<div class="field"><label for="w-'+d+'">'+DAYN[d]+'</label><select id="w-'+d+'" data-week="'+d+'">'+opt(TYPES,S.week[d])+'</select></div>').join('')+'</div></section>';
   h+='<section class="card"><h3>Sync between devices</h3><p class="sub">Open this page’s link on your laptop and iPad, signed in to the same Claude account, and your settings follow you. Changes arrive within a few seconds. If you change the same thing on two devices at once, the newest change wins.</p><p id="sync-status" data-state="'+ui.sync.state+'" style="margin-top:8px;font-weight:600">'+esc(ui.sync.msg)+'</p><div class="row" style="margin-top:10px"><button class="btn alt" data-a="sync-now">Sync now</button></div><p class="small" style="margin-top:8px">The saved copy is private to you. The downloaded footy.html file cannot sync. Use backup and restore there.</p></section>';
   h+='<section class="card"><h3>Back up and restore</h3><p class="sub">Save your settings to move them to another device or keep them safe.</p>'+
@@ -751,6 +802,7 @@ document.addEventListener('click',e=>{
    case 'bk-dl':{try{const bl=new Blob([JSON.stringify(S)],{type:'application/json'});const u=URL.createObjectURL(bl);const l=document.createElement('a');l.href=u;l.download='pitch-plan-backup.json';document.body.appendChild(l);l.click();l.remove();ui.msg='Backup file download started. If nothing downloaded, use Copy backup instead.'}catch(x){ui.msg='Download did not work here. Use Copy backup instead.'}render(true);return}
    case 'bk-restore':{const v=($('#bk-in')||{}).value||'';return restore(v)}
    case 'sync-now':if(sync.ref){S._t=Date.now();save(true);push();setSync('on','Syncing…')}else setSync('off',ui.sync.msg);return
+   case 'team-clear':delete S.team.dates[k];break;
    case 'rkind':ui.rKind=v;break;
    case 'hplace':ui.hPlace=v;break;
    case 'hspace':ui.hSpace=v;break;
@@ -775,11 +827,15 @@ document.addEventListener('change',e=>{
   const t=e.target;
   if(t.dataset.bkfile){const f=t.files&&t.files[0];if(!f)return;const r=new FileReader();r.onload=()=>restore(String(r.result));r.onerror=()=>{ui.msg='Could not read that file.';render(true)};r.readAsText(f);return}
   if(t.dataset.swapmeal!==undefined){if(t.value==='')return;const key=mealsKey();(S.picks[key]=S.picks[key]||{})[t.value]=t.dataset.swapmeal;const sl=PLAN[ui.mType||typeOf(today)][+t.value];ui.msg='Swapped in '+t.dataset.swapmeal+' for '+(sl?sl[1].toLowerCase():'that meal')+'.';save();render(true);window.scrollTo(0,0);return}
+  if(t.dataset.teamdate){const k=t.dataset.teamdate;if(t.checked){S.team.dates[k]=Object.assign({},teamOf(k)||DEFTEAM);if(typeOf(k)!=='train'&&typeOf(k)!=='match')S.overrides[k]='train'}else S.team.dates[k]=false;save();render(true);return}
+  if(t.dataset.tdf){const k=t.dataset.k;const cur=S.team.dates[k];const o=cur||(S.team.dates[k]=Object.assign({},teamOf(k)||DEFTEAM));o[t.dataset.tdf]=t.value;save();render(true);return}
+  if(t.dataset.tw!==undefined){const d=t.dataset.tw;if(t.checked){S.team.week[d]=Object.assign({},DEFTEAM);if(S.week[d]!=='train'&&S.week[d]!=='match')S.week[d]='train'}else delete S.team.week[d];save();render(true);return}
+  if(t.dataset.twf){const o=S.team.week[t.dataset.d];if(o){o[t.dataset.twf]=t.value;save();render(true)}return}
   if(t.dataset.tick){S.ticks[t.dataset.tick]=t.checked;save();return}
   if(t.dataset.chal){S.chal[t.dataset.chal]=t.checked;save();return}
   if(t.dataset.a==='tipmine'){ui.tipMine=t.checked;render(true);return}
   if(t.dataset.rec){S.rec[t.dataset.rec]=Math.max(0,parseInt(t.value,10)||0);save();return}
-  if(t.dataset.f){const f=t.dataset.f;let v=t.value;if(f==='dur')v=+v;S.profile[f]=v;S.profile.setup=true;save();render(true);return}
+  if(t.dataset.f){const f=t.dataset.f;let v=t.value;if(f==='dur'||f==='travel'||f==='early')v=+v;S.profile[f]=v;S.profile.setup=true;save();render(true);return}
   if(t.dataset.week){S.week[t.dataset.week]=t.value;save();render(true);return}
   if(t.dataset.diet){const d=S.profile.diet||[];S.profile.diet=t.checked?d.concat(t.dataset.diet):d.filter(x=>x!==t.dataset.diet);S.profile.setup=true;save();render(true)}
 });
