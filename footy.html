@@ -181,14 +181,14 @@ const longDate=k=>{const d=parseKey(k);return DAYS[d.getDay()]+' '+d.getDate()+'
 
 /* ---------- state ---------- */
 const DEF={profile:{name:'',age:'a2',pos:'mid',wake:'07:00',leave:'08:15',bed:'21:30',who:'f',dur:45,travel:20,early:15,diet:[],setup:false},
-  week:{0:'recover',1:'rest',2:'train',3:'solo',4:'train',5:'rest',6:'match'},overrides:{},weather:{},ticks:{},shuffle:{},rec:{jug:0,left:0,right:0},chal:{},picks:{},team:{week:{},dates:{}},teamRow:{},feel:{},diary:{},focus:{},recHist:{},matches:[],mTicks:{},goals:[],_t:0};
+  week:{0:'recover',1:'rest',2:'train',3:'solo',4:'train',5:'rest',6:'match'},overrides:{},weather:{},ticks:{},shuffle:{},rec:{jug:0,left:0,right:0},chal:{},picks:{},team:{week:{},dates:{}},teamRow:{},feel:{},diary:{},focus:{},recHist:{},matches:[],mTicks:{},goals:[],sleep:{},shop:{ticks:{},extra:[]},_t:0};
 let S=JSON.parse(JSON.stringify(DEF));
-function merge(o){S=Object.assign({},JSON.parse(JSON.stringify(DEF)),o);S.teamRow=S.teamRow||{};S.profile=Object.assign({},DEF.profile,o.profile||{});S.week=Object.assign({},DEF.week,o.week||{});S.rec=Object.assign({},DEF.rec,o.rec||{});S.team=Object.assign({},DEF.team,o.team||{});S.team.week=S.team.week||{};S.team.dates=S.team.dates||{}}
+function merge(o){S=Object.assign({},JSON.parse(JSON.stringify(DEF)),o);S.teamRow=S.teamRow||{};S.profile=Object.assign({},DEF.profile,o.profile||{});S.week=Object.assign({},DEF.week,o.week||{});S.rec=Object.assign({},DEF.rec,o.rec||{});S.shop=Object.assign({},DEF.shop,o.shop||{});S.shop.ticks=S.shop.ticks||{};S.shop.extra=S.shop.extra||[];S.team=Object.assign({},DEF.team,o.team||{});S.team.week=S.team.week||{};S.team.dates=S.team.dates||{}}
 function load(){try{const v=localStorage.getItem('pitchplan_v1');if(v)merge(JSON.parse(v))}catch(e){}}
 function save(){S._t=Date.now();try{localStorage.setItem('pitchplan_v1',JSON.stringify(S))}catch(e){}}
 load();
 const today=dkey(new Date());
-const ui={tab:'today',sel:today,month:[new Date().getFullYear(),new Date().getMonth()],rKind:'morning',rType:null,mType:null,mFilter:'all',plate:{},tipCat:'all',tipMine:false,confirm:false,hPlace:null,hSpace:'tiny',hMin:15,msg:'',swapIdx:null,editRow:null,wk:0,dDate:null,draft:null,mDraft:null,gDraft:null,mMsg:'',gMsg:'',rChart:null};
+const ui={tab:'today',sel:today,month:[new Date().getFullYear(),new Date().getMonth()],rKind:'morning',rType:null,mType:null,mFilter:'all',plate:{},tipCat:'all',tipMine:false,confirm:false,hPlace:null,hSpace:'tiny',hMin:15,msg:'',swapIdx:null,editRow:null,wk:0,dDate:null,draft:null,mDraft:null,gDraft:null,mMsg:'',gMsg:'',rChart:null,sDate:null,sDraft:null,sMsg:''};
 const FEEL={fresh:'Fresh',ok:'Okay',tired:'Tired',sore:'Sore',hurt:'Something hurts'};
 const HI=new Set(['Dive and recover','Jockey and shuffle','Delay and win it','Runs in behind','Short shuttle sprints','Mini bodyweight circuit','Take-on moves']);
 const HURTN='<div class="note"><b>Something hurts.</b> Do not train through pain. Tell a parent, carer or coach, and get it checked if it lasts more than a day. If you took a knock to the head, or you feel dizzy or sick, stop and tell an adult straight away. Rest and easy walking are fine until it is checked.</div>';
@@ -896,8 +896,80 @@ function viewGoals(){
   return h;
 }
 
-const VIEWS={today:viewToday,routines:viewRoutines,calendar:viewCalendar,diary:viewDiary,match:viewMatch,goals:viewGoals,home:viewHome,meals:viewMeals,tips:viewTips,me:viewMe};
-const TABN={today:'Today',routines:'Routines',calendar:'Calendar',diary:'Diary',match:'Match day',goals:'Goals',home:'At home',meals:'Meals',tips:'Tips',me:'Me'};
+/* shopping list, sleep and mood */
+const AISLES=[['Cupboard',/peanut butter|nut butter|seed butter|sauce|chia|apricot|honey|jam|syrup|dried|raisin|cracker|rice cake|granola|cereal/i],['Fruit and veg',/banana|apple|berr|orange|spinach|carrot|tomato|pepper|broccoli|cucumber|lettuce|salad|veg|avocado|grape|mango|pear|kiwi|melon|sweetcorn|corn|onion|garlic|mushroom|courgette|cabbage|potato|fruit|lemon|lime|pineapple|beetroot|celery|leek|squash|pumpkin|peach|plum|cherry|raisin|date/i],
+ ['Fruit and veg',/green bean|sweetcorn/i],['Dairy and fridge',/milk|yoghurt|yogurt|cheese|butter|cream|custard|hummus|tofu|kefir|dairy/i],
+ ['Meat and protein',/chicken|turkey|beef|mince|lamb|pork|ham|sausage|bacon|lentil|chickpea|bean|quorn|salmon|tuna|meatball|burger/i],
+ ['Bread, rice and pasta',/bread|toast|oat|rice|pasta|noodle|couscous|bagel|muffin|wrap|pitta|cereal|granola|cracker|tortilla|crumpet|flour|bulgur|quinoa|porridge|pancake|roll|bun/i],
+ ['Cupboard',/./]];
+const AISLES_ORDER=['Fruit and veg','Dairy and fridge','Meat and protein','Bread, rice and pasta','Cupboard'];
+function aisleOf(n){for(const a of AISLES)if(a[1].test(n))return a[0];return 'Cupboard'}
+function normIng(t){
+  let x=t.toLowerCase().replace(/^(spoon of|spoonful of|drizzle of|little|a little|handful of|small|slice of|slices of)\s+/,'').replace(/\s+on top$/,'').replace(/^(grated|sliced|chopped|mashed|cooked|frozen|nut-free)\s+/,'');
+  const map={'carrot sticks':'carrots','pitta':'pitta bread','toast':'wholemeal bread','cheese':'cheese','tomato':'tomatoes','pepper':'peppers','potato':'potatoes','strawberry':'strawberries','berry':'berries','banana':'bananas','apple':'apples','egg':'eggs','cucumber':'cucumber','chickpea':'chickpeas','oat':'oats','wholegrain cereal':'cereal','dried apricots':'dried apricots'};
+  if(map[x])x=map[x];
+  if(!x||/^(water|salt|pepper and salt)$/.test(x))return '';
+  return x.charAt(0).toUpperCase()+x.slice(1);
+}
+function shopItems(){
+  const cnt={};
+  for(let i=0;i<7;i++){
+    const k=dkey(addDays(parseKey(today),i)),type=typeOf(k),d=buildMealDay(type,k),mine=(S.picks&&S.picks[k])||{};
+    d.picks.forEach((x,j)=>{let m=x.meal;if(mine[j]){const q=M.find(z=>z.n===mine[j]);if(q&&mealOK(q))m=q}
+      if(!m||!m.ing)return;
+      m.ing.split(/,| and /).map(t=>t.trim().replace(/^(a |an |some |the )/i,'')).filter(Boolean).forEach(t=>{const n=normIng(t);if(n)cnt[n]=(cnt[n]||0)+1})});
+  }
+  return cnt;
+}
+function viewShop(){
+  const cnt=shopItems(),by={};
+  Object.keys(cnt).sort().forEach(n=>{(by[aisleOf(n)]=by[aisleOf(n)]||[]).push(n)});
+  const row=(n,c,key)=>'<label style="display:flex;gap:8px;align-items:center"><input type="checkbox" data-shop="'+esc(key)+'"'+(S.shop.ticks[key]?' checked':'')+'> <span'+(S.shop.ticks[key]?' style="text-decoration:line-through;opacity:.6"':'')+'>'+esc(n)+(c>1?' <span class="small">(in '+c+' meals)</span>':'')+'</span></label>';
+  let h='<section class="card"><h2>Shopping list</h2><p class="sub">Everything in your meal plan for the next 7 days, from today. It follows any meals you swap. Tick things off as you put them in the trolley.</p>';
+  const total=Object.keys(cnt).length+S.shop.extra.length,got=Object.keys(cnt).filter(n=>S.shop.ticks[n]).length+S.shop.extra.filter(n=>S.shop.ticks['x|'+n]).length;
+  h+='<p class="small">'+got+' of '+total+' ticked.</p>';
+  AISLES_ORDER.forEach(a=>{a=[a];const l=by[a[0]];if(l&&l.length)h+='<h3 style="margin-top:14px">'+a[0]+'</h3><div class="checks" style="display:grid;gap:10px;margin-top:6px">'+l.map(n=>row(n,cnt[n],n)).join('')+'</div>'});
+  h+='<h3 style="margin-top:14px">My extras</h3>'+(S.shop.extra.length?'<div class="checks" style="display:grid;gap:10px;margin-top:6px">'+S.shop.extra.map((n,i)=>'<div class="row" style="align-items:center">'+row(n,1,'x|'+n)+'<button class="btn alt" style="padding:2px 10px;min-height:0" data-a="sh-del" data-k="'+i+'" aria-label="Remove '+esc(n)+'">Remove</button></div>').join('')+'</div>':'<p class="small">Add anything else you need, like water or snacks for the bag.</p>')+
+   '<div class="row" style="margin-top:10px;align-items:end"><div class="field" style="margin:0;flex:1"><label for="sh-new">Add an item</label><input id="sh-new" type="text" maxlength="60" placeholder="For example: sports drink"></div><button class="btn" data-a="sh-add">Add</button></div>'+
+   '<div class="row" style="margin-top:12px"><button class="btn alt" data-a="sh-clear">Clear the ticks</button></div></section>';
+  return h;
+}
+const MOOD=['Upset','Low','Okay','Good','Great'],SLQ=['Poor','Restless','Okay','Good','Great'];
+const sleepHrs=(b,w)=>{const bm=toMin(b),wm=toMin(w);return Math.round(((wm-bm+1440)%1440)/6)/10};
+function viewSleep(){
+  const dk=ui.sDate||today;
+  if(!ui.sDraft){const e=S.sleep[dk];ui.sDraft=e?Object.assign({},e):{bed:S.profile.bed,wake:S.profile.wake,q:0,mood:0,note:''}}
+  const d=ui.sDraft,has=!!S.sleep[dk];
+  let h='<section class="card"><h2>Sleep and mood</h2><p class="sub">Log last night’s sleep and how you feel today. Most young players need about 8 to 11 hours.</p>'+(ui.sMsg?'<div class="note" role="status" style="margin-top:8px">'+esc(ui.sMsg)+'</div>':'')+
+   '<div class="form" style="margin-top:12px"><div class="field"><label for="sl-date">Morning of</label><input id="sl-date" type="date" max="'+today+'" value="'+dk+'"></div>'+
+   '<div class="field"><label for="sl-bed">Went to bed</label><input id="sl-bed" type="time" data-sd="bed" value="'+esc(d.bed)+'"></div>'+
+   '<div class="field"><label for="sl-wake">Woke up</label><input id="sl-wake" type="time" data-sd="wake" value="'+esc(d.wake)+'"></div></div>'+
+   '<div class="lab small">How well did you sleep?</div><div class="chips" role="group" aria-label="Sleep quality">'+SLQ.map((x,i)=>'<button class="chip" data-a="sl-q" data-v="'+(i+1)+'" aria-pressed="'+(d.q===i+1)+'">'+(i+1)+' · '+x+'</button>').join('')+'</div>'+
+   '<div class="lab small">How is your mood?</div><div class="chips" role="group" aria-label="Mood">'+MOOD.map((x,i)=>'<button class="chip" data-a="sl-mood" data-v="'+(i+1)+'" aria-pressed="'+(d.mood===i+1)+'">'+(i+1)+' · '+x+'</button>').join('')+'</div>'+
+   '<div class="field" style="margin-top:12px"><label for="sl-note">Anything on your mind? (optional)</label><input id="sl-note" type="text" maxlength="140" data-sd="note" value="'+esc(d.note||'')+'" placeholder="A few words"></div>'+
+   '<div class="row"><button class="btn" data-a="sl-save">'+(has?'Update entry':'Save entry')+'</button>'+(has?'<button class="btn alt" data-a="sl-del">Delete entry</button>':'')+'</div>'+
+   '<p class="small" style="margin-top:10px">If you feel low for a few days in a row, tell a parent, carer or coach. Talking helps.</p></section>';
+  const days=[...Array(7).keys()].map(i=>addDays(parseKey(today),i-6)),keys=days.map(dkey),ents=keys.map(k=>S.sleep[k]||null),logged=ents.filter(Boolean);
+  const avgH=logged.length?logged.reduce((a,e)=>a+e.hrs,0)/logged.length:0,avgM=logged.length?logged.reduce((a,e)=>a+e.mood,0)/logged.length:0;
+  const r1=v=>Math.round(v*10)/10;
+  h+='<section class="card" style="margin-top:16px"><h3>Last 7 days</h3><div class="cols2" style="margin:12px 0"><div><div class="small">Average sleep</div><div class="min" style="font-size:2.4rem">'+(logged.length?r1(avgH):'–')+'<span class="small"> hrs</span></div></div><div><div class="small">Average mood</div><div class="min" style="font-size:2.4rem">'+(logged.length?r1(avgM):'–')+'<span class="small"> / 5</span></div></div></div>'+
+   '<div class="bars" role="img" aria-label="Hours slept each day">'+days.map((dd,i)=>{const e=ents[i];return '<div class="bar'+(i%2?' p':'')+'"><span>'+(e?r1(e.hrs):'')+'</span><i style="height:'+(e?Math.min(80,Math.round(e.hrs*6.5)):2)+'px"></i><b>'+DAYS[dd.getDay()].charAt(0)+'</b></div>'}).join('')+'</div>';
+  const tips=[];
+  if(!logged.length)tips.push('Nothing logged in the last 7 days. Add last night above.');
+  if(logged.length&&avgH<8)tips.push('You are averaging under 8 hours. Try going to bed 30 minutes earlier and putting screens away an hour before.');
+  if(logged.length&&avgH>=9)tips.push('Great sleep. That helps your energy, mood and recovery.');
+  if(logged.length&&avgM<3)tips.push('Your mood has been low. Chat with someone you trust, and make sure you eat well and get outside.');
+  const all=Object.keys(S.sleep).map(k=>S.sleep[k]),good=all.filter(e=>e.hrs>=9),short=all.filter(e=>e.hrs<9);
+  if(good.length>=2&&short.length>=2){const a=good.reduce((s,e)=>s+e.mood,0)/good.length,b=short.reduce((s,e)=>s+e.mood,0)/short.length;if(a-b>=0.4)tips.push('On mornings after 9 or more hours, your mood averaged '+r1(a)+' compared with '+r1(b)+' after less. Sleep seems to help you.')}
+  if(tips.length)h+='<div class="note" style="margin-top:10px">'+tips.map(esc).join('<br>')+'</div>';
+  h+='</section>';
+  const rec=Object.keys(S.sleep).sort().reverse().slice(0,10);
+  if(rec.length)h+='<section class="card" style="margin-top:16px"><h3>Recent entries</h3><ul class="tl">'+rec.map(k=>{const e=S.sleep[k];return '<li style="grid-template-columns:5rem 1fr"><span class="tm" style="font-size:1.05rem">'+longDate(k)+'</span><div><b>'+r1(e.hrs)+' hrs</b> · sleep '+esc(SLQ[e.q-1]||'')+' · mood '+esc(MOOD[e.mood-1]||'')+(e.note?'<div class="small">'+esc(e.note)+'</div>':'')+' <button class="btn alt" style="margin-top:6px;padding:4px 10px;min-height:0" data-a="sl-edit" data-k="'+k+'">Edit</button></div></li>'}).join('')+'</ul></section>';
+  return h;
+}
+
+const VIEWS={today:viewToday,routines:viewRoutines,calendar:viewCalendar,diary:viewDiary,match:viewMatch,goals:viewGoals,sleep:viewSleep,shop:viewShop,home:viewHome,meals:viewMeals,tips:viewTips,me:viewMe};
+const TABN={today:'Today',routines:'Routines',calendar:'Calendar',diary:'Diary',match:'Match day',goals:'Goals',sleep:'Sleep',shop:'Shopping',home:'At home',meals:'Meals',tips:'Tips',me:'Me'};
 function render(keepScroll){
   const y=window.scrollY;
   $('#tabs').innerHTML=Object.keys(TABN).map(t=>'<button data-a="tab" data-v="'+t+'"'+(ui.tab===t?' aria-current="page"':'')+'>'+TABN[t]+'</button>').join('');
@@ -905,7 +977,7 @@ function render(keepScroll){
   if(keepScroll)window.scrollTo(0,y);
   const c=$('#clock');if(c)c.textContent=longDate(today);
 }
-function go(tab,keep){ui.tab=tab;ui.msg='';ui.mMsg='';ui.gMsg='';ui.editRow=null;try{history.replaceState(null,'','#'+tab)}catch(e){};render(keep);if(!keep)window.scrollTo(0,0)}
+function go(tab,keep){ui.tab=tab;ui.msg='';ui.mMsg='';ui.gMsg='';ui.sMsg='';ui.editRow=null;try{history.replaceState(null,'','#'+tab)}catch(e){};render(keep);if(!keep)window.scrollTo(0,0)}
 
 /* ---------- session timer ---------- */
 let run=null,runTick=null;
@@ -1001,6 +1073,14 @@ document.addEventListener('click',e=>{
    case 'g-add':{const d=ui.gDraft||{};if(!(d.text||'').trim()){ui.gMsg='Write your goal first.';render(true);return}if(d.rec&&!(+d.target>0)){ui.gMsg='Add a target number for the record you linked.';render(true);return}S.goals.push({id:Date.now(),text:d.text.trim(),rec:d.rec||'',target:d.rec?+d.target:0,by:d.by||'',done:false});ui.gDraft=null;ui.gMsg='Goal added.';break}
    case 'g-done':{const g=S.goals.find(x=>String(x.id)===k);if(g)g.done=!g.done;break}
    case 'g-del':S.goals=S.goals.filter(x=>String(x.id)!==k);break;
+   case 'sl-q':ui.sDraft=ui.sDraft||{};ui.sDraft.q=+v;document.querySelectorAll('[data-a=sl-q]').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.v===v)));return
+   case 'sl-mood':ui.sDraft=ui.sDraft||{};ui.sDraft.mood=+v;document.querySelectorAll('[data-a=sl-mood]').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.v===v)));return
+   case 'sl-save':{const dk=ui.sDate||today,d=ui.sDraft||{};if(!d.bed||!d.wake||!d.q||!d.mood){ui.sMsg='Add your bed and wake times, how you slept and your mood, then save.';render(true);return}S.sleep[dk]={bed:d.bed,wake:d.wake,hrs:sleepHrs(d.bed,d.wake),q:d.q,mood:d.mood,note:(d.note||'').trim()};ui.sMsg='Saved. You slept '+S.sleep[dk].hrs+' hours.';ui.sDraft=null;break}
+   case 'sl-del':delete S.sleep[ui.sDate||today];ui.sMsg='Entry deleted.';ui.sDraft=null;break;
+   case 'sl-edit':ui.sDate=k;ui.sDraft=null;ui.sMsg='';save();render(true);window.scrollTo(0,0);return
+   case 'sh-add':{const el=$('#sh-new'),n=((el||{}).value||'').trim();if(!n)return;if(!S.shop.extra.includes(n))S.shop.extra.push(n);break}
+   case 'sh-del':{const n=S.shop.extra[+k];S.shop.extra.splice(+k,1);delete S.shop.ticks['x|'+n];break}
+   case 'sh-clear':S.shop.ticks={};break;
    case 'wk':ui.wk=Math.min(0,ui.wk+(+v));break;
    case 'trow-edit':ui.editRow=b.dataset.id;break;
    case 'trow-cancel':ui.editRow=null;break;
@@ -1040,6 +1120,8 @@ document.addEventListener('change',e=>{
   if(t.dataset.chal){S.chal[t.dataset.chal]=t.checked;save();return}
   if(t.dataset.a==='tipmine'){ui.tipMine=t.checked;render(true);return}
   if(t.dataset.rec){const v=Math.max(0,(t.dataset.dec==='1'?parseFloat(t.value):parseInt(t.value,10))||0),id=t.dataset.rec;S.rec[id]=v;const h=(S.recHist[id]=S.recHist[id]||[]).filter(p=>p.d!==today);if(v>0)h.push({d:today,v:v});S.recHist[id]=h;if(v>0)ui.rChart=id;save();render(true);return}
+  if(t.dataset.shop!==undefined){S.shop.ticks[t.dataset.shop]=t.checked;save();render(true);return}
+  if(t.id==='sl-date'){if(t.value&&t.value<=today){ui.sDate=t.value;ui.sDraft=null;ui.sMsg='';render(true)}return}
   if(t.dataset.rchart){ui.rChart=t.value;render(true);return}
   if(t.dataset.mtick!==undefined){S.mTicks[t.dataset.mtick]=t.checked;save();return}
   if(t.dataset.md&&t.dataset.md==='date'){ui.mDraft=ui.mDraft||{};ui.mDraft.date=t.value;return}
@@ -1048,7 +1130,7 @@ document.addEventListener('change',e=>{
   if(t.dataset.week){S.week[t.dataset.week]=t.value;save();render(true);return}
   if(t.dataset.diet){const d=S.profile.diet||[];S.profile.diet=t.checked?d.concat(t.dataset.diet):d.filter(x=>x!==t.dataset.diet);S.profile.setup=true;save();render(true)}
 });
-document.addEventListener('input',e=>{const t=e.target;if(t.dataset.md){ui.mDraft=ui.mDraft||{};ui.mDraft[t.dataset.md]=t.value;return}if(t.dataset.gd){ui.gDraft=ui.gDraft||{};ui.gDraft[t.dataset.gd]=t.value;return}if(t.id==='dy-win'||t.id==='dy-work'){ui.draft=ui.draft||{rate:0,kind:'home'};ui.draft[t.id==='dy-win'?'win':'work']=t.value}});
+document.addEventListener('input',e=>{const t=e.target;if(t.dataset.sd){ui.sDraft=ui.sDraft||{};ui.sDraft[t.dataset.sd]=t.value;return}if(t.dataset.md){ui.mDraft=ui.mDraft||{};ui.mDraft[t.dataset.md]=t.value;return}if(t.dataset.gd){ui.gDraft=ui.gDraft||{};ui.gDraft[t.dataset.gd]=t.value;return}if(t.id==='dy-win'||t.id==='dy-work'){ui.draft=ui.draft||{rate:0,kind:'home'};ui.draft[t.id==='dy-win'?'win':'work']=t.value}});
 function fromHash(){const h=(location.hash||'').slice(1);if(VIEWS[h])ui.tab=h}
 window.addEventListener('hashchange',()=>{fromHash();render()});
 fromHash();render();
