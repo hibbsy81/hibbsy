@@ -167,10 +167,10 @@ const DEF={profile:{name:'',age:'a2',pos:'mid',wake:'07:00',leave:'08:15',bed:'2
 let S=JSON.parse(JSON.stringify(DEF));
 function merge(o){S=Object.assign({},DEF,o);S.profile=Object.assign({},DEF.profile,o.profile||{});S.week=Object.assign({},DEF.week,o.week||{});S.rec=Object.assign({},DEF.rec,o.rec||{});S.team=Object.assign({},DEF.team,o.team||{});S.team.week=S.team.week||{};S.team.dates=S.team.dates||{}}
 function load(){try{const v=localStorage.getItem('pitchplan_v1');if(v)merge(JSON.parse(v))}catch(e){}}
-function save(fromRemote){if(!fromRemote)S._t=Date.now();try{localStorage.setItem('pitchplan_v1',JSON.stringify(S))}catch(e){}if(!fromRemote&&typeof schedulePush==='function')schedulePush()}
+function save(){S._t=Date.now();try{localStorage.setItem('pitchplan_v1',JSON.stringify(S))}catch(e){}}
 load();
 const today=dkey(new Date());
-const ui={tab:'today',sel:today,month:[new Date().getFullYear(),new Date().getMonth()],rKind:'morning',rType:null,mType:null,mFilter:'all',plate:{},tipCat:'all',tipMine:false,confirm:false,hPlace:null,hSpace:'tiny',hMin:15,msg:'',swapIdx:null,sync:{state:'off',msg:'Checking whether sync is available…'}};
+const ui={tab:'today',sel:today,month:[new Date().getFullYear(),new Date().getMonth()],rKind:'morning',rType:null,mType:null,mFilter:'all',plate:{},tipCat:'all',tipMine:false,confirm:false,hPlace:null,hSpace:'tiny',hMin:15,msg:'',swapIdx:null};
 const typeOf=k=>S.overrides[k]||S.week[parseKey(k).getDay()];
 const DEFTEAM={start:'18:00',end:'19:30'};
 function teamOf(k){const t=S.team;if(t.dates&&Object.prototype.hasOwnProperty.call(t.dates,k))return t.dates[k]||null;return (t.week&&t.week[parseKey(k).getDay()])||null}
@@ -716,12 +716,11 @@ function viewMe(){
   h+='<section class="card"><h3>Team training</h3><p class="sub">Tell Pitch Plan when you train or play with your team and it plans your morning, meals and evening around it. You can also set single days in the Calendar.</p><div class="form" style="margin-top:12px"><div class="field"><label for="f-travel">Travel time (minutes each way)</label><input id="f-travel" type="number" min="0" max="120" inputmode="numeric" data-f="travel" value="'+(+P.travel||0)+'"></div><div class="field"><label for="f-early">Arrive early (minutes)</label><select id="f-early" data-f="early">'+[0,10,15,20,30].map(n=>'<option value="'+n+'"'+(+P.early===n?' selected':'')+'>'+n+'</option>').join('')+'</select></div></div><div class="lab small">Weekly team days</div>'+
    [1,2,3,4,5,6,0].map(d=>{const tw=S.team.week[d];return '<div class="row" style="padding:8px 0;border-top:1px solid var(--line)"><label style="display:flex;gap:8px;align-items:center;min-width:8.5rem;cursor:pointer"><input type="checkbox" style="width:20px;height:20px;accent-color:var(--pitch)" data-tw="'+d+'"'+(tw?' checked':'')+'> '+DAYN[d]+'</label>'+(tw?'<label class="small" for="tws-'+d+'">From</label><input id="tws-'+d+'" type="time" data-twf="start" data-d="'+d+'" value="'+tw.start+'" style="background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:6px;min-height:38px"><label class="small" for="twe-'+d+'">to</label><input id="twe-'+d+'" type="time" data-twf="end" data-d="'+d+'" value="'+tw.end+'" style="background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:6px;min-height:38px">':'<span class="small">No team session</span>')+'</div>'}).join('')+'</section>';
   h+='<section class="card"><h3>Weekly pattern</h3><p class="sub">The type of day for each weekday. You can still change single days in the calendar.</p><div class="form" style="margin-top:10px">'+[1,2,3,4,5,6,0].map(d=>'<div class="field"><label for="w-'+d+'">'+DAYN[d]+'</label><select id="w-'+d+'" data-week="'+d+'">'+opt(TYPES,S.week[d])+'</select></div>').join('')+'</div></section>';
-  h+='<section class="card"><h3>Sync between devices</h3><p class="sub">Open this page’s link on your laptop and iPad, signed in to the same Claude account, and your settings follow you. Changes arrive within a few seconds. If you change the same thing on two devices at once, the newest change wins.</p><p id="sync-status" data-state="'+ui.sync.state+'" style="margin-top:8px;font-weight:600">'+esc(ui.sync.msg)+'</p><div class="row" style="margin-top:10px"><button class="btn alt" data-a="sync-now">Sync now</button></div><p class="small" style="margin-top:8px">The saved copy is private to you. The downloaded footy.html file cannot sync. Use backup and restore there.</p></section>';
   h+='<section class="card"><h3>Back up and restore</h3><p class="sub">Save your settings to move them to another device or keep them safe.</p>'+
    '<div class="row" style="margin:10px 0"><button class="btn" data-a="bk-copy">Copy backup</button><button class="btn alt" data-a="bk-dl">Download file</button><label class="btn alt" for="bk-file" style="cursor:pointer;display:inline-flex;align-items:center">Choose backup file</label><input id="bk-file" type="file" accept=".json,application/json,text/plain" style="position:absolute;left:-9999px" data-bkfile="1"></div>'+
    (ui.msg?'<div class="note" role="status">'+esc(ui.msg)+'</div>':'')+
    '<div class="field" style="margin-top:10px"><label for="bk-out">Your backup text</label><textarea id="bk-out" readonly rows="3" style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:8px;font:12px/1.4 monospace;color:var(--ink)">'+esc(JSON.stringify(S))+'</textarea></div>'+
-   '<div class="field"><label for="bk-in">Paste a backup here to restore it</label><textarea id="bk-in" rows="3" style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:8px;font:12px/1.4 monospace;color:var(--ink)"></textarea></div><button class="btn warn" data-a="bk-restore">Restore from pasted text</button><p class="small" style="margin-top:8px">Restoring replaces what is saved on this device. In the online version the download button may do nothing. Use Copy backup there instead.</p></section>';
+   '<div class="field"><label for="bk-in">Paste a backup here to restore it</label><textarea id="bk-in" rows="3" style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:8px;font:12px/1.4 monospace;color:var(--ink)"></textarea></div><button class="btn warn" data-a="bk-restore">Restore from pasted text</button><p class="small" style="margin-top:8px">Restoring replaces what is saved on this device. If Download file does nothing in your browser, use Copy backup instead.</p></section>';
   h+='<section class="card"><h3>Reset</h3><p class="sub">Clears your settings, calendar changes, ticks and records on this device.</p><button class="btn warn" data-a="reset" style="margin-top:8px">'+(ui.confirm?'Tap again to wipe everything':'Reset everything')+'</button></section>';
   return h;
 }
@@ -735,44 +734,6 @@ function render(keepScroll){
   const c=$('#clock');if(c)c.textContent=longDate(today);
 }
 function go(tab,keep){ui.tab=tab;ui.msg='';try{history.replaceState(null,'','#'+tab)}catch(e){};render(keep);if(!keep)window.scrollTo(0,0)}
-
-/* ---------- sync between devices (online version, signed in) ---------- */
-const sync={ref:null,timer:null,busy:false,again:false,unsub:null};
-const hhmm=()=>{const d=new Date();return pad(d.getHours())+':'+pad(d.getMinutes())};
-function setSync(state,msg){ui.sync={state:state,msg:msg};const el=$('#sync-status');if(el){el.textContent=msg;el.dataset.state=state}}
-function schedulePush(){if(!sync.ref)return;clearTimeout(sync.timer);sync.timer=setTimeout(push,800)}
-async function push(){
-  if(!sync.ref)return;
-  if(sync.busy){sync.again=true;return}
-  sync.busy=true;
-  try{await sync.ref.set({t:S._t,json:JSON.stringify(S)});setSync('on','Synced at '+hhmm())}
-  catch(e){setSync('err','Could not sync just now ('+((e&&e.code)||'error')+'). Your settings are still saved on this device.')}
-  sync.busy=false;
-  if(sync.again){sync.again=false;push()}
-}
-function onRemote(snap){
-  if(!snap.exists){if(S._t>0)push();else setSync('on','Sync is on. Nothing saved online yet.');return}
-  const d=snap.data()||{};
-  if(typeof d.json!=='string'||typeof d.t!=='number')return;
-  if(d.t>S._t){
-    try{const o=JSON.parse(d.json);merge(o);S._t=d.t;save(true);setSync('on','Updated from another device at '+hhmm());
-      const a=document.activeElement;if(!(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)))render(true)}catch(e){}
-  }else if(d.t<S._t){schedulePush()}
-  else setSync('on','Synced at '+hhmm());
-}
-async function initSync(tries){
-  const c=window.claude;
-  if(!c||!c.use){if((tries||0)<10){setTimeout(()=>initSync((tries||0)+1),500)}else setSync('off','No sync: this page is not running inside Claude. The downloaded footy.html file always shows this. Open the online link instead.');return}
-  try{
-    const user=await c.use('user'),db=await c.use('db');
-    const id=user?await user.id():null;
-    if(!db){setSync('off','No sync: the page was not given access to the sync database in this view (database unavailable). Try reopening the link in the Claude app or at claude.ai while signed in.');return}
-    if(!id){setSync('off','No sync: Claude did not give this page your account id. Make sure you are signed in to claude.ai and reopen the link.');return}
-    sync.ref=db.doc('data/users/'+id+'/pitchplan');
-    setSync('on','Sync is on. Connecting…');
-    sync.unsub=sync.ref.onSnapshot(onRemote,e=>setSync('err','Sync stopped ('+((e&&e.code)||'error')+'). Reload the page to try again.'));
-  }catch(e){setSync('off','No sync: something went wrong starting it ('+((e&&(e.code||e.message))||'unknown')+'). Settings are saved on this device only.')}
-}
 
 /* ---------- events ---------- */
 function restore(txt){
@@ -801,7 +762,6 @@ document.addEventListener('click',e=>{
       try{navigator.clipboard.writeText(t).then(done,fb)}catch(e){fb()}return}
    case 'bk-dl':{try{const bl=new Blob([JSON.stringify(S)],{type:'application/json'});const u=URL.createObjectURL(bl);const l=document.createElement('a');l.href=u;l.download='pitch-plan-backup.json';document.body.appendChild(l);l.click();l.remove();ui.msg='Backup file download started. If nothing downloaded, use Copy backup instead.'}catch(x){ui.msg='Download did not work here. Use Copy backup instead.'}render(true);return}
    case 'bk-restore':{const v=($('#bk-in')||{}).value||'';return restore(v)}
-   case 'sync-now':if(sync.ref){S._t=Date.now();save(true);push();setSync('on','Syncing…')}else setSync('off',ui.sync.msg);return
    case 'team-clear':delete S.team.dates[k];break;
    case 'rkind':ui.rKind=v;break;
    case 'hplace':ui.hPlace=v;break;
@@ -841,7 +801,7 @@ document.addEventListener('change',e=>{
 });
 function fromHash(){const h=(location.hash||'').slice(1);if(VIEWS[h])ui.tab=h}
 window.addEventListener('hashchange',()=>{fromHash();render()});
-fromHash();render();initSync();
+fromHash();render();
 })();
 </script>
 
