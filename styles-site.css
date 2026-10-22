@@ -92,8 +92,8 @@ footer {
 
 .menu {
 	position: fixed;
-	top: calc(12px + env(safe-area-inset-top, 0px));
-	right: calc(12px + env(safe-area-inset-right, 0px));
+	top: calc(20px + env(safe-area-inset-top, 0px));
+	right: calc(28px + env(safe-area-inset-right, 0px));
 	z-index: 10;
 }
 
@@ -139,7 +139,7 @@ footer {
 	margin: 6px 0 0;
 	padding: 6px;
 	width: max-content;     /* grows to fit the longest link */
-	min-width: 160px;
+	min-width: 210px;
 	list-style: none;
 	background: rgba(255, 255, 255, 0.88);
 	-webkit-backdrop-filter: blur(14px);
