@@ -130,6 +130,16 @@ ol.drills{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:12px}
 .cols2{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
 footer{margin-top:30px;color:var(--muted);font-size:.88rem;border-top:3px solid var(--bib);padding-top:14px}
 .small{font-size:.88rem;color:var(--muted)}
+.runbar{position:fixed;left:0;right:0;bottom:0;z-index:40;background:var(--hdr);color:var(--hdr-ink);padding:12px max(16px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));border-top:4px solid var(--bib);max-height:65vh;overflow:auto;box-shadow:0 -6px 20px rgba(0,0,0,.25)}
+.runbar .rb-name{font-family:var(--font-d);text-transform:uppercase;font-size:1.4rem;line-height:1.1}
+.runbar .rb-time{font-family:var(--font-d);font-weight:700;font-size:3.2rem;line-height:1;font-variant-numeric:tabular-nums}
+.runbar .rb-bar{height:8px;background:rgba(255,255,255,.25);border-radius:4px;margin:8px 0}
+.runbar .rb-bar span{display:block;height:100%;background:#ff9ccb;border-radius:4px}
+.runbar .chip{background:rgba(255,255,255,.14);color:#fff;border-color:rgba(255,255,255,.4)}
+.runbar .chip[aria-pressed="true"]{background:#fff;color:#14213d}
+.runbar .btn{background:#ff9ccb;color:#3a0a24}
+.runbar .chip:disabled{opacity:.4}
+body.running{padding-bottom:calc(280px + env(safe-area-inset-bottom,0px))}
 .quote{margin:0;border-left:6px solid var(--bib);padding:4px 0 4px 14px;display:grid;gap:4px;align-content:start}
 .quote blockquote{margin:0;font-size:1.1rem;line-height:1.4;font-weight:500}
 .quote figcaption{font-family:var(--font-d);text-transform:uppercase;letter-spacing:.05em;font-weight:700;color:var(--bib);font-size:1.05rem}
@@ -143,6 +153,7 @@ footer{margin-top:30px;color:var(--muted);font-size:.88rem;border-top:3px solid 
 <nav aria-label="Sections"><div class="wrap" id="tabs"></div></nav>
 <div class="wrap"><main id="app" aria-live="polite"></main>
 <footer>Pitch Plan is a guide, not medical advice. If something hurts for more than a day, you feel dizzy or sick, or you take a knock to the head, stop and tell a parent, carer or coach. Check any food plan with a parent or carer, and tell them about allergies. Weather is picked by hand here, so choose what it is like outside.</footer></div>
+<div id="runbar" class="runbar" hidden></div>
 
 <script>
 (function(){
@@ -168,7 +179,7 @@ const longDate=k=>{const d=parseKey(k);return DAYS[d.getDay()]+' '+d.getDate()+'
 
 /* ---------- state ---------- */
 const DEF={profile:{name:'',age:'a2',pos:'mid',wake:'07:00',leave:'08:15',bed:'21:30',who:'f',dur:45,travel:20,early:15,diet:[],setup:false},
-  week:{0:'recover',1:'rest',2:'train',3:'solo',4:'train',5:'rest',6:'match'},overrides:{},weather:{},ticks:{},shuffle:{},rec:{jug:0,left:0,right:0},chal:{},picks:{},team:{week:{},dates:{}},teamRow:{},_t:0};
+  week:{0:'recover',1:'rest',2:'train',3:'solo',4:'train',5:'rest',6:'match'},overrides:{},weather:{},ticks:{},shuffle:{},rec:{jug:0,left:0,right:0},chal:{},picks:{},team:{week:{},dates:{}},teamRow:{},feel:{},_t:0};
 let S=JSON.parse(JSON.stringify(DEF));
 function merge(o){S=Object.assign({},JSON.parse(JSON.stringify(DEF)),o);S.teamRow=S.teamRow||{};S.profile=Object.assign({},DEF.profile,o.profile||{});S.week=Object.assign({},DEF.week,o.week||{});S.rec=Object.assign({},DEF.rec,o.rec||{});S.team=Object.assign({},DEF.team,o.team||{});S.team.week=S.team.week||{};S.team.dates=S.team.dates||{}}
 function load(){try{const v=localStorage.getItem('pitchplan_v1');if(v)merge(JSON.parse(v))}catch(e){}}
@@ -176,6 +187,9 @@ function save(){S._t=Date.now();try{localStorage.setItem('pitchplan_v1',JSON.str
 load();
 const today=dkey(new Date());
 const ui={tab:'today',sel:today,month:[new Date().getFullYear(),new Date().getMonth()],rKind:'morning',rType:null,mType:null,mFilter:'all',plate:{},tipCat:'all',tipMine:false,confirm:false,hPlace:null,hSpace:'tiny',hMin:15,msg:'',swapIdx:null,editRow:null};
+const FEEL={fresh:'Fresh',ok:'Okay',tired:'Tired',sore:'Sore',hurt:'Something hurts'};
+const HI=new Set(['Dive and recover','Jockey and shuffle','Delay and win it','Runs in behind','Short shuttle sprints','Mini bodyweight circuit','Take-on moves']);
+const HURTN='<div class="note"><b>Something hurts.</b> Do not train through pain. Tell a parent, carer or coach, and get it checked if it lasts more than a day. If you took a knock to the head, or you feel dizzy or sick, stop and tell an adult straight away. Rest and easy walking are fine until it is checked.</div>';
 const typeOf=k=>S.overrides[k]||S.week[parseKey(k).getDay()];
 const DEFTEAM={start:'18:00',end:'19:30'};
 function teamOf(k){const t=S.team;if(t.dates&&Object.prototype.hasOwnProperty.call(t.dates,k))return t.dates[k]||null;return (t.week&&t.week[parseKey(k).getDay()])||null}
@@ -272,13 +286,17 @@ const SLEEP={a1:[9,11],a2:[8.5,10.5],a3:[8,10]};
 function weatherOf(k){return S.weather[k]||'cloud'}
 function buildSession(k){
   const type=typeOf(k),w=weatherOf(k),P=S.profile,sh=S.shuffle['s'+k]||0;
-  const r=rng(['s',k,type,w,P.pos,P.who,P.dur,P.age,sh].join('|'));
+  const feel=S.feel[k]||'ok';
+  const r=rng(['s',k,type,w,P.pos,P.who,P.dur,P.age,sh,feel].join('|'));
   if(type==='rest'||type==='recover'||type==='match')return {type,w,r};
+  if(feel==='hurt')return {type,w,r,hurt:true};
   const tm=type==='train'?teamOf(k):null;
   const who=(tm||type==='solo')?'s':P.who;
   const ok={s:['s'],f:['s','f'],t:['s','f','t']}[who];
-  const pool=D.filter(d=>(!d.a||d.a.includes(P.age))&&ok.includes(d.who||'s')&&(!d.w||d.w.includes(w)));
-  const dur=tm?Math.min(P.dur,20):type==='solo'?Math.min(P.dur,30):P.dur;
+  let pool=D.filter(d=>(!d.a||d.a.includes(P.age))&&ok.includes(d.who||'s')&&(!d.w||d.w.includes(w)));
+  if(feel==='tired'||feel==='sore')pool=pool.filter(d=>d.k!=='g'&&!(feel==='sore'&&HI.has(d.n)));
+  let dur=tm?Math.min(P.dur,20):type==='solo'?Math.min(P.dur,30):P.dur;
+  if(feel==='tired')dur=Math.min(dur,30);if(feel==='sore')dur=Math.min(dur,20);
   const warm=WARM[w],cool=COOL;
   let left=dur-warm.m-cool.m,items=[];
   const posD=pickN(pool.filter(d=>d.k==='p'&&d.pos.includes(P.pos)),r,1)[0];
@@ -288,7 +306,7 @@ function buildSession(k){
   for(const d of shuf(pool.filter(d=>d.k==='t'),r)){if(d.m<=left){items.unshift(d);left-=d.m}}
   const order={t:0,p:1,g:2};items.sort((a,b)=>order[a.k]-order[b.k]);
   const all=[Object.assign({tagw:'Warm-up'},warm)].concat(items,[Object.assign({tagw:'Cool-down'},cool)]);
-  return {type,w,all,total:all.reduce((s,d)=>s+d.m,0),r,team:tm};
+  return {type,w,all,total:all.reduce((s,d)=>s+d.m,0),r,team:tm,feel:feel};
 }
 function whoTag(d){return d.who==='t'?'Group':d.who==='f'?'With a mate':'Solo'}
 function drillLi(d){
@@ -305,6 +323,9 @@ function sessionHTML(k,full){
     '<button class="btn alt" data-a="shuffle" data-k="s'+k+'">Shuffle drills</button></div>';
   if(!S.weather[k])h+='<p class="small">Weather: pick it above. Until then this assumes dry and mild.</p>';
   h+='<div class="note"><b>'+wx.l+'.</b> '+wx.note+'</div><ul class="kit">'+wx.kit.map(x=>'<li>'+x+'</li>').join('')+'</ul>';
+  const fl=S.feel[k];
+  if(fl==='hurt'&&s.type!=='rest'){h+=HURTN;if(s.type==='train'||s.type==='solo')return h}
+  if((fl==='tired'||fl==='sore')&&(s.type==='train'||s.type==='solo'))h+='<div class="note"><b>You feel '+fl+'.</b> This session is shorter and lighter. Warm up well, take it easy and stop if anything hurts.</div>';
   if(s.team)h+='<div class="note"><b>Team training '+s.team.start+' to '+s.team.end+'.</b> Your coach runs the session, so this is a short top-up for before you leave or when you get home.</div>';
   if(s.type==='rest'){h+='<h3 style="margin-top:14px">Rest day ideas</h3><ul class="kit">'+RESTI.map(x=>'<li>'+x+'</li>').join('')+'</ul>';return h}
   if(s.type==='recover'){h+='<h3 style="margin-top:14px">Recovery ideas</h3><ul class="kit">'+pickN(RECOVER,s.r,4).map(x=>'<li>'+x+'</li>').join('')+'</ul>';return h}
@@ -316,6 +337,7 @@ function sessionHTML(k,full){
     return h;
   }
   h+='<p class="small" style="margin-top:8px">'+s.total+' minutes in total, '+({s:'solo',f:'with a mate',t:'with a group'}[s.type==='solo'?'s':S.profile.who])+', for a '+POSN[S.profile.pos].toLowerCase()+'.</p>';
+  h+='<div class="row" style="margin-top:8px"><button class="btn" data-a="run-start" data-src="session" data-k="'+k+'">Start session timer</button></div>';
   h+='<ol class="drills">'+s.all.map(drillLi).join('')+'</ol>';
   return h;
 }
@@ -367,6 +389,7 @@ function buildNight(k,type){
   const tm=teamOf(k);
   if(tm){const tt=tmin(tm);if(tt.en>=960){const home=tt.en+(+P.travel||0),free=home+50,start=toMin(P.bed)-total;
     if(start<free)warn=(warn?warn+' ':'')+'Team training ends at '+fmt(tt.en)+', so you get home about '+fmt(home)+'. Dinner and this routine are tight. Lights out at '+fmt(free+total)+' would fit, or skip the optional steps.'}}
+  const fl=S.feel[k];if(fl==='tired'||fl==='sore')warn=(warn?warn+' ':'')+'You said you feel '+fl+'. Try lights out 30 minutes earlier, at '+fmt(toMin(P.bed)-30)+', and do the stretch step.';
   return {rows,msg,warn};
 }
 function buildTeam(k){
@@ -584,33 +607,39 @@ function quoteHTML(q,big){return '<figure class="quote"><blockquote>“'+esc(q.q
 function buildHome(){
   const k=today,w=weatherOf(k);
   const auto=(w==='rain'||w==='frost'||w==='cold')?'in':'out';
-  const place=ui.hPlace||auto,sp=ui.hSpace,mins=ui.hMin;
+  const feel=S.feel[k]||'ok';
+  const place=ui.hPlace||auto,sp=ui.hSpace,mins=feel==='sore'?Math.min(ui.hMin,10):feel==='tired'?Math.min(ui.hMin,15):ui.hMin;
+  if(feel==='hurt')return {hurt:true,all:[],total:0,place,auto,w,feel};
   const r=rng(['h',k,place,sp,mins,w,S.shuffle['h'+k]||0].join('|'));
-  const pool=HOME.filter(d=>d.p.includes(place)&&(sp==='small'||d.sp==='tiny')&&(!d.w||d.w.includes(w)));
+  const pool=HOME.filter(d=>d.p.includes(place)&&(sp==='small'||d.sp==='tiny')&&(!d.w||d.w.includes(w))&&!(feel==='sore'&&HI.has(d.n)));
   let left=mins-4;const items=[];
   const balls=shuf(pool,r);
   for(const d of balls){if(d.m<=left){items.push(d);left-=d.m}}
   const warm={tagw:'Warm-up',n:place==='in'?'Indoor warm-up':'Outdoor warm-up',m:2,s:['March on the spot, high knees, ankle hops: 30 seconds each','Hip circles and leg swings: 10 each']};
   const cool={tagw:'Cool-down',n:'Slow down',m:2,s:['Walk it off, calf and thigh stretches 20 seconds each','Drink some water']};
   const all=[warm].concat(items,[cool]);
-  return {all,place,auto,total:all.reduce((a,b)=>a+b.m,0),w};
+  return {all,place,auto,total:all.reduce((a,b)=>a+b.m,0),w,feel};
 }
 function viewHome(){
   const k=today,h=buildHome(),wx=WX[h.w];
   let o='<section class="card"><div class="sec-head"><h2>At home</h2><button class="btn alt" data-a="shuffle" data-k="h'+k+'">Shuffle</button></div><p class="sub">Short sessions for small spaces. Pick the weather and the space you have.</p>'+
    '<div class="lab small" style="margin-top:8px">Weather</div>'+weatherChips(k)+
+   '<div class="lab small">How do you feel today?</div>'+feelChips(k)+
    '<div class="lab small">Where</div><div class="chips" role="group" aria-label="Where"><button class="chip" data-a="hplace" data-v="in" aria-pressed="'+(h.place==='in')+'">Indoors</button><button class="chip" data-a="hplace" data-v="out" aria-pressed="'+(h.place==='out')+'">Outdoors</button></div>'+
    '<div class="lab small">Space</div><div class="chips" role="group" aria-label="Space"><button class="chip" data-a="hspace" data-v="tiny" aria-pressed="'+(ui.hSpace==='tiny')+'">Tiny: about 2 by 2 metres</button><button class="chip" data-a="hspace" data-v="small" aria-pressed="'+(ui.hSpace==='small')+'">Small: about 4 by 4 metres</button></div>'+
    '<div class="lab small">Time</div><div class="chips" role="group" aria-label="Time">'+[10,15,20,30].map(n=>'<button class="chip" data-a="hmin" data-v="'+n+'" aria-pressed="'+(ui.hMin===n)+'">'+n+' minutes</button>').join('')+'</div>'+
    '<div class="note"><b>'+wx.l+'.</b> '+wx.note+(!ui.hPlace?' '+(h.auto==='in'?'Indoors is suggested today.':'Outdoors is fine today.'):'')+'</div>'+
    (h.place==='in'?'<ul class="kit"><li>Ask an adult and clear a space first</li><li>Use a soft or low-bounce ball, or rolled socks</li><li>Wear trainers or grippy socks, never slippy socks on a hard floor</li><li>No shooting indoors</li></ul>':'<ul class="kit"><li>Keep away from windows, cars and flowerbeds</li><li>Ask before using a wall or fence</li><li>Wear trainers on wet or uneven ground</li></ul>')+
-   '<p class="small" style="margin-top:8px">'+h.total+' minutes in total.</p><ol class="drills">'+h.all.map(drillLi).join('')+'</ol></section>';
+   (h.hurt?HURTN:(h.feel==='tired'||h.feel==='sore'?'<div class="note"><b>You feel '+h.feel+'.</b> This is a lighter, shorter session. Stop if anything hurts.</div>':'')+'<p class="small" style="margin-top:8px">'+h.total+' minutes in total.</p><div class="row"><button class="btn" data-a="run-start" data-src="home">Start session timer</button></div><ol class="drills">'+h.all.map(drillLi).join('')+'</ol>')+'</section>';
   return o;
 }
 
 /* ---------- views ---------- */
 function weatherChips(k){
   return '<div class="chips" role="group" aria-label="Weather">'+WKEYS.map(w=>'<button class="chip" data-a="weather" data-k="'+k+'" data-v="'+w+'" aria-pressed="'+(S.weather[k]===w?'true':'false')+'">'+WX[w].l+'</button>').join('')+'</div>';
+}
+function feelChips(k){
+  return '<div class="chips" role="group" aria-label="How you feel">'+Object.keys(FEEL).map(f=>'<button class="chip" data-a="feel" data-k="'+k+'" data-v="'+f+'" aria-pressed="'+(S.feel[k]===f?'true':'false')+'">'+FEEL[f]+'</button>').join('')+'</div>';
 }
 function typeChips(k){
   const cur=typeOf(k);
@@ -623,7 +652,8 @@ function viewToday(){
   if(!P.setup)h+='<div class="card note"><b>Start here.</b> Tell Pitch Plan your age group, position and wake-up time in <a href="#me" style="color:inherit;font-weight:600">Me</a> and everything below will fit you.</div>';
   h+='<section class="card hero"><div><span class="sub">'+greet+(P.name?', '+esc(P.name):'')+'</span><div class="date">'+longDate(k)+'</div></div>'+
     '<div class="row"><span class="pill t-'+type+'">'+TYPES[type]+'</span>'+(teamOf(k)?'<span class="pill" style="background:var(--surface2);color:var(--ink)">Team '+teamOf(k).start+' to '+teamOf(k).end+'</span>':'')+'<span class="small">'+POSN[P.pos]+' · '+AGEN[P.age]+'</span></div>'+
-    '<div><div class="lab" style="font-weight:600">What is the weather like?</div>'+weatherChips(k)+'</div></section>';
+    '<div><div class="lab" style="font-weight:600">What is the weather like?</div>'+weatherChips(k)+'</div>'+
+    '<div><div class="lab" style="font-weight:600">How do you feel today?</div>'+feelChips(k)+'</div></section>';
   h+='<section class="card"><div class="sec-head"><h3>Words from the pros</h3><button class="btn alt" data-a="shuffle" data-k="q">Another</button></div>'+quoteHTML(quoteOfDay())+'</section>';
   h+='<div class="grid">';
   h+='<section class="card">'+sessionHTML(k)+'</section>';
@@ -676,7 +706,7 @@ function viewCalendar(){
     (()=>{const tm=teamOf(k);return '<div style="margin-top:12px"><div class="checks"><label><input type="checkbox" data-teamdate="'+k+'"'+(tm?' checked':'')+'> I have team '+(t==='match'?'match':'training')+' on this day</label></div>'+
       (tm?'<div class="form" style="margin-top:8px"><div class="field"><label for="td-s">'+(t==='match'?'Kick-off':'Starts')+'</label><input id="td-s" type="time" data-tdf="start" data-k="'+k+'" value="'+tm.start+'"></div><div class="field"><label for="td-e">Ends</label><input id="td-e" type="time" data-tdf="end" data-k="'+k+'" value="'+tm.end+'"></div></div>':'')+
       (Object.prototype.hasOwnProperty.call(S.team.dates,k)?'<button class="chip" data-a="team-clear" data-k="'+k+'">Use my weekly team pattern</button>':'')+'</div>'})()+
-    '<div class="lab small" style="margin-top:12px">Weather</div>'+weatherChips(k)+sessionHTML(k)+
+    '<div class="lab small" style="margin-top:12px">Weather</div>'+weatherChips(k)+(k===today?'<div class="lab small">How do you feel today?</div>'+feelChips(k):'')+sessionHTML(k)+
     '<div class="row" style="margin-top:14px"><button class="btn" data-a="go" data-v="meals" data-type="'+t+'">Meals for this day</button><button class="btn alt" data-a="go" data-v="routines" data-type="'+t+'" data-kind="morning">Routines for this day</button></div></section></div>';
   return h;
 }
@@ -750,6 +780,53 @@ function render(keepScroll){
 }
 function go(tab,keep){ui.tab=tab;ui.msg='';ui.editRow=null;try{history.replaceState(null,'','#'+tab)}catch(e){};render(keep);if(!keep)window.scrollTo(0,0)}
 
+/* ---------- session timer ---------- */
+let run=null,runTick=null;
+const runBar=()=>$('#runbar');
+function beep(n){try{if(!run||!run.ctx)return;const c=run.ctx;for(let i=0;i<(n||1);i++){const o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.value=880;o.connect(g);g.connect(c.destination);const t=c.currentTime+i*0.3;g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(0.25,t+0.02);g.gain.exponentialRampToValueAtTime(0.0001,t+0.22);o.start(t);o.stop(t+0.25)}}catch(e){}try{if(navigator.vibrate)navigator.vibrate(n>1?[200,100,200]:200)}catch(e){}}
+async function lockScreen(on){try{if(on){if(navigator.wakeLock&&run&&!run.wl)run.wl=await navigator.wakeLock.request('screen')}else if(run&&run.wl){await run.wl.release();run.wl=null}}catch(e){}}
+function startRun(list,title){
+  stopRun(true);
+  let ctx=null;try{const AC=window.AudioContext||window.webkitAudioContext;if(AC)ctx=new AC()}catch(e){}
+  run={list:list,i:0,running:true,left:list[0].m*60000,endAt:Date.now()+list[0].m*60000,done:false,ctx:ctx,wl:null,steps:false,title:title};
+  lockScreen(true);
+  runTick=setInterval(tickRun,250);
+  drawRun();
+}
+function stopRun(quiet){
+  if(runTick){clearInterval(runTick);runTick=null}
+  if(run){lockScreen(false);try{if(run.ctx)run.ctx.close()}catch(e){}}
+  run=null;
+  if(!quiet)drawRun();
+}
+function fmtMs(ms){const t=Math.max(0,Math.ceil(ms/1000));return pad(Math.floor(t/60))+':'+pad(t%60)}
+function goDrill(i,auto){
+  if(!run)return;
+  if(i>=run.list.length){run.done=true;run.running=false;beep(3);lockScreen(false);if(runTick){clearInterval(runTick);runTick=null}drawRun();return}
+  run.i=Math.max(0,i);run.left=run.list[run.i].m*60000;run.endAt=Date.now()+run.left;
+  if(auto)beep(2);
+  drawRun();
+}
+function tickRun(){
+  if(!run||!run.running||run.done)return;
+  const left=run.endAt-Date.now();
+  if(left<=0){goDrill(run.i+1,true);return}
+  run.left=left;
+  const t=$('#run-time'),b=$('#run-bar');
+  if(t)t.textContent=fmtMs(left);
+  if(b)b.style.width=Math.min(100,100-(left/(run.list[run.i].m*60000))*100)+'%';
+}
+function drawRun(){
+  const el=runBar();if(!el)return;
+  if(!run){el.hidden=true;el.innerHTML='';document.body.classList.remove('running');return}
+  document.body.classList.add('running');el.hidden=false;
+  if(run.done){el.innerHTML='<div class="rb-name">Session complete</div><p style="margin:6px 0 10px">Nice work. Drink some water and stretch.</p><div class="row"><button class="btn" data-a="run-stop">Close</button></div>';return}
+  const d=run.list[run.i],pct=Math.min(100,100-(run.left/(d.m*60000))*100);
+  el.innerHTML='<div class="row" style="justify-content:space-between"><span class="small" style="color:inherit;opacity:.85">'+(d.tagw||'Drill')+' · '+(run.i+1)+' of '+run.list.length+'</span><button class="chip" data-a="run-stop">Stop</button></div>'+
+   '<div class="rb-name">'+esc(d.n)+'</div><div class="rb-time" id="run-time" role="timer">'+fmtMs(run.left)+'</div><div class="rb-bar"><span id="run-bar" style="width:'+pct+'%"></span></div>'+
+   '<div class="row"><button class="btn" data-a="run-pause">'+(run.running?'Pause':'Resume')+'</button><button class="chip" data-a="run-prev"'+(run.i===0?' disabled':'')+'>Back</button><button class="chip" data-a="run-next">'+(run.i===run.list.length-1?'Finish':'Next drill')+'</button><button class="chip" data-a="run-steps" aria-pressed="'+run.steps+'">Steps</button></div>'+
+   (run.steps?'<ol style="margin:10px 0 0;padding-left:20px">'+d.s.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ol>'+(d.tip?'<p style="margin:6px 0 0;opacity:.9"><b>Tip:</b> '+esc(d.tip)+'</p>':''):'');
+}
 /* ---------- events ---------- */
 function restore(txt){
   try{const o=JSON.parse(txt);if(!o||typeof o!=='object'||!o.profile||!o.week)throw 0;
@@ -765,6 +842,7 @@ document.addEventListener('click',e=>{
   switch(a){
    case 'tab':return go(v);
    case 'go':if(b.dataset.type){if(v==='meals')ui.mType=b.dataset.type;else ui.rType=b.dataset.type}if(b.dataset.kind)ui.rKind=b.dataset.kind;return go(v);
+   case 'feel':if(S.feel[k]===v)delete S.feel[k];else S.feel[k]=v;break;
    case 'weather':if(S.weather[k]===v)delete S.weather[k];else S.weather[k]=v;break;
    case 'type':S.overrides[k]=v;break;
    case 'clear':delete S.overrides[k];break;
@@ -778,6 +856,12 @@ document.addEventListener('click',e=>{
    case 'bk-dl':{try{const bl=new Blob([JSON.stringify(S)],{type:'application/json'});const u=URL.createObjectURL(bl);const l=document.createElement('a');l.href=u;l.download='pitch-plan-backup.json';document.body.appendChild(l);l.click();l.remove();ui.msg='Backup file download started. If nothing downloaded, use Copy backup instead.'}catch(x){ui.msg='Download did not work here. Use Copy backup instead.'}render(true);return}
    case 'bk-restore':{const v=($('#bk-in')||{}).value||'';return restore(v)}
    case 'team-clear':delete S.team.dates[k];break;
+   case 'run-start':{const list=b.dataset.src==='home'?buildHome().all:buildSession(k).all;if(list&&list.length){const title=b.dataset.src==='home'?'Home session':'Session';startRun(list,title)}return}
+   case 'run-pause':if(run&&!run.done){if(run.running){run.left=Math.max(0,run.endAt-Date.now());run.running=false}else{run.endAt=Date.now()+run.left;run.running=true}drawRun()}return
+   case 'run-next':if(run)goDrill(run.i+1,false);return
+   case 'run-prev':if(run)goDrill(run.i-1,false);return
+   case 'run-steps':if(run){run.steps=!run.steps;drawRun()}return
+   case 'run-stop':stopRun();return
    case 'trow-edit':ui.editRow=b.dataset.id;break;
    case 'trow-cancel':ui.editRow=null;break;
    case 'trow-reset':delete S.teamRow[today+'|'+b.dataset.id];ui.editRow=null;break;
