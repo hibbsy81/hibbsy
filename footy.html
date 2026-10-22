@@ -181,14 +181,14 @@ const longDate=k=>{const d=parseKey(k);return DAYS[d.getDay()]+' '+d.getDate()+'
 
 /* ---------- state ---------- */
 const DEF={profile:{name:'',age:'a2',pos:'mid',wake:'07:00',leave:'08:15',bed:'21:30',who:'f',dur:45,travel:20,early:15,diet:[],setup:false},
-  week:{0:'recover',1:'rest',2:'train',3:'solo',4:'train',5:'rest',6:'match'},overrides:{},weather:{},ticks:{},shuffle:{},rec:{jug:0,left:0,right:0},chal:{},picks:{},team:{week:{},dates:{}},teamRow:{},feel:{},diary:{},focus:{},_t:0};
+  week:{0:'recover',1:'rest',2:'train',3:'solo',4:'train',5:'rest',6:'match'},overrides:{},weather:{},ticks:{},shuffle:{},rec:{jug:0,left:0,right:0},chal:{},picks:{},team:{week:{},dates:{}},teamRow:{},feel:{},diary:{},focus:{},recHist:{},matches:[],mTicks:{},goals:[],_t:0};
 let S=JSON.parse(JSON.stringify(DEF));
 function merge(o){S=Object.assign({},JSON.parse(JSON.stringify(DEF)),o);S.teamRow=S.teamRow||{};S.profile=Object.assign({},DEF.profile,o.profile||{});S.week=Object.assign({},DEF.week,o.week||{});S.rec=Object.assign({},DEF.rec,o.rec||{});S.team=Object.assign({},DEF.team,o.team||{});S.team.week=S.team.week||{};S.team.dates=S.team.dates||{}}
 function load(){try{const v=localStorage.getItem('pitchplan_v1');if(v)merge(JSON.parse(v))}catch(e){}}
 function save(){S._t=Date.now();try{localStorage.setItem('pitchplan_v1',JSON.stringify(S))}catch(e){}}
 load();
 const today=dkey(new Date());
-const ui={tab:'today',sel:today,month:[new Date().getFullYear(),new Date().getMonth()],rKind:'morning',rType:null,mType:null,mFilter:'all',plate:{},tipCat:'all',tipMine:false,confirm:false,hPlace:null,hSpace:'tiny',hMin:15,msg:'',swapIdx:null,editRow:null,wk:0,dDate:null,draft:null};
+const ui={tab:'today',sel:today,month:[new Date().getFullYear(),new Date().getMonth()],rKind:'morning',rType:null,mType:null,mFilter:'all',plate:{},tipCat:'all',tipMine:false,confirm:false,hPlace:null,hSpace:'tiny',hMin:15,msg:'',swapIdx:null,editRow:null,wk:0,dDate:null,draft:null,mDraft:null,gDraft:null,mMsg:'',gMsg:'',rChart:null};
 const FEEL={fresh:'Fresh',ok:'Okay',tired:'Tired',sore:'Sore',hurt:'Something hurts'};
 const HI=new Set(['Dive and recover','Jockey and shuffle','Delay and win it','Runs in behind','Short shuttle sprints','Mini bodyweight circuit','Take-on moves']);
 const HURTN='<div class="note"><b>Something hurts.</b> Do not train through pain. Tell a parent, carer or coach, and get it checked if it lasts more than a day. If you took a knock to the head, or you feel dizzy or sick, stop and tell an adult straight away. Rest and easy walking are fine until it is checked.</div>';
@@ -745,7 +745,7 @@ function viewTips(){
    '<div class="checks"><label><input type="checkbox" data-a="tipmine"'+(ui.tipMine?' checked':'')+'> Only tips for my position ('+POSN[S.profile.pos].toLowerCase()+')</label></div><div style="margin-top:8px">'+
    shown.map(t=>'<div class="tip"><span class="c">'+TC[t.c]+(t.pos?' · '+POSN[t.pos].split(' ')[0]:'')+'</span><p>'+esc(t.t)+'</p></div>').join('')+'</div></section>';
   h+='<div style="display:grid;gap:16px;align-content:start"><section class="card"><h3>My records</h3><p class="sub">Your personal bests. Saved on this device. Leave a box at 0 until you set one.</p>'+
-   RECG.map(g=>'<h4 style="margin:14px 0 6px">'+g[0]+'</h4><div class="form">'+g[1].map(x=>'<div class="field"><label for="rec-'+x[0]+'">'+x[1]+'</label><input id="rec-'+x[0]+'" type="number" min="0" '+(x[3]?'step="0.1" inputmode="decimal"':'inputmode="numeric"')+' data-rec="'+x[0]+'" data-dec="'+(x[3]?1:0)+'" value="'+(S.rec[x[0]]||0)+'"></div>').join('')+'</div>').join('')+'</section>'+
+   RECG.map(g=>'<h4 style="margin:14px 0 6px">'+g[0]+'</h4><div class="form">'+g[1].map(x=>'<div class="field"><label for="rec-'+x[0]+'">'+x[1]+'</label><input id="rec-'+x[0]+'" type="number" min="0" '+(x[3]?'step="0.1" inputmode="decimal"':'inputmode="numeric"')+' data-rec="'+x[0]+'" data-dec="'+(x[3]?1:0)+'" value="'+(S.rec[x[0]]||0)+'"></div>').join('')+'</div>').join('')+'</section>'+recChart()+
    '<section class="card"><h3>Weekly challenges</h3><div class="checks" style="display:grid;gap:10px;margin-top:8px">'+CHAL.map(c=>'<label><input type="checkbox" data-chal="'+c[0]+'"'+(S.chal[c[0]]?' checked':'')+'> '+c[1]+'</label>').join('')+'</div><button class="btn alt" style="margin-top:12px" data-a="chalreset">Start a new week</button></section></div></div>';
   return h;
 }
@@ -821,8 +821,83 @@ function viewDiary(){
   return h;
 }
 
-const VIEWS={today:viewToday,routines:viewRoutines,calendar:viewCalendar,diary:viewDiary,home:viewHome,meals:viewMeals,tips:viewTips,me:viewMe};
-const TABN={today:'Today',routines:'Routines',calendar:'Calendar',diary:'Diary',home:'At home',meals:'Meals',tips:'Tips',me:'Me'};
+/* records chart, match day, goals */
+const RECALL=RECG.reduce((a,g)=>a.concat(g[1].map(x=>({id:x[0],label:x[1],low:!!x[3],grp:g[0]}))),[]);
+const recInfo=id=>RECALL.find(r=>r.id===id)||{id:id,label:id,low:false};
+function recChart(){
+  const have=RECALL.filter(r=>(S.recHist[r.id]||[]).length);
+  const sel=ui.rChart&&recInfo(ui.rChart)?ui.rChart:(have[0]||RECALL[0]).id;
+  const info=recInfo(sel),pts=(S.recHist[sel]||[]).slice().sort((a,b)=>a.d<b.d?-1:1);
+  let h='<section class="card"><h3>Records chart</h3><p class="sub">Each time you change a record, the new number is saved with today’s date.</p>'+
+   '<div class="field" style="margin-top:10px;max-width:18rem"><label for="rc-sel">Show</label><select id="rc-sel" data-rchart="1">'+RECALL.map(r=>'<option value="'+r.id+'"'+(r.id===sel?' selected':'')+'>'+esc(r.label)+(r.grp.indexOf('Speed')===0?' (seconds)':'')+'</option>').join('')+'</select></div>';
+  if(!pts.length)return h+'<div class="note">Nothing saved for this one yet. Type a number in My records and it will show here.</div></section>';
+  const W=300,H=150,L=34,R=12,T=14,B=26,vs=pts.map(p=>p.v);let mn=Math.min(...vs),mx=Math.max(...vs);if(mn===mx){mn=Math.max(0,mn-1);mx=mx+1}
+  const pad2=(mx-mn)*.15;mn=Math.max(0,mn-pad2);mx=mx+pad2;
+  const x=i=>pts.length===1?(L+(W-L-R)/2):L+(W-L-R)*i/(pts.length-1),y=v=>T+(H-T-B)*(1-(v-mn)/(mx-mn));
+  const best=info.low?Math.min(...vs):Math.max(...vs),fmtv=v=>(Math.round(v*10)/10)+'';
+  let s='<svg viewBox="0 0 '+W+' '+H+'" width="100%" role="img" aria-label="'+esc(info.label)+' over time" style="display:block;max-width:34rem">';
+  [0,.5,1].forEach(f=>{const v=mn+(mx-mn)*f,yy=y(v);s+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+yy+'" y2="'+yy+'" stroke="var(--line)" stroke-width="1"/><text x="'+(L-4)+'" y="'+(yy+3)+'" text-anchor="end" font-size="9" fill="var(--muted)">'+fmtv(v)+'</text>'});
+  if(pts.length>1)s+='<polyline fill="none" stroke="var(--pitch)" stroke-width="2.5" stroke-linejoin="round" points="'+pts.map((p,i)=>x(i)+','+y(p.v)).join(' ')+'"/>';
+  pts.forEach((p,i)=>{const isb=p.v===best;s+='<circle cx="'+x(i)+'" cy="'+y(p.v)+'" r="'+(isb?5:3.5)+'" fill="'+(isb?'var(--bib)':'var(--pitch)')+'"/>'});
+  s+='<text x="'+L+'" y="'+(H-8)+'" font-size="9" fill="var(--muted)" text-anchor="'+(pts.length===1?'middle':'start')+'"'+(pts.length===1?' transform="translate('+(x(0)-L)+',0)"':'')+'>'+longDate(pts[0].d)+'</text>';
+  if(pts.length>1)s+='<text x="'+(W-R)+'" y="'+(H-8)+'" font-size="9" fill="var(--muted)" text-anchor="end">'+longDate(pts[pts.length-1].d)+'</text>';
+  s+='</svg>';
+  const first=pts[0].v,last=pts[pts.length-1].v,diff=last-first,better=info.low?diff<0:diff>0;
+  h+=s+'<p class="small" style="margin-top:6px">Best: <b>'+fmtv(best)+'</b> (pink dot) · Latest: <b>'+fmtv(last)+'</b>'+(pts.length>1?' · '+(diff===0?'No change since the start':(better?'Better by ':'Slower or lower by ')+fmtv(Math.abs(diff))+' since the start'):'')+'</p></section>';
+  return h;
+}
+const KITM=['Boots cleaned and laced','Shin pads','Kit, socks and spare top','Warm coat or tracksuit','Water bottle, full','Snack and a banana','Hair ties and bits','Any medicine or inhaler you use'];
+function viewMatch(){
+  const dk=today;
+  if(!ui.mDraft)ui.mDraft={date:dk,opp:'',us:'',them:'',rate:0,best:'',work:''};
+  const d=ui.mDraft,done=KITM.filter((x,i)=>S.mTicks[i]).length;
+  let h='<div class="grid"><section class="card"><h2>Match day checklist</h2><p class="sub">Tick things off as they go in your bag. '+done+' of '+KITM.length+' done.</p><div class="checks" style="display:grid;gap:10px;margin-top:8px">'+
+   KITM.map((x,i)=>'<label><input type="checkbox" data-mtick="'+i+'"'+(S.mTicks[i]?' checked':'')+'> '+esc(x)+'</label>').join('')+'</div><button class="btn alt" style="margin-top:12px" data-a="m-reset">Clear the ticks</button></section>'+
+   '<section class="card"><h2>Log a match</h2>'+(ui.mMsg?'<div class="note" role="status" style="margin-top:8px">'+esc(ui.mMsg)+'</div>':'')+
+   '<div class="form" style="margin-top:12px"><div class="field"><label for="mt-date">Date</label><input id="mt-date" type="date" max="'+today+'" data-md="date" value="'+esc(d.date)+'"></div>'+
+   '<div class="field"><label for="mt-opp">Played against</label><input id="mt-opp" type="text" maxlength="60" data-md="opp" value="'+esc(d.opp)+'" placeholder="Team name"></div>'+
+   '<div class="field"><label for="mt-us">Our goals</label><input id="mt-us" type="number" min="0" inputmode="numeric" data-md="us" value="'+esc(d.us)+'"></div>'+
+   '<div class="field"><label for="mt-them">Their goals</label><input id="mt-them" type="number" min="0" inputmode="numeric" data-md="them" value="'+esc(d.them)+'"></div></div>'+
+   '<div class="lab small">How did you play?</div><div class="chips" role="group" aria-label="How you played">'+RATE.map((x,i)=>'<button class="chip" data-a="m-rate" data-v="'+(i+1)+'" aria-pressed="'+(d.rate===i+1)+'">'+(i+1)+' · '+esc(x)+'</button>').join('')+'</div>'+
+   '<div class="form" style="margin-top:12px"><div class="field"><label for="mt-best">Best moment</label><input id="mt-best" type="text" maxlength="140" data-md="best" value="'+esc(d.best)+'" placeholder="Something you are proud of"></div>'+
+   '<div class="field"><label for="mt-work">Work on for next time</label><input id="mt-work" type="text" maxlength="140" data-md="work" value="'+esc(d.work)+'" placeholder="One thing to improve"></div></div>'+
+   '<div class="row"><button class="btn" data-a="m-save">Save match</button></div></section></div>';
+  const M=S.matches.slice().sort((a,b)=>a.date<b.date?1:a.date>b.date?-1:b.id-a.id);
+  if(M.length){
+    const w=M.filter(m=>m.us>m.them).length,dr=M.filter(m=>m.us===m.them).length,l=M.length-w-dr,gf=M.reduce((a,m)=>a+m.us,0),ga=M.reduce((a,m)=>a+m.them,0),avg=M.reduce((a,m)=>a+m.rate,0)/M.length;
+    h+='<section class="card" style="margin-top:16px"><h3>My season</h3><div class="cols2" style="margin:10px 0"><div><div class="small">Played</div><div class="min" style="font-size:2.4rem">'+M.length+'</div></div><div><div class="small">Won · Drawn · Lost</div><div class="min" style="font-size:2.4rem">'+w+' · '+dr+' · '+l+'</div></div><div><div class="small">Goals for and against</div><div class="min" style="font-size:2.4rem">'+gf+' · '+ga+'</div></div><div><div class="small">Average performance</div><div class="min" style="font-size:2.4rem">'+(Math.round(avg*10)/10)+'<span class="small"> / 5</span></div></div></div>'+
+     '<ul class="tl">'+M.map(m=>{const r=m.us>m.them?'Won':m.us===m.them?'Drew':'Lost';return '<li style="grid-template-columns:5rem 1fr"><span class="tm" style="font-size:1.05rem">'+longDate(m.date)+'</span><div><b>'+r+' '+m.us+'–'+m.them+(m.opp?' v '+esc(m.opp):'')+'</b> · '+esc(RATE[m.rate-1]||'')+(m.best?'<div class="small">Best: '+esc(m.best)+'</div>':'')+(m.work?'<div class="small">Work on: '+esc(m.work)+'</div>':'')+' <button class="btn alt" style="margin-top:6px;padding:4px 10px;min-height:0" data-a="m-del" data-k="'+m.id+'">Delete</button></div></li>'}).join('')+'</ul></section>';
+  }
+  return h;
+}
+function goalProg(g){
+  if(g.done)return {pct:100,txt:'Done'};
+  if(!g.rec||!g.target)return {pct:0,txt:''};
+  const info=recInfo(g.rec),cur=+S.rec[g.rec]||0,t=+g.target;
+  if(info.low){const pct=cur>0?Math.min(100,Math.round(t/cur*100)):0;return {pct:pct,txt:(cur?'Now '+cur+' s, target '+t+' s':'No time saved yet, target '+t+' s'),hit:cur>0&&cur<=t}}
+  return {pct:Math.min(100,Math.round(cur/t*100)),txt:'Now '+cur+', target '+t,hit:cur>=t};
+}
+function viewGoals(){
+  if(!ui.gDraft)ui.gDraft={text:'',rec:'',target:'',by:''};
+  const d=ui.gDraft;
+  let h='<div class="grid"><section class="card"><h2>Set a goal</h2><p class="sub">Pick something you want to reach. Link it to a record and the bar fills as you improve.</p>'+(ui.gMsg?'<div class="note" role="status" style="margin-top:8px">'+esc(ui.gMsg)+'</div>':'')+
+   '<div class="form" style="margin-top:12px"><div class="field"><label for="g-text">My goal</label><input id="g-text" type="text" maxlength="100" data-gd="text" value="'+esc(d.text)+'" placeholder="For example: 20 keepy-uppies"></div>'+
+   '<div class="field"><label for="g-rec">Link to a record (optional)</label><select id="g-rec" data-gd="rec"><option value="">No link</option>'+RECALL.map(r=>'<option value="'+r.id+'"'+(d.rec===r.id?' selected':'')+'>'+esc(r.label)+'</option>').join('')+'</select></div>'+
+   '<div class="field"><label for="g-target">Target number</label><input id="g-target" type="number" min="0" step="0.1" inputmode="decimal" data-gd="target" value="'+esc(d.target)+'"></div>'+
+   '<div class="field"><label for="g-by">Aim to reach it by (optional)</label><input id="g-by" type="date" min="'+today+'" data-gd="by" value="'+esc(d.by)+'"></div></div>'+
+   '<div class="row"><button class="btn" data-a="g-add">Add goal</button></div></section>';
+  const open=S.goals.filter(g=>!g.done),dn=S.goals.filter(g=>g.done);
+  const card=g=>{const p=goalProg(g),left=g.by?Math.ceil((parseKey(g.by)-parseKey(today))/864e5):null;
+    return '<li style="display:block;padding:10px 0;border-bottom:1px solid var(--line)"><b>'+esc(g.text)+'</b>'+(g.rec?'<div class="small">Linked to '+esc(recInfo(g.rec).label)+'</div>':'')+
+     (g.rec&&g.target?'<div class="bar-track" style="background:var(--surface2);border-radius:4px;height:12px;margin:6px 0;overflow:hidden" role="img" aria-label="'+p.pct+' percent"><div style="width:'+p.pct+'%;height:100%;background:'+(p.hit||g.done?'var(--bib)':'var(--pitch)')+'"></div></div><div class="small">'+p.pct+'% · '+esc(p.txt)+(p.hit&&!g.done?' · Target reached!':'')+'</div>':'')+
+     (g.by&&!g.done?'<div class="small">'+(left<0?'Date has passed':left===0?'Due today':left+' day'+(left===1?'':'s')+' left')+' (by '+longDate(g.by)+')</div>':'')+
+     '<div class="row" style="margin-top:8px"><button class="btn alt" style="padding:4px 12px;min-height:0" data-a="g-done" data-k="'+g.id+'">'+(g.done?'Not done yet':'Mark as done')+'</button><button class="btn alt" style="padding:4px 12px;min-height:0" data-a="g-del" data-k="'+g.id+'">Delete</button></div></li>'};
+  h+='<section class="card"><h2>My goals</h2>'+(open.length?'<ul class="tl" style="margin-top:8px">'+open.map(card).join('')+'</ul>':'<p class="sub">No goals yet. Add your first one.</p>')+(dn.length?'<h3 style="margin-top:16px">Done</h3><ul class="tl">'+dn.map(card).join('')+'</ul>':'')+'</section></div>';
+  return h;
+}
+
+const VIEWS={today:viewToday,routines:viewRoutines,calendar:viewCalendar,diary:viewDiary,match:viewMatch,goals:viewGoals,home:viewHome,meals:viewMeals,tips:viewTips,me:viewMe};
+const TABN={today:'Today',routines:'Routines',calendar:'Calendar',diary:'Diary',match:'Match day',goals:'Goals',home:'At home',meals:'Meals',tips:'Tips',me:'Me'};
 function render(keepScroll){
   const y=window.scrollY;
   $('#tabs').innerHTML=Object.keys(TABN).map(t=>'<button data-a="tab" data-v="'+t+'"'+(ui.tab===t?' aria-current="page"':'')+'>'+TABN[t]+'</button>').join('');
@@ -830,7 +905,7 @@ function render(keepScroll){
   if(keepScroll)window.scrollTo(0,y);
   const c=$('#clock');if(c)c.textContent=longDate(today);
 }
-function go(tab,keep){ui.tab=tab;ui.msg='';ui.editRow=null;try{history.replaceState(null,'','#'+tab)}catch(e){};render(keep);if(!keep)window.scrollTo(0,0)}
+function go(tab,keep){ui.tab=tab;ui.msg='';ui.mMsg='';ui.gMsg='';ui.editRow=null;try{history.replaceState(null,'','#'+tab)}catch(e){};render(keep);if(!keep)window.scrollTo(0,0)}
 
 /* ---------- session timer ---------- */
 let run=null,runTick=null;
@@ -919,6 +994,13 @@ document.addEventListener('click',e=>{
    case 'd-save':{const dk=ui.dDate||today,d=ui.draft||{};const win=(($('#dy-win')||{}).value||'').trim(),work=(($('#dy-work')||{}).value||'').trim();if(!d.rate){ui.msg='Pick how it felt, from 1 to 5, then save.';render(true);return}S.diary[dk]={rate:d.rate,kind:d.kind||defaultKind(dk),win:win,work:work};ui.msg='Saved. Nice work.';ui.draft=null;break}
    case 'd-del':{delete S.diary[ui.dDate||today];ui.msg='Entry deleted.';ui.draft=null;break}
    case 'd-edit':ui.dDate=k;ui.draft=null;ui.msg='';save();render(true);window.scrollTo(0,0);return
+   case 'm-rate':ui.mDraft=ui.mDraft||{};ui.mDraft.rate=+v;document.querySelectorAll('[data-a=m-rate]').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.v===v)));return
+   case 'm-reset':S.mTicks={};break;
+   case 'm-save':{const d=ui.mDraft||{};if(!d.date||d.us===''||d.us==null||d.them===''||d.them==null||!d.rate){ui.mMsg='Add the date, both scores and how you played, then save.';render(true);return}S.matches.push({id:Date.now(),date:d.date,opp:(d.opp||'').trim(),us:Math.max(0,parseInt(d.us,10)||0),them:Math.max(0,parseInt(d.them,10)||0),rate:d.rate,best:(d.best||'').trim(),work:(d.work||'').trim()});ui.mDraft=null;ui.mMsg='Match saved.';break}
+   case 'm-del':S.matches=S.matches.filter(m=>String(m.id)!==k);break;
+   case 'g-add':{const d=ui.gDraft||{};if(!(d.text||'').trim()){ui.gMsg='Write your goal first.';render(true);return}if(d.rec&&!(+d.target>0)){ui.gMsg='Add a target number for the record you linked.';render(true);return}S.goals.push({id:Date.now(),text:d.text.trim(),rec:d.rec||'',target:d.rec?+d.target:0,by:d.by||'',done:false});ui.gDraft=null;ui.gMsg='Goal added.';break}
+   case 'g-done':{const g=S.goals.find(x=>String(x.id)===k);if(g)g.done=!g.done;break}
+   case 'g-del':S.goals=S.goals.filter(x=>String(x.id)!==k);break;
    case 'wk':ui.wk=Math.min(0,ui.wk+(+v));break;
    case 'trow-edit':ui.editRow=b.dataset.id;break;
    case 'trow-cancel':ui.editRow=null;break;
@@ -957,12 +1039,16 @@ document.addEventListener('change',e=>{
   if(t.dataset.tick){S.ticks[t.dataset.tick]=t.checked;save();return}
   if(t.dataset.chal){S.chal[t.dataset.chal]=t.checked;save();return}
   if(t.dataset.a==='tipmine'){ui.tipMine=t.checked;render(true);return}
-  if(t.dataset.rec){const v=t.dataset.dec==='1'?parseFloat(t.value):parseInt(t.value,10);S.rec[t.dataset.rec]=Math.max(0,v||0);save();return}
+  if(t.dataset.rec){const v=Math.max(0,(t.dataset.dec==='1'?parseFloat(t.value):parseInt(t.value,10))||0),id=t.dataset.rec;S.rec[id]=v;const h=(S.recHist[id]=S.recHist[id]||[]).filter(p=>p.d!==today);if(v>0)h.push({d:today,v:v});S.recHist[id]=h;if(v>0)ui.rChart=id;save();render(true);return}
+  if(t.dataset.rchart){ui.rChart=t.value;render(true);return}
+  if(t.dataset.mtick!==undefined){S.mTicks[t.dataset.mtick]=t.checked;save();return}
+  if(t.dataset.md&&t.dataset.md==='date'){ui.mDraft=ui.mDraft||{};ui.mDraft.date=t.value;return}
+  if(t.dataset.gd==='rec'){ui.gDraft=ui.gDraft||{};ui.gDraft.rec=t.value;return}
   if(t.dataset.f){const f=t.dataset.f;let v=t.value;if(f==='dur'||f==='travel'||f==='early')v=+v;S.profile[f]=v;S.profile.setup=true;save();if(t.type!=='time'&&t.type!=='number')render(true);return}
   if(t.dataset.week){S.week[t.dataset.week]=t.value;save();render(true);return}
   if(t.dataset.diet){const d=S.profile.diet||[];S.profile.diet=t.checked?d.concat(t.dataset.diet):d.filter(x=>x!==t.dataset.diet);S.profile.setup=true;save();render(true)}
 });
-document.addEventListener('input',e=>{const t=e.target;if(t.id==='dy-win'||t.id==='dy-work'){ui.draft=ui.draft||{rate:0,kind:'home'};ui.draft[t.id==='dy-win'?'win':'work']=t.value}});
+document.addEventListener('input',e=>{const t=e.target;if(t.dataset.md){ui.mDraft=ui.mDraft||{};ui.mDraft[t.dataset.md]=t.value;return}if(t.dataset.gd){ui.gDraft=ui.gDraft||{};ui.gDraft[t.dataset.gd]=t.value;return}if(t.id==='dy-win'||t.id==='dy-work'){ui.draft=ui.draft||{rate:0,kind:'home'};ui.draft[t.id==='dy-win'?'win':'work']=t.value}});
 function fromHash(){const h=(location.hash||'').slice(1);if(VIEWS[h])ui.tab=h}
 window.addEventListener('hashchange',()=>{fromHash();render()});
 fromHash();render();
