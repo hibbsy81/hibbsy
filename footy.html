@@ -130,6 +130,12 @@ ol.drills{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:12px}
 .cols2{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
 footer{margin-top:30px;color:var(--muted);font-size:.88rem;border-top:3px solid var(--bib);padding-top:14px}
 .small{font-size:.88rem;color:var(--muted)}
+.bars{display:flex;gap:6px;align-items:flex-end;height:110px;border-bottom:2px solid var(--line)}
+.bar{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:2px;font-size:.8rem;min-width:0}
+.bar i{display:block;width:100%;background:var(--pitch);border-radius:3px 3px 0 0}
+.bar.p i{background:var(--bib)}
+.bar b{font-family:var(--font-d);color:var(--muted);margin-bottom:-22px;position:relative;top:22px}
+.bars{margin-bottom:26px}
 .runbar{position:fixed;left:0;right:0;bottom:0;z-index:40;background:var(--hdr);color:var(--hdr-ink);padding:12px max(16px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));border-top:4px solid var(--bib);max-height:65vh;overflow:auto;box-shadow:0 -6px 20px rgba(0,0,0,.25)}
 .runbar .rb-name{font-family:var(--font-d);text-transform:uppercase;font-size:1.4rem;line-height:1.1}
 .runbar .rb-time{font-family:var(--font-d);font-weight:700;font-size:3.2rem;line-height:1;font-variant-numeric:tabular-nums}
@@ -179,14 +185,14 @@ const longDate=k=>{const d=parseKey(k);return DAYS[d.getDay()]+' '+d.getDate()+'
 
 /* ---------- state ---------- */
 const DEF={profile:{name:'',age:'a2',pos:'mid',wake:'07:00',leave:'08:15',bed:'21:30',who:'f',dur:45,travel:20,early:15,diet:[],setup:false},
-  week:{0:'recover',1:'rest',2:'train',3:'solo',4:'train',5:'rest',6:'match'},overrides:{},weather:{},ticks:{},shuffle:{},rec:{jug:0,left:0,right:0},chal:{},picks:{},team:{week:{},dates:{}},teamRow:{},feel:{},_t:0};
+  week:{0:'recover',1:'rest',2:'train',3:'solo',4:'train',5:'rest',6:'match'},overrides:{},weather:{},ticks:{},shuffle:{},rec:{jug:0,left:0,right:0},chal:{},picks:{},team:{week:{},dates:{}},teamRow:{},feel:{},diary:{},focus:{},ics:{team:true,diary:true,morning:false,night:false},_t:0};
 let S=JSON.parse(JSON.stringify(DEF));
 function merge(o){S=Object.assign({},JSON.parse(JSON.stringify(DEF)),o);S.teamRow=S.teamRow||{};S.profile=Object.assign({},DEF.profile,o.profile||{});S.week=Object.assign({},DEF.week,o.week||{});S.rec=Object.assign({},DEF.rec,o.rec||{});S.team=Object.assign({},DEF.team,o.team||{});S.team.week=S.team.week||{};S.team.dates=S.team.dates||{}}
 function load(){try{const v=localStorage.getItem('pitchplan_v1');if(v)merge(JSON.parse(v))}catch(e){}}
 function save(){S._t=Date.now();try{localStorage.setItem('pitchplan_v1',JSON.stringify(S))}catch(e){}}
 load();
 const today=dkey(new Date());
-const ui={tab:'today',sel:today,month:[new Date().getFullYear(),new Date().getMonth()],rKind:'morning',rType:null,mType:null,mFilter:'all',plate:{},tipCat:'all',tipMine:false,confirm:false,hPlace:null,hSpace:'tiny',hMin:15,msg:'',swapIdx:null,editRow:null};
+const ui={tab:'today',sel:today,month:[new Date().getFullYear(),new Date().getMonth()],rKind:'morning',rType:null,mType:null,mFilter:'all',plate:{},tipCat:'all',tipMine:false,confirm:false,hPlace:null,hSpace:'tiny',hMin:15,msg:'',swapIdx:null,editRow:null,wk:0,dDate:null,draft:null,icsMsg:''};
 const FEEL={fresh:'Fresh',ok:'Okay',tired:'Tired',sore:'Sore',hurt:'Something hurts'};
 const HI=new Set(['Dive and recover','Jockey and shuffle','Delay and win it','Runs in behind','Short shuttle sprints','Mini bodyweight circuit','Take-on moves']);
 const HURTN='<div class="note"><b>Something hurts.</b> Do not train through pain. Tell a parent, carer or coach, and get it checked if it lasts more than a day. If you took a knock to the head, or you feel dizzy or sick, stop and tell an adult straight away. Rest and easy walking are fine until it is checked.</div>';
@@ -666,6 +672,7 @@ function viewToday(){
   h+='</div>';
   const t=tipOfDay();
   h+='<section class="card potd tip" style="grid-template-columns:5.2rem 1fr"><span class="c">'+TC[t.c]+'</span><p>'+esc(t.t)+'</p></section>';
+  h+='<section class="card"><div class="sec-head"><h3>Training diary</h3><button class="btn'+(S.diary[today]?' alt':'')+'" data-a="go" data-v="diary">'+(S.diary[today]?'Edit today':'Log today')+'</button></div><p class="sub">'+(S.diary[today]?'Logged today: '+RATE[S.diary[today].rate-1]+'. See your weekly review in the Diary tab.':'How did it feel? One win and one thing to work on takes a minute.')+'</p></section>';
   h+='<section class="card"><div class="sec-head"><h3>Short on space or time?</h3><button class="btn" data-a="go" data-v="home">Home session</button></div><p class="sub">Ten to thirty minute sessions for a hallway, bedroom, garage or garden.</p></section>';
   return h;
 }
@@ -708,7 +715,7 @@ function viewCalendar(){
       (Object.prototype.hasOwnProperty.call(S.team.dates,k)?'<button class="chip" data-a="team-clear" data-k="'+k+'">Use my weekly team pattern</button>':'')+'</div>'})()+
     '<div class="lab small" style="margin-top:12px">Weather</div>'+weatherChips(k)+(k===today?'<div class="lab small">How do you feel today?</div>'+feelChips(k):'')+sessionHTML(k)+
     '<div class="row" style="margin-top:14px"><button class="btn" data-a="go" data-v="meals" data-type="'+t+'">Meals for this day</button><button class="btn alt" data-a="go" data-v="routines" data-type="'+t+'" data-kind="morning">Routines for this day</button></div></section></div>';
-  return h;
+  return h+icsCard();
 }
 function viewMeals(){
   const type=ui.mType||typeOf(today),P=S.profile,key=mealsKey();
@@ -769,8 +776,99 @@ function viewMe(){
   h+='<section class="card"><h3>Reset</h3><p class="sub">Clears your settings, calendar changes, ticks and records on this device.</p><button class="btn warn" data-a="reset" style="margin-top:8px">'+(ui.confirm?'Tap again to wipe everything':'Reset everything')+'</button></section>';
   return h;
 }
-const VIEWS={today:viewToday,routines:viewRoutines,calendar:viewCalendar,home:viewHome,meals:viewMeals,tips:viewTips,me:viewMe};
-const TABN={today:'Today',routines:'Routines',calendar:'Calendar',home:'At home',meals:'Meals',tips:'Tips',me:'Me'};
+
+/* ---------- training diary, weekly review, calendar reminders ---------- */
+const RATE=['Rough','Hard','Okay','Good','Brilliant'];
+const KIND={team:'Team training',match:'Match',home:'Home session',solo:'Skills on my own',rest:'Rest or recovery'};
+function defaultKind(k){const t=typeOf(k);if(t==='match')return 'match';if(t==='train')return teamOf(k)?'team':'home';if(t==='solo')return 'solo';return 'rest'}
+function weekStart(off){const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-((d.getDay()+6)%7)+off*7);return d}
+function addDays(d,n){const x=new Date(d);x.setDate(x.getDate()+n);return x}
+function countTicks(k,kind){let n=0;for(const key in S.ticks)if(S.ticks[key]&&key.indexOf(k+'|'+kind+'|')===0)n++;return n}
+function drinksOn(k){let n=0;for(let i=0;i<8;i++)if(S.ticks['w|'+k+'|'+i])n++;return n}
+function viewDiary(){
+  const dk=ui.dDate||today;
+  if(!ui.draft){const e=S.diary[dk];ui.draft=e?Object.assign({},e):{rate:0,kind:defaultKind(dk),win:'',work:''}}
+  const d=ui.draft,has=!!S.diary[dk];
+  let h='<section class="card"><h2>Training diary</h2><p class="sub">Log how a session went. It takes a minute and powers your weekly review.</p>'+
+   (ui.msg?'<div class="note" role="status" style="margin-top:8px">'+esc(ui.msg)+'</div>':'')+
+   '<div class="field" style="margin-top:12px;max-width:16rem"><label for="dy-date">Day</label><input id="dy-date" type="date" max="'+today+'" value="'+dk+'"></div>'+
+   '<div class="lab small">What did you do?</div><div class="chips" role="group" aria-label="What you did">'+Object.keys(KIND).map(x=>'<button class="chip" data-a="d-kind" data-v="'+x+'" aria-pressed="'+(d.kind===x)+'">'+KIND[x]+'</button>').join('')+'</div>'+
+   '<div class="lab small">How did it feel?</div><div class="chips" role="group" aria-label="How it felt">'+RATE.map((x,i)=>'<button class="chip" data-a="d-rate" data-v="'+(i+1)+'" aria-pressed="'+(d.rate===i+1)+'">'+(i+1)+' · '+x+'</button>').join('')+'</div>'+
+   '<div class="form"><div class="field"><label for="dy-win">One win</label><input id="dy-win" type="text" maxlength="140" value="'+esc(d.win||'')+'" placeholder="Something that went well"></div><div class="field"><label for="dy-work">One thing to work on</label><input id="dy-work" type="text" maxlength="140" value="'+esc(d.work||'')+'" placeholder="Something to improve next time"></div></div>'+
+   '<div class="row"><button class="btn" data-a="d-save">'+(has?'Update entry':'Save entry')+'</button>'+(has?'<button class="btn alt" data-a="d-del">Delete entry</button>':'')+'</div></section>';
+  // weekly review
+  const ws=weekStart(ui.wk),days=[...Array(7).keys()].map(i=>addDays(ws,i)),keys=days.map(dkey);
+  const ents=keys.map(k=>S.diary[k]||null),logged=ents.filter(Boolean);
+  const avg=logged.length?logged.reduce((a,e)=>a+e.rate,0)/logged.length:0;
+  const sess=logged.filter(e=>e.kind!=='rest').length;
+  const dr=keys.map(drinksOn),drAvg=dr.reduce((a,b)=>a+b,0)/7;
+  const tiredDays=keys.filter(k=>S.feel[k]==='tired'||S.feel[k]==='sore'||S.feel[k]==='hurt').length;
+  const wkKey=dkey(ws),label=days[0].getDate()+' '+MONTHS[days[0].getMonth()].slice(0,3)+' to '+days[6].getDate()+' '+MONTHS[days[6].getMonth()].slice(0,3);
+  h+='<section class="card"><div class="cal-top"><button class="btn alt" data-a="wk" data-v="-1" aria-label="Previous week">‹</button><h3 style="margin:0">Week review</h3><button class="btn alt" data-a="wk" data-v="1" aria-label="Next week"'+(ui.wk>=0?' disabled':'')+'>›</button></div><p class="sub">'+label+(ui.wk===0?' (this week)':'')+'</p>'+
+   '<div class="cols2" style="margin:12px 0"><div><div class="small">Sessions logged</div><div class="min" style="font-size:2.4rem">'+sess+'</div></div><div><div class="small">Average feel</div><div class="min" style="font-size:2.4rem">'+(logged.length?avg.toFixed(1):'–')+'<small>/ 5</small></div></div><div><div class="small">Drinks a day</div><div class="min" style="font-size:2.4rem">'+drAvg.toFixed(1)+'<small>/ 8</small></div></div></div>'+
+   '<div class="bars" role="img" aria-label="How each day felt, out of 5">'+days.map((dd,i)=>{const e=ents[i];return '<div class="bar'+(i%2?' p':'')+'"><span>'+(e?e.rate:'')+'</span><i style="height:'+(e?e.rate*14:2)+'px"></i><b>'+DAYS[dd.getDay()].slice(0,1)+'</b></div>'}).join('')+'</div>'+
+   '<ul class="tl" style="margin-top:12px">'+days.map((dd,i)=>{const k=keys[i],e=ents[i],t=typeOf(k);return '<li style="grid-template-columns:5rem 1fr"><span class="tm" style="font-size:1.05rem">'+DAYS[dd.getDay()]+' '+dd.getDate()+'</span><span><span class="tag">'+TYPES[t]+'</span> '+(e?'<b>'+KIND[e.kind]+' · '+RATE[e.rate-1]+'</b>':'<span class="small">Nothing logged</span>')+'<br><span class="small">Morning steps '+countTicks(k,'morning')+' · night steps '+countTicks(k,'night')+' · drinks '+dr[i]+'/8'+(S.feel[k]?' · felt '+FEEL[S.feel[k]].toLowerCase():'')+'</span></span></li>'}).join('')+'</ul>';
+  const tips=[];
+  if(!logged.length)tips.push('Nothing is logged for this week yet. Log a session above to get your review.');
+  if(logged.length&&avg>=4)tips.push('You rated this week high. Keep doing what is working.');
+  if(logged.length&&avg<3)tips.push('Sessions felt hard this week. Check your sleep, food and drinks, and tell your coach if you feel worn out.');
+  if(tiredDays>=2)tips.push('You felt tired, sore or hurt on '+tiredDays+' days. Make sure you get a proper rest day and an early night.');
+  if(drAvg<5&&ui.wk<=0)tips.push('Drinks averaged under 5 a day. Keep a bottle with you and tick them off.');
+  if(tips.length)h+='<div class="note" style="margin-top:10px">'+tips.map(esc).join('<br>')+'</div>';
+  const wins=logged.filter(e=>e.win),works=logged.filter(e=>e.work);
+  h+='<div class="cols2" style="margin-top:12px"><div><h3>Wins</h3>'+(wins.length?'<ul class="kit">'+keys.map((k,i)=>ents[i]&&ents[i].win?'<li><b>'+DAYS[days[i].getDay()]+':</b> '+esc(ents[i].win)+'</li>':'').join('')+'</ul>':'<p class="small">No wins logged yet.</p>')+'</div><div><h3>To work on</h3>'+(works.length?'<ul class="kit">'+keys.map((k,i)=>ents[i]&&ents[i].work?'<li><b>'+DAYS[days[i].getDay()]+':</b> '+esc(ents[i].work)+'</li>':'').join('')+'</ul>':'<p class="small">Nothing logged yet.</p>')+'</div></div>'+
+   '<div class="field" style="margin-top:12px"><label for="dy-focus">My focus for next week</label><input id="dy-focus" type="text" maxlength="140" data-focus="'+wkKey+'" value="'+esc(S.focus[wkKey]||'')+'" placeholder="One thing to practise"></div></section>';
+  // recent entries
+  const all=Object.keys(S.diary).sort().reverse().slice(0,10);
+  if(all.length)h+='<section class="card"><h3>Recent entries</h3><ul class="tl">'+all.map(k=>{const e=S.diary[k];return '<li style="grid-template-columns:5rem 1fr"><span class="tm" style="font-size:1.05rem">'+longDate(k)+'</span><span><b>'+KIND[e.kind]+' · '+RATE[e.rate-1]+'</b>'+(e.win?'<br>Win: '+esc(e.win):'')+(e.work?'<br>Work on: '+esc(e.work):'')+'<br><button class="chip" data-a="d-edit" data-k="'+k+'">Edit</button></span></li>'}).join('')+'</ul></section>';
+  return h;
+}
+
+/* calendar reminders (.ics) */
+const icsFold=l=>{l=l.replace(/[^\x20-\x7e]/g,'');let o='';while(l.length>74){o+=l.slice(0,74)+'\r\n ';l=l.slice(74)}return o+l};
+const icsEsc=t=>String(t).replace(/\\/g,'\\\\').replace(/;/g,'\;').replace(/,/g,'\\,').replace(/\n/g,'\\n');
+const icsDT=(d,min)=>d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate())+'T'+pad(Math.floor(min/60)%24)+pad(min%60)+'00';
+function icsBuild(){
+  const o=S.ics,P=S.profile,L=[],now=new Date();
+  const stamp=now.getUTCFullYear()+pad(now.getUTCMonth()+1)+pad(now.getUTCDate())+'T'+pad(now.getUTCHours())+pad(now.getUTCMinutes())+pad(now.getUTCSeconds())+'Z';
+  let n=0;const base=hash(JSON.stringify([S.team,S.profile.wake,S.profile.bed]));
+  L.push('BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Pitch Plan//Reminders//EN','CALSCALE:GREGORIAN','METHOD:PUBLISH');
+  const alarm=(mins,text,rel)=>['BEGIN:VALARM','ACTION:DISPLAY','DESCRIPTION:'+icsEsc(text),'TRIGGER'+(rel==='end'?';RELATED=END:PT'+mins+'M':':-PT'+mins+'M'),'END:VALARM'];
+  const ev=x=>{L.push('BEGIN:VEVENT','UID:pp-'+base+'-'+(n++)+'@pitchplan','DTSTAMP:'+stamp,'DTSTART:'+x.s,'DTEND:'+x.e,'SUMMARY:'+icsEsc(x.sum));if(x.desc)L.push('DESCRIPTION:'+icsEsc(x.desc));if(x.rr)L.push('RRULE:'+x.rr);(x.ex||[]).forEach(e=>L.push('EXDATE:'+e));(x.al||[]).forEach(a=>L.push(...a));L.push('END:VEVENT')};
+  const teamAlarms=(tm,match,travel,early)=>{const a=[];
+    a.push(alarm(180,'Finish your '+(match?'pre-match':'main')+' meal about now'));
+    a.push(alarm(90,'Snack and a drink of water'));
+    a.push(alarm(travel+early+10,'Final bag check: boots, shin pads, water bottle'));
+    a.push(alarm(travel+early,'Time to leave home'));
+    if(o.diary)a.push(alarm(15,'Log your training diary in Pitch Plan','end'));
+    return a};
+  const today0=new Date();today0.setHours(0,0,0,0);
+  if(o.team){
+    const travel=+P.travel||0,early=+P.early||0;
+    Object.keys(S.team.week).forEach(w=>{const tm=S.team.week[w];if(!tm)return;
+      const tt=tmin(tm);let d=new Date(today0);while(d.getDay()!==+w)d.setDate(d.getDate()+1);
+      const match=S.week[w]==='match',ex=[];
+      Object.keys(S.team.dates).forEach(k=>{const kd=parseKey(k);if(kd.getDay()===+w&&kd>=d)ex.push(icsDT(kd,tt.st))});
+      ev({s:icsDT(d,tt.st),e:icsDT(d,tt.en),sum:match?'Match':'Team training',desc:'Added from Pitch Plan. Travel '+travel+' min, arrive '+early+' min early.',rr:'FREQ=WEEKLY;BYDAY='+['SU','MO','TU','WE','TH','FR','SA'][w],ex:ex,al:teamAlarms(tm,match,travel,early)})});
+    Object.keys(S.team.dates).forEach(k=>{const tm=S.team.dates[k],kd=parseKey(k);if(!tm||kd<today0)return;const tt=tmin(tm),match=typeOf(k)==='match';
+      ev({s:icsDT(kd,tt.st),e:icsDT(kd,tt.en),sum:match?'Match':'Team training',desc:'Added from Pitch Plan.',al:teamAlarms(tm,match,travel,early)})})
+  }
+  if(o.morning){const w=toMin(P.wake);ev({s:icsDT(today0,w),e:icsDT(today0,w+10),sum:'Wake up: morning routine',desc:'Water, mobility, breakfast, bag check.',rr:'FREQ=DAILY',al:[alarm(0,'Wake up and start your morning routine')]})}
+  if(o.night){const b=toMin(P.bed);ev({s:icsDT(today0,b-60),e:icsDT(today0,b),sum:'Night routine',desc:'Screens off, stretch, pack your bag, lights out at '+fmt(b)+'.',rr:'FREQ=DAILY',al:[alarm(0,'Start your night routine')]})}
+  L.push('END:VCALENDAR');
+  return {text:L.map(icsFold).join('\r\n')+'\r\n',count:n};
+}
+function icsCard(){
+  const o=S.ics,hasTeam=Object.keys(S.team.week).length||Object.values(S.team.dates).some(Boolean);
+  const cb=(k,t)=>'<label><input type="checkbox" data-ics="'+k+'"'+(o[k]?' checked':'')+'> '+t+'</label>';
+  return '<section class="card" style="margin-top:16px"><h3>Calendar reminders</h3><p class="sub">Make a calendar file for your phone, iPad or computer. Your own calendar then sends the alerts, even when Pitch Plan is closed.</p>'+
+   '<div class="checks" style="display:grid;gap:10px;margin:10px 0">'+cb('team','Team sessions and matches, with alerts for your last meal, snack, bag check and leaving home')+cb('diary','A reminder to log your training diary after each team session')+cb('morning','Every morning at your wake-up time')+cb('night','Every night, an hour before lights out')+'</div>'+
+   (o.team&&!hasTeam?'<div class="note">You have not set any team sessions yet. Add them in Me, under Team training, or tick them on a day here.</div>':'')+
+   (ui.icsMsg?'<div class="note" role="status" style="margin:10px 0">'+esc(ui.icsMsg)+'</div>':'')+
+   '<div class="row" style="margin-top:10px"><button class="btn" data-a="ics-dl">Download calendar file</button><button class="btn alt" data-a="ics-copy">Copy as text</button></div><p class="small" style="margin-top:8px">Open the downloaded .ics file to add the events. Times use your device’s time zone. If you change a time later, download a fresh file and delete the old events.</p></section>';
+}
+const VIEWS={today:viewToday,routines:viewRoutines,calendar:viewCalendar,diary:viewDiary,home:viewHome,meals:viewMeals,tips:viewTips,me:viewMe};
+const TABN={today:'Today',routines:'Routines',calendar:'Calendar',diary:'Diary',home:'At home',meals:'Meals',tips:'Tips',me:'Me'};
 function render(keepScroll){
   const y=window.scrollY;
   $('#tabs').innerHTML=Object.keys(TABN).map(t=>'<button data-a="tab" data-v="'+t+'"'+(ui.tab===t?' aria-current="page"':'')+'>'+TABN[t]+'</button>').join('');
@@ -862,6 +960,14 @@ document.addEventListener('click',e=>{
    case 'run-prev':if(run)goDrill(run.i-1,false);return
    case 'run-steps':if(run){run.steps=!run.steps;drawRun()}return
    case 'run-stop':stopRun();return
+   case 'd-kind':ui.draft=ui.draft||{};ui.draft.kind=v;document.querySelectorAll('[data-a=d-kind]').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.v===v)));return
+   case 'd-rate':ui.draft=ui.draft||{};ui.draft.rate=+v;document.querySelectorAll('[data-a=d-rate]').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.v===v)));return
+   case 'd-save':{const dk=ui.dDate||today,d=ui.draft||{};const win=(($('#dy-win')||{}).value||'').trim(),work=(($('#dy-work')||{}).value||'').trim();if(!d.rate){ui.msg='Pick how it felt, from 1 to 5, then save.';render(true);return}S.diary[dk]={rate:d.rate,kind:d.kind||defaultKind(dk),win:win,work:work};ui.msg='Saved. Nice work.';ui.draft=null;break}
+   case 'd-del':{delete S.diary[ui.dDate||today];ui.msg='Entry deleted.';ui.draft=null;break}
+   case 'd-edit':ui.dDate=k;ui.draft=null;ui.msg='';save();render(true);window.scrollTo(0,0);return
+   case 'wk':ui.wk=Math.min(0,ui.wk+(+v));break;
+   case 'ics-dl':{const r=icsBuild();if(!r.count){ui.icsMsg='Nothing to add yet. Tick an option above, and add team sessions if you chose those.';render(true);return}try{const bl=new Blob([r.text],{type:'text/calendar'});const u=URL.createObjectURL(bl);const l=document.createElement('a');l.href=u;l.download='pitch-plan-reminders.ics';document.body.appendChild(l);l.click();l.remove();ui.icsMsg='Calendar file with '+r.count+' event'+(r.count>1?'s':'')+' downloaded. Open it to add the events. If nothing downloaded, use Copy as text instead.'}catch(x){ui.icsMsg='The download did not work here. Use Copy as text instead.'}render(true);return}
+   case 'ics-copy':{const r=icsBuild();if(!r.count){ui.icsMsg='Nothing to add yet. Tick an option above, and add team sessions if you chose those.';render(true);return}const done=()=>{ui.icsMsg='Copied. Paste it into a text file and save it as reminders.ics, then open that file.';render(true)};try{navigator.clipboard.writeText(r.text).then(done,()=>{ui.icsMsg='Could not copy here. Use Download instead.';render(true)})}catch(x){ui.icsMsg='Could not copy here. Use Download instead.';render(true)}return}
    case 'trow-edit':ui.editRow=b.dataset.id;break;
    case 'trow-cancel':ui.editRow=null;break;
    case 'trow-reset':delete S.teamRow[today+'|'+b.dataset.id];ui.editRow=null;break;
@@ -889,6 +995,9 @@ document.addEventListener('click',e=>{
 document.addEventListener('change',e=>{
   const t=e.target;
   if(t.dataset.bkfile){const f=t.files&&t.files[0];if(!f)return;const r=new FileReader();r.onload=()=>restore(String(r.result));r.onerror=()=>{ui.msg='Could not read that file.';render(true)};r.readAsText(f);return}
+  if(t.id==='dy-date'){if(t.value&&t.value<=today){ui.dDate=t.value;ui.draft=null;ui.msg='';render(true)}return}
+  if(t.dataset.focus){S.focus[t.dataset.focus]=t.value;save();return}
+  if(t.dataset.ics){S.ics[t.dataset.ics]=t.checked;save();ui.icsMsg='';return}
   if(t.dataset.swapmeal!==undefined){if(t.value==='')return;const key=mealsKey();(S.picks[key]=S.picks[key]||{})[t.value]=t.dataset.swapmeal;const sl=PLAN[ui.mType||typeOf(today)][+t.value];ui.msg='Swapped in '+t.dataset.swapmeal+' for '+(sl?sl[1].toLowerCase():'that meal')+'.';save();render(true);window.scrollTo(0,0);return}
   if(t.dataset.teamdate){const k=t.dataset.teamdate;if(t.checked){S.team.dates[k]=Object.assign({},teamOf(k)||DEFTEAM);if(typeOf(k)!=='train'&&typeOf(k)!=='match')S.overrides[k]='train'}else S.team.dates[k]=false;save();render(true);return}
   if(t.dataset.tdf){const k=t.dataset.k;const cur=S.team.dates[k];const o=cur||(S.team.dates[k]=Object.assign({},teamOf(k)||DEFTEAM));o[t.dataset.tdf]=t.value;save();return}
@@ -902,6 +1011,7 @@ document.addEventListener('change',e=>{
   if(t.dataset.week){S.week[t.dataset.week]=t.value;save();render(true);return}
   if(t.dataset.diet){const d=S.profile.diet||[];S.profile.diet=t.checked?d.concat(t.dataset.diet):d.filter(x=>x!==t.dataset.diet);S.profile.setup=true;save();render(true)}
 });
+document.addEventListener('input',e=>{const t=e.target;if(t.id==='dy-win'||t.id==='dy-work'){ui.draft=ui.draft||{rate:0,kind:'home'};ui.draft[t.id==='dy-win'?'win':'work']=t.value}});
 function fromHash(){const h=(location.hash||'').slice(1);if(VIEWS[h])ui.tab=h}
 window.addEventListener('hashchange',()=>{fromHash();render()});
 fromHash();render();
