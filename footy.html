@@ -160,14 +160,14 @@ const longDate=k=>{const d=parseKey(k);return DAYS[d.getDay()]+' '+d.getDate()+'
 
 /* ---------- state ---------- */
 const DEF={profile:{name:'',age:'a2',pos:'mid',wake:'07:00',leave:'08:15',bed:'21:30',who:'f',dur:45,diet:[],setup:false},
-  week:{0:'recover',1:'rest',2:'train',3:'solo',4:'train',5:'rest',6:'match'},overrides:{},weather:{},ticks:{},shuffle:{},rec:{jug:0,left:0,right:0},chal:{},_t:0};
+  week:{0:'recover',1:'rest',2:'train',3:'solo',4:'train',5:'rest',6:'match'},overrides:{},weather:{},ticks:{},shuffle:{},rec:{jug:0,left:0,right:0},chal:{},picks:{},_t:0};
 let S=JSON.parse(JSON.stringify(DEF));
 function merge(o){S=Object.assign({},DEF,o);S.profile=Object.assign({},DEF.profile,o.profile||{});S.week=Object.assign({},DEF.week,o.week||{});S.rec=Object.assign({},DEF.rec,o.rec||{})}
 function load(){try{const v=localStorage.getItem('pitchplan_v1');if(v)merge(JSON.parse(v))}catch(e){}}
 function save(fromRemote){if(!fromRemote)S._t=Date.now();try{localStorage.setItem('pitchplan_v1',JSON.stringify(S))}catch(e){}if(!fromRemote&&typeof schedulePush==='function')schedulePush()}
 load();
 const today=dkey(new Date());
-const ui={tab:'today',sel:today,month:[new Date().getFullYear(),new Date().getMonth()],rKind:'morning',rType:null,mType:null,mFilter:'all',plate:{},tipCat:'all',tipMine:false,confirm:false,hPlace:null,hSpace:'tiny',hMin:15,msg:'',sync:{state:'off',msg:'Checking whether sync is available…'}};
+const ui={tab:'today',sel:today,month:[new Date().getFullYear(),new Date().getMonth()],rKind:'morning',rType:null,mType:null,mFilter:'all',plate:{},tipCat:'all',tipMine:false,confirm:false,hPlace:null,hSpace:'tiny',hMin:15,msg:'',swapIdx:null,sync:{state:'off',msg:'Checking whether sync is available…'}};
 const typeOf=k=>S.overrides[k]||S.week[parseKey(k).getDay()];
 
 /* ---------- data: weather ---------- */
@@ -421,21 +421,28 @@ function buildMealDay(type,key){
   }
   return best;
 }
-function mealCard(m,slot,sub){
+function mealCard(m,slot,sub,extra){
   const sw=mealSwaps(m);
   return '<div class="meal">'+(slot?'<div class="slot">'+slot+(sub?' <span class="small" style="text-transform:none;letter-spacing:0;font-family:var(--font-b);font-weight:400">'+sub+'</span>':'')+'</div>':'')+
    '<h4>'+esc(m.n)+'</h4><div class="badges">'+m.g.map(g=>'<span class="b">'+G[g]+'</span>').join('')+'</div>'+
-   '<p class="small">'+esc(m.ing)+'</p><p class="why">'+esc(m.why)+'</p>'+(sw.length?'<p class="sw"><b>Swap:</b> '+sw.map(esc).join('; ')+'</p>':'')+'</div>';
+   '<p class="small">'+esc(m.ing)+'</p><p class="why">'+esc(m.why)+'</p>'+(sw.length?'<p class="sw"><b>Food swap:</b> '+sw.map(esc).join('; ')+'</p>':'')+(extra||'')+'</div>';
 }
 function coverHTML(cov){
   return '<div class="cover" role="list">'+Object.keys(G).map(g=>'<span role="listitem" class="cv'+(cov.has(g)?' ok':'')+'">'+(cov.has(g)?'✓ ':'Missing: ')+G[g]+'</span>').join('')+'</div>';
 }
+function mealsKey(){const t=typeOf(today);return (ui.mType&&ui.mType!==t)?'meals-'+ui.mType:today}
 function mealDayHTML(type,key,head){
   const d=buildMealDay(type,key);
+  const mine=(S.picks&&S.picks[key])||{};
+  d.picks.forEach((x,i)=>{if(mine[i]){const m=M.find(q=>q.n===mine[i]);if(m&&mealOK(m)){x.meal=m;x.mine=true}}});
+  d.cov=new Set();d.picks.forEach(x=>x.meal&&x.meal.g.forEach(g=>d.cov.add(g)));
+  const nMine=d.picks.filter(x=>x.mine).length;
   let h='<div class="sec-head"><h3>'+head+'</h3><button class="btn alt" data-a="shuffle" data-k="d'+key+'">Shuffle meals</button></div>';
   h+=coverHTML(d.cov);
   if(d.cov.size<5){const miss=Object.keys(G).filter(g=>!d.cov.has(g));h+='<div class="note">To fill the gaps, add '+miss.map(g=>'<b>'+G[g].toLowerCase()+'</b> ('+GIDEA[g]+')').join(' and ')+'.</div>'}
-  h+='<div class="mgrid">'+d.picks.map(x=>x.meal?mealCard(x.meal,x.slot[1],x.slot[2]):'<div class="meal"><div class="slot">'+x.slot[1]+'</div><p class="small">No meal fits your food filters here yet. Try different filters in Me.</p></div>').join('')+'</div>';
+  h+='<p class="small">Not keen on a meal? Tap Swap and choose another from the meal ideas.</p>';
+  h+='<div class="mgrid">'+d.picks.map((x,i)=>x.meal?mealCard(x.meal,x.slot[1],x.slot[2],'<div class="row" style="margin-top:8px">'+(x.mine?'<span class="tag" style="border-color:var(--pitch);color:var(--pitch)">Your pick</span>':'')+'<button class="chip" data-a="swap-start" data-i="'+i+'" data-code="'+x.slot[0]+'">Swap</button>'+(x.mine?'<button class="chip" data-a="swap-undo" data-i="'+i+'" data-key="'+key+'">Undo</button>':'')+'</div>'):'<div class="meal"><div class="slot">'+x.slot[1]+'</div><p class="small">No meal fits your food filters here yet. Try different filters in Me.</p></div>').join('')+'</div>';
+  if(nMine)h+='<div class="row" style="margin-top:8px"><button class="chip" data-a="swap-reset" data-key="'+key+'">Put back the suggested meals</button></div>';
   return h;
 }
 function waterHTML(){
@@ -610,11 +617,11 @@ function viewCalendar(){
   return h;
 }
 function viewMeals(){
-  const type=ui.mType||typeOf(today),P=S.profile;
+  const type=ui.mType||typeOf(today),P=S.profile,key=mealsKey();
   let h='<div class="grid"><section class="card"><h2>Day plan</h2><p class="sub">Every day should cover carbs, protein, fruit and veg, calcium and a little healthy fat. Meals are not about counting anything. Eat until you are comfortably full.</p>'+
    '<div class="chips" role="group" aria-label="Day type for meals">'+TKEYS.map(t=>'<button class="chip" data-a="mtype" data-v="'+t+'" aria-pressed="'+(type===t)+'">'+TYPES[t]+'</button>').join('')+'</div>'+
    ((P.diet||[]).length?'<p class="small">Filters on: '+P.diet.map(d=>DIETN[d]).join(', ')+'. Change them in Me.</p>':'<p class="small">No food filters set. Add allergies or diets in Me.</p>')+
-   mealDayHTML(type,'meals-'+type,'Plan for '+TYPES[type].toLowerCase())+'</section>';
+   (ui.msg?'<div class="note" role="status">'+esc(ui.msg)+'</div>':'')+mealDayHTML(type,key,'Plan for '+TYPES[type].toLowerCase())+'</section>';
   h+='<div style="display:grid;gap:16px;align-content:start">';
   const have=Object.keys(ui.plate).filter(x=>ui.plate[x]);
   const miss=Object.keys(G).filter(g=>!ui.plate[g]);
@@ -622,8 +629,11 @@ function viewMeals(){
   h+='<section class="card"><h3>Check my plate</h3><p class="sub">Tick what is on your plate or in your lunch box.</p><div class="chips">'+Object.keys(G).map(g=>'<button class="chip" data-a="plate" data-v="'+g+'" aria-pressed="'+(!!ui.plate[g])+'">'+G[g]+'</button>').join('')+'</div>'+
    (core?'<div class="note" style="background:transparent;border-color:var(--good)"><b>Good plate.</b> Carbs, protein and veg are all there.'+(miss.length?' For a bonus add '+miss.map(g=>G[g].toLowerCase()).join(' and ')+'.':' Nothing missing.')+'</div>':'<div class="note">Add '+['c','p','v'].filter(g=>!ui.plate[g]).map(g=>'<b>'+G[g].toLowerCase()+'</b> ('+GIDEA[g]+')').join(' and ')+'.</div>')+'</section>';
   h+='<section class="card"><h3>Drinks today</h3>'+waterHTML()+'</section></div></div>';
-  h+='<section class="card"><div class="sec-head"><h2>Meal ideas</h2></div><div class="chips" role="group" aria-label="Meal type">'+[['all','All']].concat(Object.keys(SLOTS).map(s=>[s,SLOTS[s]])).map(x=>'<button class="chip" data-a="mfilter" data-v="'+x[0]+'" aria-pressed="'+(ui.mFilter===x[0])+'">'+x[1]+'</button>').join('')+'</div><div class="mgrid">'+
-   M.filter(m=>mealOK(m)&&(ui.mFilter==='all'||m.slots.includes(ui.mFilter))).map(m=>mealCard(m,m.slots.map(s=>SLOTS[s]).join(' · '))).join('')+'</div></section>';
+  const plan=PLAN[type],sIdx=ui.swapIdx;
+  const swapBanner=(sIdx!=null&&plan[sIdx])?'<div class="note" role="status"><b>Swapping '+esc(plan[sIdx][1])+'.</b> Tap Use this meal on the one you want. <button class="chip" data-a="swap-cancel">Cancel</button></div>':'';
+  const pickSel=n=>'<div class="field" style="margin:8px 0 0"><label class="small" for="sw-'+hash(n)+'">Swap into my plan</label><select id="sw-'+hash(n)+'" data-swapmeal="'+esc(n)+'"><option value="">Choose a slot…</option>'+plan.map((p,i)=>'<option value="'+i+'">'+esc(p[1])+'</option>').join('')+'</select></div>';
+  h+='<section class="card" id="ideas"><div class="sec-head"><h2>Meal ideas</h2></div>'+swapBanner+'<div class="chips" role="group" aria-label="Meal type">'+[['all','All']].concat(Object.keys(SLOTS).map(s=>[s,SLOTS[s]])).map(x=>'<button class="chip" data-a="mfilter" data-v="'+x[0]+'" aria-pressed="'+(ui.mFilter===x[0])+'">'+x[1]+'</button>').join('')+'</div><div class="mgrid">'+
+   M.filter(m=>mealOK(m)&&(ui.mFilter==='all'||m.slots.includes(ui.mFilter))).map(m=>mealCard(m,m.slots.map(s=>SLOTS[s]).join(' · '),'',(sIdx!=null&&plan[sIdx]?'<div class="row" style="margin-top:8px"><button class="btn" data-a="swap-use" data-name="'+esc(m.n)+'">Use this meal for '+esc(plan[sIdx][1])+'</button></div>':pickSel(m.n)))).join('')+'</div></section>';
   return h;
 }
 function viewTips(){
@@ -701,15 +711,16 @@ function onRemote(snap){
 }
 async function initSync(tries){
   const c=window.claude;
-  if(!c||!c.use){if((tries||0)<10){setTimeout(()=>initSync((tries||0)+1),500)}else setSync('off','Sync is not available here. Settings are saved on this device only.');return}
+  if(!c||!c.use){if((tries||0)<10){setTimeout(()=>initSync((tries||0)+1),500)}else setSync('off','No sync: this page is not running inside Claude. The downloaded footy.html file always shows this. Open the online link instead.');return}
   try{
     const user=await c.use('user'),db=await c.use('db');
     const id=user?await user.id():null;
-    if(!db||!id){setSync('off','Sync needs the online version and a Claude sign-in. Settings are saved on this device only.');return}
+    if(!db){setSync('off','No sync: the page was not given access to the sync database in this view (database unavailable). Try reopening the link in the Claude app or at claude.ai while signed in.');return}
+    if(!id){setSync('off','No sync: Claude did not give this page your account id. Make sure you are signed in to claude.ai and reopen the link.');return}
     sync.ref=db.doc('data/users/'+id+'/pitchplan');
     setSync('on','Sync is on. Connecting…');
     sync.unsub=sync.ref.onSnapshot(onRemote,e=>setSync('err','Sync stopped ('+((e&&e.code)||'error')+'). Reload the page to try again.'));
-  }catch(e){setSync('off','Sync is not available here. Settings are saved on this device only.')}
+  }catch(e){setSync('off','No sync: something went wrong starting it ('+((e&&(e.code||e.message))||'unknown')+'). Settings are saved on this device only.')}
 }
 
 /* ---------- events ---------- */
@@ -745,7 +756,12 @@ document.addEventListener('click',e=>{
    case 'hspace':ui.hSpace=v;break;
    case 'hmin':ui.hMin=+v;break;
    case 'rtype':ui.rType=v;break;
-   case 'mtype':ui.mType=v;break;
+   case 'swap-start':{ui.swapIdx=+b.dataset.i;ui.mFilter=b.dataset.code;ui.msg='';if(ui.tab!=='meals'){ui.mType=null;go('meals');}else render(true);const el=$('#ideas');if(el)el.scrollIntoView({behavior:'auto',block:'start'});return}
+   case 'swap-use':{const key=mealsKey();(S.picks[key]=S.picks[key]||{})[ui.swapIdx]=b.dataset.name;const sl=PLAN[ui.mType||typeOf(today)][ui.swapIdx];ui.msg='Swapped in '+b.dataset.name+' for '+(sl?sl[1].toLowerCase():'that meal')+'.';ui.swapIdx=null;save();render(true);window.scrollTo(0,0);return}
+   case 'swap-undo':{if(S.picks[b.dataset.key])delete S.picks[b.dataset.key][b.dataset.i];ui.msg='';break}
+   case 'swap-reset':delete S.picks[b.dataset.key];ui.msg='';break;
+   case 'swap-cancel':ui.swapIdx=null;break;
+   case 'mtype':ui.mType=v;ui.swapIdx=null;ui.msg='';break;
    case 'mfilter':ui.mFilter=v;break;
    case 'plate':ui.plate[v]=!ui.plate[v];break;
    case 'water':{const key='w|'+today+'|'+b.dataset.i;S.ticks[key]=!S.ticks[key];break}
@@ -758,6 +774,7 @@ document.addEventListener('click',e=>{
 document.addEventListener('change',e=>{
   const t=e.target;
   if(t.dataset.bkfile){const f=t.files&&t.files[0];if(!f)return;const r=new FileReader();r.onload=()=>restore(String(r.result));r.onerror=()=>{ui.msg='Could not read that file.';render(true)};r.readAsText(f);return}
+  if(t.dataset.swapmeal!==undefined){if(t.value==='')return;const key=mealsKey();(S.picks[key]=S.picks[key]||{})[t.value]=t.dataset.swapmeal;const sl=PLAN[ui.mType||typeOf(today)][+t.value];ui.msg='Swapped in '+t.dataset.swapmeal+' for '+(sl?sl[1].toLowerCase():'that meal')+'.';save();render(true);window.scrollTo(0,0);return}
   if(t.dataset.tick){S.ticks[t.dataset.tick]=t.checked;save();return}
   if(t.dataset.chal){S.chal[t.dataset.chal]=t.checked;save();return}
   if(t.dataset.a==='tipmine'){ui.tipMine=t.checked;render(true);return}
