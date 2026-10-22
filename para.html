@@ -674,13 +674,24 @@ marker.on('dragend', ()=>{
 });
 
 document.getElementById('myLocBtn').addEventListener('click', ()=>{
-  if(!navigator.geolocation){ alert('Geolocation not available in this browser.'); return; }
+  const statusEl = document.getElementById('status');
+  if(!navigator.geolocation){
+    statusEl.className = 'err';
+    statusEl.textContent = 'Location is not available in this browser.';
+    return;
+  }
+  statusEl.className = '';
+  statusEl.textContent = 'Finding your location…';
   navigator.geolocation.getCurrentPosition(
     pos => {
       updateMap(pos.coords.latitude, pos.coords.longitude, true);
       populateFieldsFromLatLon(pos.coords.latitude, pos.coords.longitude);
+      runFetch(true);   // load the winds straight away, like picking a preset DZ
     },
-    err => alert('Could not get location: ' + err.message)
+    err => {
+      statusEl.className = 'err';
+      statusEl.textContent = 'Could not get your location: ' + err.message;
+    }
   );
 });
 
