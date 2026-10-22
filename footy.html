@@ -5,9 +5,9 @@
 <style>
 /* Layout concept: matchday programme. Dark pitch-green header with faint pitch lines, sticky tab bar, cards laid out like a team sheet. */
 :root{
-  --bg:#eef3fb; --surface:#ffffff; --surface2:#e1eafa; --ink:#14213d; --muted:#4a5878; --line:#cdd8ee;
-  --hdr:#1e3a8a; --hdr2:#be185d; --bg2:#fbeaf3; --hdr-ink:#ffffff;
-  --pitch:#1d4ed8; --on-pitch:#ffffff; --bib:#c2185b; --bib-soft:#fde4ef;
+  --bg:#dce8ff; --surface:#ffffff; --surface2:#d3e2ff; --ink:#14213d; --muted:#46547a; --line:#b4c6f0;
+  --hdr:#1e3a8a; --hdr2:#be185d; --bg2:#ffd3e7; --hdr-ink:#ffffff;
+  --pitch:#1d4ed8; --on-pitch:#ffffff; --bib:#c2185b; --bib-soft:#ffd9ea;
   --t-train:#1d4ed8; --t-match:#c2185b; --t-solo:#0369a1; --t-recover:#a21caf; --t-rest:#5b6b8a; --on-t:#ffffff;
   --good:#1d4ed8; --warn:#c2185b; --warn-soft:#fde4ef;
   --font-d:'Barlow Condensed','Arial Narrow',Arial,sans-serif; --font-b:'Barlow',system-ui,-apple-system,'Segoe UI',Arial,sans-serif;
@@ -149,6 +149,24 @@ body.running{padding-bottom:calc(280px + env(safe-area-inset-bottom,0px))}
 .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 @media (max-width:480px){.cell{min-height:54px}.tip{grid-template-columns:1fr;gap:2px}}
 @media (prefers-reduced-motion:no-preference){.card{transition:border-color .15s}.card:hover{border-color:var(--pitch)}}
+/* extra blue and pink */
+body{background-image:linear-gradient(180deg,var(--bg) 0,var(--bg) 160px,var(--bg2) 100%)}
+nav{background:linear-gradient(90deg,var(--surface2),var(--bib-soft));border-bottom:3px solid var(--pitch)}
+nav button:hover{color:var(--bib)}
+nav button[aria-current="page"]{color:var(--bib);border-bottom-color:var(--bib);background:linear-gradient(180deg,transparent,rgba(255,255,255,.55))}
+.card{border-top-width:6px;background-image:linear-gradient(180deg,rgba(29,78,216,.07),transparent 90px);box-shadow:0 2px 0 rgba(190,24,93,.18)}
+.grid>.card:nth-child(even),main>.card:nth-of-type(even){background-image:linear-gradient(180deg,rgba(194,24,93,.09),transparent 90px);box-shadow:0 2px 0 rgba(29,78,216,.2)}
+.card h4{color:var(--pitch)}
+.btn:not(.alt):not(.warn){background-image:linear-gradient(90deg,var(--pitch),var(--bib));color:#fff}
+.btn.alt{border-color:var(--bib);color:var(--bib)}
+.chip{border-color:var(--pitch)}
+.chip[aria-pressed="true"]{background-image:linear-gradient(90deg,var(--pitch),var(--bib));color:#fff;border-color:var(--bib)}
+.note{background:linear-gradient(90deg,var(--bib-soft),var(--surface2));border-left-color:var(--bib)}
+.tag{border-color:var(--pitch);color:var(--pitch)}
+.meal,.tip{border-top-color:var(--bib-soft)}
+input[type=checkbox]{accent-color:var(--bib)}
+.field select,.field input{border-color:var(--pitch)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) nav button[aria-current="page"]{background:none}:root:not([data-theme="light"]) .card{background-image:linear-gradient(180deg,rgba(110,168,255,.12),transparent 90px)}:root:not([data-theme="light"]) .btn:not(.alt):not(.warn),:root:not([data-theme="light"]) .chip[aria-pressed="true"]{color:#06122e}}
 </style>
 
 <header class="hdr"><div class="wrap"><div><h1>Pitch Plan</h1><p>Routines, training, food and tips, built around your week.</p></div><div class="small" style="color:inherit;opacity:.8" id="clock"></div></div></header>
@@ -968,8 +986,8 @@ function viewSleep(){
   return h;
 }
 
-const VIEWS={today:viewToday,routines:viewRoutines,calendar:viewCalendar,diary:viewDiary,match:viewMatch,goals:viewGoals,sleep:viewSleep,shop:viewShop,home:viewHome,meals:viewMeals,tips:viewTips,me:viewMe};
-const TABN={today:'Today',routines:'Routines',calendar:'Calendar',diary:'Diary',match:'Match day',goals:'Goals',sleep:'Sleep',shop:'Shopping',home:'At home',meals:'Meals',tips:'Tips',me:'Me'};
+const VIEWS={today:viewToday,routines:viewRoutines,calendar:viewCalendar,diary:viewDiary,match:viewMatch,goals:viewGoals,sleep:viewSleep,home:viewHome,meals:viewMeals,tips:viewTips,me:viewMe,shop:viewShop};
+const TABN={today:'Today',routines:'Routines',calendar:'Calendar',diary:'Diary',match:'Match day',goals:'Goals',sleep:'Sleep',home:'At home',meals:'Meals',tips:'Tips',me:'Me',shop:'Shopping'};
 function render(keepScroll){
   const y=window.scrollY;
   $('#tabs').innerHTML=Object.keys(TABN).map(t=>'<button data-a="tab" data-v="'+t+'"'+(ui.tab===t?' aria-current="page"':'')+'>'+TABN[t]+'</button>').join('');
