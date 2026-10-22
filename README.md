@@ -4,4 +4,4 @@
 3. Settings > Actions > General > Workflow permissions > Read and write.
 4. Actions tab > "Update fixtures" > Run workflow (then it runs every 6 hours).
 Check the Action log: each team should report more than 0 fixtures. If one reports 0, fix its page slug in scripts/update.py.
-Optional logos: see logos/README.md.
+Team logos download automatically; add channel logos (e.g. youtube.png) to logos/channels/ - see logos/README.md.
