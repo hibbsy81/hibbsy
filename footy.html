@@ -733,6 +733,7 @@ function viewMeals(){
    M.filter(m=>mealOK(m)&&(ui.mFilter==='all'||m.slots.includes(ui.mFilter))).map(m=>mealCard(m,m.slots.map(s=>SLOTS[s]).join(' · '),'',(sIdx!=null&&plan[sIdx]?'<div class="row" style="margin-top:8px"><button class="btn" data-a="swap-use" data-name="'+esc(m.n)+'">Use this meal for '+esc(plan[sIdx][1])+'</button></div>':pickSel(m.n)))).join('')+'</div></section>';
   return h;
 }
+const RECG=[['Keepy-uppies',[['jug','Both feet'],['left','Left foot'],['right','Right foot'],['thigh','Thighs and feet'],['head','Headers']]],['In one minute',[['toe','Toe taps'],['wall','Wall passes'],['cone','Cone touches']]],['Shooting',[['shot','Shots on target out of 10'],['pen','Penalties scored out of 5']]],['Speed and fitness (seconds, lower is better)',[['sprint','20 metre sprint',0,1],['weave','Cone weave',0,1],['k1','1 km run',0,1]]],['Strength',[['plank','Plank hold (seconds)'],['squat','Squats in one minute']]]];
 function viewTips(){
   const cats=[['all','All']].concat(Object.keys(TC).map(c=>[c,TC[c]]));
   const list=TIPS.filter(t=>(ui.tipCat==='all'||t.c===ui.tipCat)&&(!ui.tipMine||!t.pos||t.pos===S.profile.pos)&&(ui.tipMine?true:true));
@@ -743,8 +744,8 @@ function viewTips(){
   h+='<div class="grid"><section class="card"><h2>Tips and ideas</h2><div class="chips" role="group" aria-label="Tip category">'+cats.map(c=>'<button class="chip" data-a="tipcat" data-v="'+c[0]+'" aria-pressed="'+(ui.tipCat===c[0])+'">'+c[1]+'</button>').join('')+'</div>'+
    '<div class="checks"><label><input type="checkbox" data-a="tipmine"'+(ui.tipMine?' checked':'')+'> Only tips for my position ('+POSN[S.profile.pos].toLowerCase()+')</label></div><div style="margin-top:8px">'+
    shown.map(t=>'<div class="tip"><span class="c">'+TC[t.c]+(t.pos?' · '+POSN[t.pos].split(' ')[0]:'')+'</span><p>'+esc(t.t)+'</p></div>').join('')+'</div></section>';
-  h+='<div style="display:grid;gap:16px;align-content:start"><section class="card"><h3>My records</h3><p class="sub">Keepy-uppy personal bests. Saved on this device.</p><div class="form" style="margin-top:10px">'+
-   [['jug','Both feet'],['left','Left foot'],['right','Right foot']].map(x=>'<div class="field"><label for="rec-'+x[0]+'">'+x[1]+'</label><input id="rec-'+x[0]+'" type="number" min="0" inputmode="numeric" data-rec="'+x[0]+'" value="'+(S.rec[x[0]]||0)+'"></div>').join('')+'</div></section>'+
+  h+='<div style="display:grid;gap:16px;align-content:start"><section class="card"><h3>My records</h3><p class="sub">Your personal bests. Saved on this device. Leave a box at 0 until you set one.</p>'+
+   RECG.map(g=>'<h4 style="margin:14px 0 6px">'+g[0]+'</h4><div class="form">'+g[1].map(x=>'<div class="field"><label for="rec-'+x[0]+'">'+x[1]+'</label><input id="rec-'+x[0]+'" type="number" min="0" '+(x[3]?'step="0.1" inputmode="decimal"':'inputmode="numeric"')+' data-rec="'+x[0]+'" data-dec="'+(x[3]?1:0)+'" value="'+(S.rec[x[0]]||0)+'"></div>').join('')+'</div>').join('')+'</section>'+
    '<section class="card"><h3>Weekly challenges</h3><div class="checks" style="display:grid;gap:10px;margin-top:8px">'+CHAL.map(c=>'<label><input type="checkbox" data-chal="'+c[0]+'"'+(S.chal[c[0]]?' checked':'')+'> '+c[1]+'</label>').join('')+'</div><button class="btn alt" style="margin-top:12px" data-a="chalreset">Start a new week</button></section></div></div>';
   return h;
 }
@@ -956,7 +957,7 @@ document.addEventListener('change',e=>{
   if(t.dataset.tick){S.ticks[t.dataset.tick]=t.checked;save();return}
   if(t.dataset.chal){S.chal[t.dataset.chal]=t.checked;save();return}
   if(t.dataset.a==='tipmine'){ui.tipMine=t.checked;render(true);return}
-  if(t.dataset.rec){S.rec[t.dataset.rec]=Math.max(0,parseInt(t.value,10)||0);save();return}
+  if(t.dataset.rec){const v=t.dataset.dec==='1'?parseFloat(t.value):parseInt(t.value,10);S.rec[t.dataset.rec]=Math.max(0,v||0);save();return}
   if(t.dataset.f){const f=t.dataset.f;let v=t.value;if(f==='dur'||f==='travel'||f==='early')v=+v;S.profile[f]=v;S.profile.setup=true;save();if(t.type!=='time'&&t.type!=='number')render(true);return}
   if(t.dataset.week){S.week[t.dataset.week]=t.value;save();render(true);return}
   if(t.dataset.diet){const d=S.profile.diet||[];S.profile.diet=t.checked?d.concat(t.dataset.diet):d.filter(x=>x!==t.dataset.diet);S.profile.setup=true;save();render(true)}
