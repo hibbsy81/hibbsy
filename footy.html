@@ -82,6 +82,7 @@ ol.drills{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:12px}
 .tl label{display:flex;gap:10px;cursor:pointer;align-items:flex-start}
 .tl input{width:22px;height:22px;accent-color:var(--pitch);flex:none;margin-top:1px}
 .tl input:checked+span{text-decoration:line-through;color:var(--muted)}
+.tmbtn{background:none;border:0;padding:0;font:inherit;color:inherit;border-bottom:2px dotted var(--bib);cursor:pointer;line-height:1.1}
 .tl .mins{color:var(--muted);font-size:.85rem;white-space:nowrap}
 .tl .end .tm{color:var(--bib)}
 .cal-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
@@ -167,14 +168,14 @@ const longDate=k=>{const d=parseKey(k);return DAYS[d.getDay()]+' '+d.getDate()+'
 
 /* ---------- state ---------- */
 const DEF={profile:{name:'',age:'a2',pos:'mid',wake:'07:00',leave:'08:15',bed:'21:30',who:'f',dur:45,travel:20,early:15,diet:[],setup:false},
-  week:{0:'recover',1:'rest',2:'train',3:'solo',4:'train',5:'rest',6:'match'},overrides:{},weather:{},ticks:{},shuffle:{},rec:{jug:0,left:0,right:0},chal:{},picks:{},team:{week:{},dates:{}},_t:0};
+  week:{0:'recover',1:'rest',2:'train',3:'solo',4:'train',5:'rest',6:'match'},overrides:{},weather:{},ticks:{},shuffle:{},rec:{jug:0,left:0,right:0},chal:{},picks:{},team:{week:{},dates:{}},teamRow:{},_t:0};
 let S=JSON.parse(JSON.stringify(DEF));
-function merge(o){S=Object.assign({},DEF,o);S.profile=Object.assign({},DEF.profile,o.profile||{});S.week=Object.assign({},DEF.week,o.week||{});S.rec=Object.assign({},DEF.rec,o.rec||{});S.team=Object.assign({},DEF.team,o.team||{});S.team.week=S.team.week||{};S.team.dates=S.team.dates||{}}
+function merge(o){S=Object.assign({},JSON.parse(JSON.stringify(DEF)),o);S.teamRow=S.teamRow||{};S.profile=Object.assign({},DEF.profile,o.profile||{});S.week=Object.assign({},DEF.week,o.week||{});S.rec=Object.assign({},DEF.rec,o.rec||{});S.team=Object.assign({},DEF.team,o.team||{});S.team.week=S.team.week||{};S.team.dates=S.team.dates||{}}
 function load(){try{const v=localStorage.getItem('pitchplan_v1');if(v)merge(JSON.parse(v))}catch(e){}}
 function save(){S._t=Date.now();try{localStorage.setItem('pitchplan_v1',JSON.stringify(S))}catch(e){}}
 load();
 const today=dkey(new Date());
-const ui={tab:'today',sel:today,month:[new Date().getFullYear(),new Date().getMonth()],rKind:'morning',rType:null,mType:null,mFilter:'all',plate:{},tipCat:'all',tipMine:false,confirm:false,hPlace:null,hSpace:'tiny',hMin:15,msg:'',swapIdx:null};
+const ui={tab:'today',sel:today,month:[new Date().getFullYear(),new Date().getMonth()],rKind:'morning',rType:null,mType:null,mFilter:'all',plate:{},tipCat:'all',tipMine:false,confirm:false,hPlace:null,hSpace:'tiny',hMin:15,msg:'',swapIdx:null,editRow:null};
 const typeOf=k=>S.overrides[k]||S.week[parseKey(k).getDay()];
 const DEFTEAM={start:'18:00',end:'19:30'};
 function teamOf(k){const t=S.team;if(t.dates&&Object.prototype.hasOwnProperty.call(t.dates,k))return t.dates[k]||null;return (t.week&&t.week[parseKey(k).getDay()])||null}
@@ -386,6 +387,7 @@ function buildTeam(k){
   add('post',en+15,'Recovery snack and a drink within 30 to 60 minutes: chocolate milk and a banana, or a bowl of cereal with yoghurt.',10);
   add('home',en+travel,'Home',0,true);
   add('dinner',en+travel+10,'Dinner, then shower and unwind.',40);
+  rows.forEach(r=>{const ov=S.teamRow&&S.teamRow[k+'|'+r.id];if(ov&&r.id!=='start'&&r.id!=='finish'){r._t=toMin(ov);r.time=ov;r.edited=true}});
   rows.sort((a,b)=>a._t-b._t);
   let warn='';
   if(leave<wake+30)warn='You need to leave at '+fmt(leave)+'. Wake up by '+fmt(leave-45)+' to fit your morning.';
@@ -394,8 +396,16 @@ function buildTeam(k){
 function tlHTML(rows,kind,k){
   return '<ul class="tl">'+rows.map(x=>{
     const key=today+'|'+kind+'|'+x.id,on=S.ticks[key]?' checked':'';
-    return '<li class="'+(x.end?'end':'')+'"><span class="tm">'+x.time+'</span>'+
-      (x.end?'<span><b>'+esc(x.t)+'</b></span>':'<label><input type="checkbox" data-tick="'+key+'"'+on+'><span>'+esc(x.t)+' <span class="mins">'+x.m+' min</span></span></label>')+'</li>'}).join('')+'</ul>';
+    let tm='<span class="tm">'+x.time+'</span>',extra='';
+    if(kind==='team'){
+      tm='<span class="tm"><button class="tmbtn" data-a="trow-edit" data-id="'+x.id+'" aria-label="Change the time for '+esc(x.t)+'">'+x.time+'</button></span>';
+      if(ui.editRow===x.id){
+        const ses=x.id==='start'||x.id==='finish';
+        extra='<div class="row" style="margin-top:8px"><label class="small" for="trow-in">New time</label><input id="trow-in" type="time" value="'+x.time+'" style="background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:6px;min-height:40px"><button class="btn" data-a="trow-save" data-id="'+x.id+'">Save</button><button class="chip" data-a="trow-cancel">Cancel</button>'+(x.edited?'<button class="chip" data-a="trow-reset" data-id="'+x.id+'">Reset</button>':'')+'</div>'+(ses?'<p class="small">This changes the session time for today and moves the other times with it.</p>':'');
+      }
+    }
+    return '<li class="'+(x.end?'end':'')+'">'+tm+
+      '<span>'+(x.end?'<b>'+esc(x.t)+'</b>':'<label><input type="checkbox" data-tick="'+key+'"'+on+'><span>'+esc(x.t)+' <span class="mins">'+x.m+' min</span>'+(x.edited?' <span class="tag">edited</span>':'')+'</span></label>')+extra+'</span></li>'}).join('')+'</ul>';
 }
 
 /* ---------- meals ---------- */
@@ -738,7 +748,7 @@ function render(keepScroll){
   if(keepScroll)window.scrollTo(0,y);
   const c=$('#clock');if(c)c.textContent=longDate(today);
 }
-function go(tab,keep){ui.tab=tab;ui.msg='';try{history.replaceState(null,'','#'+tab)}catch(e){};render(keep);if(!keep)window.scrollTo(0,0)}
+function go(tab,keep){ui.tab=tab;ui.msg='';ui.editRow=null;try{history.replaceState(null,'','#'+tab)}catch(e){};render(keep);if(!keep)window.scrollTo(0,0)}
 
 /* ---------- events ---------- */
 function restore(txt){
@@ -768,6 +778,10 @@ document.addEventListener('click',e=>{
    case 'bk-dl':{try{const bl=new Blob([JSON.stringify(S)],{type:'application/json'});const u=URL.createObjectURL(bl);const l=document.createElement('a');l.href=u;l.download='pitch-plan-backup.json';document.body.appendChild(l);l.click();l.remove();ui.msg='Backup file download started. If nothing downloaded, use Copy backup instead.'}catch(x){ui.msg='Download did not work here. Use Copy backup instead.'}render(true);return}
    case 'bk-restore':{const v=($('#bk-in')||{}).value||'';return restore(v)}
    case 'team-clear':delete S.team.dates[k];break;
+   case 'trow-edit':ui.editRow=b.dataset.id;break;
+   case 'trow-cancel':ui.editRow=null;break;
+   case 'trow-reset':delete S.teamRow[today+'|'+b.dataset.id];ui.editRow=null;break;
+   case 'trow-save':{const v=($('#trow-in')||{}).value,id=b.dataset.id;if(v){if(id==='start'||id==='finish'){const o=S.team.dates[today]||(S.team.dates[today]=Object.assign({},teamOf(today)||DEFTEAM));if(id==='start'){o.start=v;if(toMin(o.end)<=toMin(v))o.end=fmt(toMin(v)+90)}else o.end=v}else S.teamRow[today+'|'+id]=v}ui.editRow=null;break}
    case 'rkind':ui.rKind=v;break;
    case 'hplace':ui.hPlace=v;break;
    case 'hspace':ui.hSpace=v;break;
