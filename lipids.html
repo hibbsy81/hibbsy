@@ -11,260 +11,352 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Lipids">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="theme-color" content="#f1f5f5" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0c1515" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#e9f0f1" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#061011" media="(prefers-color-scheme: dark)">
 <style>:root{color-scheme:light}body{margin:0}[hidden]{display:none!important}</style>
 <style>
-/* Layout: one narrow column, phone first. Inputs on top, a single large pass/fail panel, then a scaled bar showing where the current level sits against the 40% target. */
+/* Layout: a grid of soft glass cards on a tinted ground. Title and Clear on one row, two input cards side by side, one large gradient result panel, then a rounded scale bar. Everything stays inside one phone screen. */
 :root {
-  --bg: #f1f5f5;
-  --surface: #ffffff;
-  --fg: #12201f;
-  --muted: #4f6564;
-  --line: #cfdcdb;
+  --bg: #e9f0f1;
+  --glow-a: rgba(14, 90, 98, 0.20);
+  --glow-b: rgba(242, 84, 91, 0.14);
+  --surface: rgba(255, 255, 255, 0.86);
+  --field: rgba(14, 90, 98, 0.07);
+  --fg: #0c1a1b;
+  --muted: #587070;
+  --line: rgba(12, 26, 27, 0.09);
   --accent: #0e5a62;
-  --idle-bg: #e6eded;
-  --good-bg: #dcf2e2;
-  --good-fg: #09562a;
-  --good-solid: #1f8a46;
-  --bad-bg: #fbe2df;
-  --bad-fg: #8a1b12;
-  --bad-solid: #c8372d;
-  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --font-num: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --accent-soft: rgba(14, 90, 98, 0.22);
+  --pass-from: #1c9a52;
+  --pass-to: #0f6b37;
+  --pass-glow: rgba(15, 107, 55, 0.55);
+  --fail-from: #e5484d;
+  --fail-to: #b3262d;
+  --fail-glow: rgba(179, 38, 45, 0.55);
+  --on-solid: #ffffff;
+  --shadow: 0 1px 2px rgba(12, 26, 27, 0.06), 0 14px 30px -14px rgba(12, 26, 27, 0.25);
+  --font: ui-rounded, "SF Pro Rounded", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #0c1515;
-    --surface: #152120;
-    --fg: #e6f0ef;
-    --muted: #9bb2b0;
-    --line: #2b3d3b;
+    --bg: #061011;
+    --glow-a: rgba(60, 170, 180, 0.20);
+    --glow-b: rgba(242, 84, 91, 0.12);
+    --surface: rgba(22, 36, 37, 0.80);
+    --field: rgba(255, 255, 255, 0.07);
+    --fg: #eaf4f4;
+    --muted: #94adad;
+    --line: rgba(255, 255, 255, 0.10);
     --accent: #6cc5cd;
-    --idle-bg: #1d2d2c;
-    --good-bg: #12311d;
-    --good-fg: #8fe0a9;
-    --good-solid: #3fb96a;
-    --bad-bg: #3b1916;
-    --bad-fg: #ffb6ad;
-    --bad-solid: #e5584c;
+    --accent-soft: rgba(108, 197, 205, 0.30);
+    --pass-from: #22a85c;
+    --pass-to: #11743b;
+    --pass-glow: rgba(34, 168, 92, 0.45);
+    --fail-from: #ec5a5c;
+    --fail-to: #ac262d;
+    --fail-glow: rgba(236, 90, 92, 0.40);
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 16px 34px -14px rgba(0, 0, 0, 0.65);
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #0c1515;
-  --surface: #152120;
-  --fg: #e6f0ef;
-  --muted: #9bb2b0;
-  --line: #2b3d3b;
+  --bg: #061011;
+  --glow-a: rgba(60, 170, 180, 0.20);
+  --glow-b: rgba(242, 84, 91, 0.12);
+  --surface: rgba(22, 36, 37, 0.80);
+  --field: rgba(255, 255, 255, 0.07);
+  --fg: #eaf4f4;
+  --muted: #94adad;
+  --line: rgba(255, 255, 255, 0.10);
   --accent: #6cc5cd;
-  --idle-bg: #1d2d2c;
-  --good-bg: #12311d;
-  --good-fg: #8fe0a9;
-  --good-solid: #3fb96a;
-  --bad-bg: #3b1916;
-  --bad-fg: #ffb6ad;
-  --bad-solid: #e5584c;
+  --accent-soft: rgba(108, 197, 205, 0.30);
+  --pass-from: #22a85c;
+  --pass-to: #11743b;
+  --pass-glow: rgba(34, 168, 92, 0.45);
+  --fail-from: #ec5a5c;
+  --fail-to: #ac262d;
+  --fail-glow: rgba(236, 90, 92, 0.40);
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 16px 34px -14px rgba(0, 0, 0, 0.65);
   color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
 body {
-  background: var(--bg);
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(90% 38% at 0% 0%, var(--glow-a), transparent 70%),
+    radial-gradient(80% 34% at 100% 6%, var(--glow-b), transparent 70%);
+  background-repeat: no-repeat;
   color: var(--fg);
-  font-family: var(--font-body);
+  font-family: var(--font);
   font-size: 16px;
-  line-height: 1.5;
+  line-height: 1.4;
+  -webkit-text-size-adjust: 100%;
   padding-block: 16px 24px;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
+
 .wrap {
   width: 100%;
-  max-width: 460px;
+  max-width: 440px;
   margin-inline: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "title  clear"
+    "inputs inputs"
+    "result result"
+    "scale  scale";
+  gap: 14px 12px;
+  align-items: center;
 }
 h1 {
+  grid-area: title;
   margin: 0;
-  font-size: 1.5rem;
+  font-size: 1.625rem;
   line-height: 1.15;
-  font-weight: 600;
-  letter-spacing: -0.01em;
+  font-weight: 700;
+  letter-spacing: -0.025em;
   text-wrap: balance;
 }
-.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 
-.card {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  padding: 14px;
+/* Inputs */
+.inputs {
+  grid-area: inputs;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
 }
-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-.field { display: grid; gap: 6px; min-width: 0; }
+.field {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+  padding: 12px 16px 10px;
+  background: var(--surface);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  box-shadow: var(--shadow);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.field:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent-soft), var(--shadow);
+}
 label {
   font-size: 0.8125rem;
   font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
   color: var(--muted);
 }
 input {
   width: 100%;
   min-width: 0;
-  font-family: var(--font-num);
-  font-size: 1.375rem;
-  font-weight: 500;
-  color: var(--fg);
-  background: var(--bg);
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 10px 12px;
-  font-variant-numeric: tabular-nums;
-}
-input:focus-visible,
-button:focus-visible {
-  outline: 3px solid var(--accent);
-  outline-offset: 2px;
-}
-button {
   font: inherit;
-  font-size: 0.9375rem;
-  font-weight: 500;
-  color: var(--accent);
+  font-size: 2rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--fg);
   background: transparent;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 8px 14px;
-  cursor: pointer;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
 }
-button:hover { border-color: var(--accent); }
+input::placeholder { color: var(--muted); opacity: 0.45; }
 
 /* Result */
 .result {
-  border-radius: 10px;
-  padding: 14px 16px;
-  background: var(--idle-bg);
-  color: var(--fg);
+  grid-area: result;
+  --from: var(--surface);
+  --to: var(--surface);
+  --shine: transparent;
   display: grid;
-  gap: 6px;
-  border: 2px solid transparent;
+  gap: 10px;
+  padding: 18px 20px 20px;
+  color: var(--fg);
+  background:
+    radial-gradient(120% 100% at 100% 0%, var(--shine), transparent 62%),
+    linear-gradient(150deg, var(--from), var(--to));
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  box-shadow: var(--shadow);
+  transition: box-shadow 0.3s ease;
 }
-.result[data-state="pass"] { background: var(--good-bg); color: var(--good-fg); border-color: var(--good-solid); }
-.result[data-state="fail"] { background: var(--bad-bg); color: var(--bad-fg); border-color: var(--bad-solid); }
-.status { display: flex; align-items: center; gap: 10px; font-size: 1.25rem; font-weight: 600; }
+.result[data-state="pass"] {
+  --from: var(--pass-from);
+  --to: var(--pass-to);
+  --shine: rgba(255, 255, 255, 0.28);
+  color: var(--on-solid);
+  border-color: transparent;
+  box-shadow: 0 18px 34px -16px var(--pass-glow);
+  animation: pop-a 0.3s ease;
+}
+.result[data-state="fail"] {
+  --from: var(--fail-from);
+  --to: var(--fail-to);
+  --shine: rgba(255, 255, 255, 0.28);
+  color: var(--on-solid);
+  border-color: transparent;
+  box-shadow: 0 18px 34px -16px var(--fail-glow);
+  animation: pop-b 0.3s ease;
+}
+@keyframes pop-a { from { transform: scale(0.98); } to { transform: scale(1); } }
+@keyframes pop-b { from { transform: scale(0.98); } to { transform: scale(1); } }
+.status {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 14px 5px 6px;
+  border-radius: 999px;
+  background: var(--field);
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+.result[data-state="pass"] .status,
+.result[data-state="fail"] .status { background: rgba(0, 0, 0, 0.22); }
 .badge {
   flex: none;
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   display: grid;
   place-items: center;
   background: var(--muted);
-  color: var(--surface);
-  font-size: 1rem;
+  color: var(--bg);
+  font-size: 0.8125rem;
+  font-weight: 700;
   line-height: 1;
 }
-.result[data-state="pass"] .badge { background: var(--good-solid); color: #fff; }
-.result[data-state="fail"] .badge { background: var(--bad-solid); color: #fff; }
+.result[data-state="pass"] .badge { background: #ffffff; color: var(--pass-to); }
+.result[data-state="fail"] .badge { background: #ffffff; color: var(--fail-to); }
 .big {
-  font-family: var(--font-num);
-  font-weight: 600;
-  font-size: clamp(2.25rem, 12vw, 3rem);
+  display: flex;
+  align-items: baseline;
+  gap: 0.04em;
+  font-size: clamp(3.25rem, 19vw, 4.5rem);
+  font-weight: 700;
+  letter-spacing: -0.04em;
   line-height: 1;
   font-variant-numeric: tabular-nums;
   overflow-wrap: anywhere;
 }
-.detail { margin: 0; text-wrap: pretty; }
+.result[data-state="idle"] .big { color: var(--muted); }
+.unit { font-size: 0.5em; font-weight: 600; letter-spacing: 0; opacity: 0.85; }
 
-/* Scale bar: original level is the full length */
-.scale { display: grid; gap: 10px; }
-.scale h2 {
-  margin: 0;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--muted);
+/* Scale */
+.scale {
+  grid-area: scale;
+  display: grid;
+  gap: 16px;
+  padding: 20px 18px 16px;
+  background: var(--surface);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  box-shadow: var(--shadow);
 }
 .track {
+  --from: var(--muted);
+  --to: var(--muted);
   position: relative;
-  height: 22px;
-  border-radius: 6px;
-  background: var(--idle-bg);
-  border: 1px solid var(--line);
+  height: 14px;
+  border-radius: 999px;
+  background: var(--field);
 }
+.track[data-state="pass"] { --from: var(--pass-from); --to: var(--pass-to); }
+.track[data-state="fail"] { --from: var(--fail-from); --to: var(--fail-to); }
 .fill {
   position: absolute;
   inset: 0 auto 0 0;
   width: 0;
-  border-radius: 5px 0 0 5px;
-  background: var(--muted);
-  transition: width 0.25s ease;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--from), var(--to));
+  transition: width 0.3s cubic-bezier(0.3, 0.7, 0.2, 1);
 }
-.track[data-state="pass"] .fill { background: var(--good-solid); }
-.track[data-state="fail"] .fill { background: var(--bad-solid); }
 .tick {
   position: absolute;
   top: -5px;
   bottom: -5px;
-  width: 0;
-  border-left: 2px dashed var(--fg);
+  width: 4px;
+  margin-left: -2px;
+  border-radius: 2px;
+  background: var(--fg);
+  box-shadow: 0 0 0 2px var(--bg);
 }
-.tick.orig { border-left-style: solid; }
+.tick.orig { width: 2px; margin-left: -1px; opacity: 0.35; box-shadow: none; }
 dl {
   margin: 0;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
+  grid-template-columns: auto auto auto;
+  justify-content: space-between;
+  gap: 8px;
 }
 dl div { min-width: 0; }
-dt { font-size: 0.8125rem; color: var(--muted); }
+dl div:nth-child(2) { text-align: center; }
+dl div:nth-child(3) { text-align: right; }
+dt { font-size: 0.75rem; font-weight: 500; color: var(--muted); }
 dd {
   margin: 0;
-  font-family: var(--font-num);
-  font-size: 1.125rem;
-  font-weight: 500;
+  font-size: 1.25rem;
+  font-weight: 650;
   font-variant-numeric: tabular-nums;
   overflow-wrap: anywhere;
 }
-.foot { margin: 0; font-size: 0.8125rem; color: var(--muted); text-wrap: pretty; }
+
+/* Clear */
+.clear {
+  grid-area: clear;
+  font: inherit;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--surface);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 8px 18px;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: transform 0.12s ease;
+}
+.clear:active { transform: scale(0.96); }
+.clear:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 
 @media (prefers-reduced-motion: reduce) {
-  .fill { transition: none; }
+  .fill, .field, .result, .clear { transition: none; }
+  .result[data-state] { animation: none; }
 }
 </style>
 </head>
 <body>
 <main class="wrap">
-  <header class="top">
-    <h1>Lipid Calculator</h1>
-    <button type="button" id="clear">Clear</button>
-  </header>
+  <h1>Lipid Calculator</h1>
 
-  <section class="card" aria-label="Levels">
-    <form id="form" novalidate>
-      <div class="field">
-        <label for="orig">Original level</label>
-        <input id="orig" name="orig" type="text" inputmode="decimal" autocomplete="off" placeholder="0.0">
-      </div>
-      <div class="field">
-        <label for="curr">Current level</label>
-        <input id="curr" name="curr" type="text" inputmode="decimal" autocomplete="off" placeholder="0.0">
-      </div>
-    </form>
-  </section>
+  <form id="form" class="inputs" novalidate>
+    <div class="field">
+      <label for="orig">Original level</label>
+      <input id="orig" name="orig" type="text" inputmode="decimal" enterkeyhint="next" autocomplete="off" placeholder="0.0">
+    </div>
+    <div class="field">
+      <label for="curr">Current level</label>
+      <input id="curr" name="curr" type="text" inputmode="decimal" enterkeyhint="done" autocomplete="off" placeholder="0.0">
+    </div>
+  </form>
 
   <section class="result" id="result" data-state="idle" aria-live="polite">
     <div class="status"><span class="badge" id="badge" aria-hidden="true">–</span><span id="status">Enter both levels</span></div>
-    <div class="big" id="big">–</div>
+    <div class="big"><span id="bigNum">–</span><span class="unit" id="unit" hidden>%</span></div>
   </section>
 
-  <section class="card scale" aria-label="Scale">
-    <h2>Where the current level sits</h2>
+  <section class="scale" aria-label="Scale">
     <div class="track" id="track" data-state="idle">
       <div class="fill" id="fill"></div>
       <div class="tick" id="tickTarget" style="left:60%"></div>
@@ -277,6 +369,7 @@ dd {
     </dl>
   </section>
 
+  <button type="button" id="clear" class="clear">Clear</button>
 </main>
 
 <script>
@@ -311,11 +404,12 @@ function calc(orig, curr) {
     track.setAttribute("data-state", state);
   }
 
-  function idle(message) {
+  function idle(label) {
     setState("idle");
     $("badge").textContent = "–";
-    $("status").textContent = "Enter both levels";
-    $("big").textContent = "–";
+    $("status").textContent = label;
+    $("bigNum").textContent = "–";
+    $("unit").hidden = true;
     $("fill").style.width = "0";
     $("tickTarget").style.left = "60%";
     $("tickOrig").style.left = "100%";
@@ -327,19 +421,18 @@ function calc(orig, curr) {
   function update() {
     var o = parseLevel(elOrig.value), c = parseLevel(elCurr.value);
     var emptyO = elOrig.value.trim() === "", emptyC = elCurr.value.trim() === "";
-    if (emptyO || emptyC) { idle("The result appears here as soon as both levels are filled in."); return; }
-    if (isNaN(o) || isNaN(c)) { idle("Use numbers only, for example 5.8 or 3.2."); return; }
+    if (emptyO || emptyC) { idle("Enter both levels"); return; }
+    if (isNaN(o) || isNaN(c)) { idle("Enter numbers only"); return; }
     var r = calc(o, c);
-    if (!r) { idle("The original level must be greater than zero."); return; }
+    if (!r) { idle("Original must be above 0"); return; }
 
     var up = r.dropPct < 0;
     var pct = trunc1(r.dropPct);
-    var dir = up ? "Up" : "Down";
     setState(r.met ? "pass" : "fail");
     $("badge").textContent = r.met ? "✓" : "✕";
     $("status").textContent = r.met ? "Target met" : "Target not met";
-    $("big").textContent = (up ? "+" : "−") + fmt(pct) + "%";
-    if (r.dropPct === 0) $("big").textContent = "0%";
+    $("bigNum").textContent = pct === 0 ? "0" : (up ? "+" : "−") + fmt(pct);
+    $("unit").hidden = false;
 
     var max = Math.max(o, c);
     $("fill").style.width = (c / max * 100) + "%";
@@ -352,6 +445,12 @@ function calc(orig, curr) {
 
   elOrig.addEventListener("input", update);
   elCurr.addEventListener("input", update);
+  elOrig.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") { e.preventDefault(); elCurr.focus(); }
+  });
+  elCurr.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") { e.preventDefault(); elCurr.blur(); }
+  });
   $("form").addEventListener("submit", function (e) { e.preventDefault(); update(); });
   $("clear").addEventListener("click", function () {
     elOrig.value = ""; elCurr.value = ""; update(); elOrig.focus();

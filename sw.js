@@ -1,7 +1,6 @@
-const CACHE = "lipids-v1";
+const CACHE = "lipids-v2";
 const FILES = [
-  "./",
-  "index.html",
+  "lipids.html",
   "manifest.webmanifest",
   "favicon.svg",
   "apple-touch-icon.png",
@@ -28,7 +27,7 @@ self.addEventListener("fetch", (event) => {
   event.respondWith(
     caches.match(event.request, { ignoreSearch: true }).then((hit) => {
       if (hit) return hit;
-      return fetch(event.request).catch(() => caches.match("index.html"));
+      return fetch(event.request).catch(() => caches.match("lipids.html"));
     })
   );
 });

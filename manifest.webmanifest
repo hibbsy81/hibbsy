@@ -1,11 +1,11 @@
 {
   "name": "Lipid Calculator",
   "short_name": "Lipids",
-  "start_url": "./",
+  "start_url": "lipids.html",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#f1f5f5",
-  "theme_color": "#f1f5f5",
+  "background_color": "#e9f0f1",
+  "theme_color": "#e9f0f1",
   "icons": [
     {
       "src": "icon-192.png",
