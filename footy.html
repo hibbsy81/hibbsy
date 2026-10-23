@@ -167,12 +167,32 @@ nav button[aria-current="page"]{color:var(--bib);border-bottom-color:var(--bib);
 input[type=checkbox]{accent-color:var(--bib)}
 .field select,.field input{border-color:var(--pitch)}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) nav button[aria-current="page"]{background:none}:root:not([data-theme="light"]) .card{background-image:linear-gradient(180deg,rgba(110,168,255,.12),transparent 90px)}:root:not([data-theme="light"]) .btn:not(.alt):not(.warn),:root:not([data-theme="light"]) .chip[aria-pressed="true"]{color:#06122e}}
+/* bottom bar on phones */
+#bnav{display:none}
+@media (max-width:720px){
+ nav[aria-label="Sections"]{display:none}
+ #bnav{display:flex;position:fixed;top:auto;margin-inline:0;left:0;right:0;bottom:0;z-index:35;background:linear-gradient(90deg,var(--surface2),var(--bib-soft));border-top:3px solid var(--pitch);padding:4px max(6px,env(safe-area-inset-right,0px)) calc(4px + env(safe-area-inset-bottom,0px)) max(6px,env(safe-area-inset-left,0px))}
+ #bnav button{flex:1;margin-bottom:0;background:none;border:0;display:grid;justify-items:center;gap:2px;padding:6px 2px;min-height:54px;font-family:var(--font-d);font-weight:700;font-size:.95rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);cursor:pointer;border-radius:6px}
+ #bnav button svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+ #bnav button[aria-current="page"]{color:var(--bib);background:rgba(255,255,255,.55)}
+ body{padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+ body.running{padding-bottom:calc(360px + env(safe-area-inset-bottom,0px))}
+}
+@media (max-width:720px) and (prefers-color-scheme: dark){:root:not([data-theme="light"]) #bnav button[aria-current="page"]{background:rgba(255,255,255,.1)}}
+:root[data-theme="dark"] #bnav button[aria-current="page"]{background:rgba(255,255,255,.1)}
+.more-grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));margin-top:12px}
+.more-grid button{text-align:left;background:var(--surface);border:2px solid var(--pitch);border-radius:8px;padding:14px;cursor:pointer;display:grid;gap:4px;min-height:76px}
+.more-grid button:nth-child(even){border-color:var(--bib)}
+.more-grid button b{font-family:var(--font-d);text-transform:uppercase;font-size:1.3rem;color:var(--pitch);letter-spacing:.03em}
+.more-grid button:nth-child(even) b{color:var(--bib)}
+.more-grid button span{font-size:.9rem;color:var(--muted)}
 </style>
 
 <header class="hdr"><div class="wrap"><div><h1>Pitch Plan</h1><p>Routines, training, food and tips, built around your week.</p></div><div class="small" style="color:inherit;opacity:.8" id="clock"></div></div></header>
 <nav aria-label="Sections"><div class="wrap" id="tabs"></div></nav>
 <div class="wrap"><main id="app" aria-live="polite"></main>
 <footer>Pitch Plan is a guide, not medical advice. If something hurts for more than a day, you feel dizzy or sick, or you take a knock to the head, stop and tell a parent, carer or coach. Check any food plan with a parent or carer, and tell them about allergies. Weather is picked by hand here, so choose what it is like outside.</footer></div>
+<nav id="bnav" aria-label="Main sections"></nav>
 <div id="runbar" class="runbar" hidden></div>
 
 <script>
@@ -1018,11 +1038,15 @@ function viewSleep(){
   return h;
 }
 
-const VIEWS={today:viewToday,routines:viewRoutines,calendar:viewCalendar,diary:viewDiary,match:viewMatch,goals:viewGoals,sleep:viewSleep,home:viewHome,meals:viewMeals,tips:viewTips,me:viewMe};
+const BN=[['today','Today','<path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/>'],['calendar','Calendar','<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>'],['meals','Meals','<path d="M7 3v8M4 3v5a3 3 0 0 0 6 0V3M7 11v10M17 3c-2 2-3 5-3 8h3v10"/>'],['diary','Diary','<path d="M5 3h12a2 2 0 0 1 2 2v16H7a2 2 0 0 1-2-2z"/><path d="M9 8h6M9 12h6"/>'],['more','More','<circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/>']];
+const MORE=[['routines','Routines','Morning and night steps'],['match','Match day','Checklist and match log'],['goals','Goals','Set targets and track them'],['sleep','Sleep','Sleep and mood log'],['home','At home','Small-space sessions'],['tips','Tips','Tips, records and challenges'],['me','Me','Your settings and backup']];
+function viewMore(){return '<section class="card"><h2>More</h2><p class="sub">Everything else in Pitch Plan.</p><div class="more-grid">'+MORE.map(m=>'<button data-a="tab" data-v="'+m[0]+'"><b>'+m[1]+'</b><span>'+m[2]+'</span></button>').join('')+'</div></section>'}
+const VIEWS={more:viewMore,today:viewToday,routines:viewRoutines,calendar:viewCalendar,diary:viewDiary,match:viewMatch,goals:viewGoals,sleep:viewSleep,home:viewHome,meals:viewMeals,tips:viewTips,me:viewMe};
 const TABN={today:'Today',routines:'Routines',calendar:'Calendar',diary:'Diary',match:'Match day',goals:'Goals',sleep:'Sleep',home:'At home',meals:'Meals',tips:'Tips',me:'Me'};
 function render(keepScroll){
   const y=window.scrollY;
   $('#tabs').innerHTML=Object.keys(TABN).map(t=>'<button data-a="tab" data-v="'+t+'"'+(ui.tab===t?' aria-current="page"':'')+'>'+TABN[t]+'</button>').join('');
+  const mainT=BN.map(x=>x[0]);$('#bnav').innerHTML=BN.map(x=>{const on=x[0]==='more'?(ui.tab==='more'||mainT.indexOf(ui.tab)<0):ui.tab===x[0];return '<button data-a="tab" data-v="'+x[0]+'"'+(on?' aria-current="page"':'')+'><svg viewBox="0 0 24 24" aria-hidden="true">'+x[2]+'</svg>'+x[1]+'</button>'}).join('');
   $('#app').innerHTML=VIEWS[ui.tab]();
   if(keepScroll)window.scrollTo(0,y);
   const c=$('#clock');if(c)c.textContent=longDate(today);
