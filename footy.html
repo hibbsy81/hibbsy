@@ -186,6 +186,18 @@ input[type=checkbox]{accent-color:var(--bib)}
 .more-grid button b{font-family:var(--font-d);text-transform:uppercase;font-size:1.3rem;color:var(--pitch);letter-spacing:.03em}
 .more-grid button:nth-child(even) b{color:var(--bib)}
 .more-grid button span{font-size:.9rem;color:var(--muted)}
+.dpic{display:block;width:100%;max-width:300px;margin:10px 0 0;background:var(--surface2);border-radius:6px;border:1px solid var(--line)}
+.badges-grid{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));margin-top:10px}
+.badge{border:2px dashed var(--line);border-radius:8px;padding:12px;display:grid;gap:3px;opacity:.7;background:var(--bg)}
+.badge.on{opacity:1;border:2px solid var(--pitch);background:linear-gradient(160deg,var(--surface2),var(--bib-soft))}
+.badge:nth-child(even).on{border-color:var(--bib)}
+.badge .bi{font-size:1.8rem;line-height:1;color:var(--muted)}
+.badge.on .bi{color:var(--bib)}
+.badge b{font-family:var(--font-d);text-transform:uppercase;font-size:1.1rem;letter-spacing:.03em}
+.badge span{font-size:.85rem;color:var(--muted)}
+.badge em{font-style:normal;font-weight:700;color:var(--bib);font-size:.85rem}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.streak{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:10px}
 </style>
 
 <header class="hdr"><div class="wrap"><div><h1>Pitch Plan</h1><p>Routines, training, food and tips, built around your week.</p></div><div class="small" style="color:inherit;opacity:.8" id="clock"></div></div></header>
@@ -219,9 +231,9 @@ const longDate=k=>{const d=parseKey(k);return DAYS[d.getDay()]+' '+d.getDate()+'
 
 /* ---------- state ---------- */
 const DEF={profile:{name:'',age:'a2',pos:'mid',wake:'07:00',leave:'08:15',bed:'21:30',who:'f',dur:45,travel:20,early:15,diet:[],setup:false},
-  week:{0:'recover',1:'rest',2:'train',3:'solo',4:'train',5:'rest',6:'match'},overrides:{},weather:{},ticks:{},shuffle:{},rec:{jug:0,left:0,right:0},chal:{},picks:{},team:{week:{},dates:{}},teamRow:{},feel:{},diary:{},focus:{},recHist:{},matches:[],mTicks:{},goals:[],sleep:{},shop:{ticks:{},extra:[]},_t:0};
+  week:{0:'recover',1:'rest',2:'train',3:'solo',4:'train',5:'rest',6:'match'},overrides:{},weather:{},ticks:{},shuffle:{},rec:{jug:0,left:0,right:0},chal:{},picks:{},team:{week:{},dates:{}},teamRow:{},feel:{},diary:{},focus:{},recHist:{},matches:[],mTicks:{},goals:[],sleep:{},badges:{},shop:{ticks:{},extra:[]},_t:0};
 let S=JSON.parse(JSON.stringify(DEF));
-function merge(o){S=Object.assign({},JSON.parse(JSON.stringify(DEF)),o);S.teamRow=S.teamRow||{};S.profile=Object.assign({},DEF.profile,o.profile||{});S.week=Object.assign({},DEF.week,o.week||{});S.rec=Object.assign({},DEF.rec,o.rec||{});S.shop=Object.assign({},DEF.shop,o.shop||{});S.shop.ticks=S.shop.ticks||{};S.shop.extra=S.shop.extra||[];S.team=Object.assign({},DEF.team,o.team||{});S.team.week=S.team.week||{};S.team.dates=S.team.dates||{}}
+function merge(o){S=Object.assign({},JSON.parse(JSON.stringify(DEF)),o);S.teamRow=S.teamRow||{};S.profile=Object.assign({},DEF.profile,o.profile||{});S.week=Object.assign({},DEF.week,o.week||{});S.rec=Object.assign({},DEF.rec,o.rec||{});S.badges=S.badges||{};S.shop=Object.assign({},DEF.shop,o.shop||{});S.shop.ticks=S.shop.ticks||{};S.shop.extra=S.shop.extra||[];S.team=Object.assign({},DEF.team,o.team||{});S.team.week=S.team.week||{};S.team.dates=S.team.dates||{}}
 function load(){try{const v=localStorage.getItem('pitchplan_v1');if(v)merge(JSON.parse(v))}catch(e){}}
 function save(){S._t=Date.now();try{localStorage.setItem('pitchplan_v1',JSON.stringify(S))}catch(e){}}
 load();
@@ -383,7 +395,7 @@ function buildSession(k){
 function whoTag(d){return d.who==='t'?'Group':d.who==='f'?'With a mate':'Solo'}
 function drillLi(d){
   return '<li class="drill"><div class="dh"><span class="min">'+d.m+'<small>min</small></span><h4>'+esc(d.n)+'</h4>'+
-   (d.tagw?'<span class="tag">'+d.tagw+'</span>':'<span class="tag">'+whoTag(d)+'</span>')+'</div><ol>'+d.s.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ol>'+
+   (d.tagw?'<span class="tag">'+d.tagw+'</span>':'<span class="tag">'+whoTag(d)+'</span>')+'</div>'+drillPic(d)+'<ol>'+d.s.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ol>'+
    (d.tip?'<p class="coach"><b>Coaching point</b>'+esc(d.tip)+'</p>':'')+'</li>';
 }
 const RECOVER=['Easy 15 to 20 minute walk or bike ride','10 minute mobility flow: hips, hamstrings, calves, back','Gently foam-roll calves and thighs if you have a roller','Watch a match and follow just your position for 5 minutes, then write down what you noticed','Easy keepy-uppies for 5 minutes, no pressure on a record','Write down 3 things you did well this week','Have a long, slow stretch while you watch something','Kick about with friends just for fun'];
@@ -1039,9 +1051,94 @@ function viewSleep(){
 }
 
 const BN=[['today','Today','<path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/>'],['calendar','Calendar','<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>'],['meals','Meals','<path d="M7 3v8M4 3v5a3 3 0 0 0 6 0V3M7 11v10M17 3c-2 2-3 5-3 8h3v10"/>'],['diary','Diary','<path d="M5 3h12a2 2 0 0 1 2 2v16H7a2 2 0 0 1-2-2z"/><path d="M9 8h6M9 12h6"/>'],['more','More','<circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/>']];
-const MORE=[['routines','Routines','Morning and night steps'],['match','Match day','Checklist and match log'],['goals','Goals','Set targets and track them'],['sleep','Sleep','Sleep and mood log'],['home','At home','Small-space sessions'],['tips','Tips','Tips, records and challenges'],['me','Me','Your settings and backup']];
+const MORE=[['routines','Routines','Morning and night steps'],['match','Match day','Checklist and match log'],['goals','Goals','Set targets and track them'],['badges','Badges','Streaks and achievements'],['sleep','Sleep','Sleep and mood log'],['home','At home','Small-space sessions'],['tips','Tips','Tips, records and challenges'],['me','Me','Your settings and backup']];
 function viewMore(){return '<section class="card"><h2>More</h2><p class="sub">Everything else in Pitch Plan.</p><div class="more-grid">'+MORE.map(m=>'<button data-a="tab" data-v="'+m[0]+'"><b>'+m[1]+'</b><span>'+m[2]+'</span></button>').join('')+'</div></section>'}
-const VIEWS={more:viewMore,today:viewToday,routines:viewRoutines,calendar:viewCalendar,diary:viewDiary,match:viewMatch,goals:viewGoals,sleep:viewSleep,home:viewHome,meals:viewMeals,tips:viewTips,me:viewMe};
+/* drill pictures */
+const SVGH={
+ cone:(x,y)=>'<path d="M'+(x-5)+' '+(y+5)+'L'+x+' '+(y-6)+'L'+(x+5)+' '+(y+5)+'Z" fill="#f59e0b" stroke="#92400e" stroke-width="1"/>',
+ ball:(x,y)=>'<circle cx="'+x+'" cy="'+y+'" r="4.5" fill="#fff" stroke="#14213d" stroke-width="1.5"/>',
+ pl:(x,y,t,c)=>'<circle cx="'+x+'" cy="'+y+'" r="8.5" fill="'+(c||'var(--pitch)')+'"/><text x="'+x+'" y="'+(y+3)+'" text-anchor="middle" font-size="8" font-weight="700" fill="#fff">'+t+'</text>',
+ mv:d=>'<path d="'+d+'" fill="none" stroke="var(--bib)" stroke-width="2" stroke-dasharray="5 3" stroke-linecap="round" marker-end="url(#ahp)"/>',
+ bl:d=>'<path d="'+d+'" fill="none" stroke="var(--pitch)" stroke-width="2.2" stroke-linecap="round" marker-end="url(#ahb)"/>',
+ t:(x,y,s,a)=>'<text x="'+x+'" y="'+y+'" text-anchor="'+(a||'middle')+'" font-size="8" fill="var(--muted)">'+s+'</text>',
+ goal:(x,y,w)=>'<rect x="'+x+'" y="'+y+'" width="'+w+'" height="12" fill="rgba(255,255,255,.6)" stroke="#14213d" stroke-width="2"/>'
+};
+const DLAY={
+ weave:()=>[1,2,3,4,5].map(i=>SVGH.cone(30+i*30,60)).join('')+SVGH.pl(22,60,'Me')+SVGH.ball(36,68)+SVGH.mv('M32 56 Q60 34 75 60 T135 60 T195 60')+SVGH.bl('M200 60 L226 60')+SVGH.cone(232,60),
+ wall:()=>'<line x1="28" y1="14" x2="28" y2="106" stroke="#14213d" stroke-width="6"/>'+SVGH.t(28,10,'wall')+SVGH.pl(175,60,'Me')+SVGH.ball(150,60)+SVGH.bl('M144 52 L38 52')+SVGH.bl('M38 70 L144 70'),
+ self:()=>SVGH.pl(100,72,'Me')+SVGH.ball(100,30)+SVGH.bl('M92 40 Q70 55 90 66')+SVGH.bl('M110 40 Q130 55 112 64')+SVGH.t(100,108,'Stay in one small space'),
+ box:()=>SVGH.cone(70,22)+SVGH.cone(170,22)+SVGH.cone(70,98)+SVGH.cone(170,98)+SVGH.pl(120,60,'Me')+SVGH.ball(140,70)+SVGH.mv('M78 28 L162 28 L162 92 L78 92 L78 36'),
+ pairs:()=>SVGH.pl(35,60,'Me')+SVGH.pl(205,60,'F','#14213d')+SVGH.ball(55,50)+SVGH.bl('M60 52 L186 52')+SVGH.bl('M186 68 L60 68')+SVGH.t(120,95,'keep the gap steady'),
+ shoot:()=>SVGH.goal(70,8,100)+SVGH.cone(78,34)+SVGH.cone(162,34)+SVGH.pl(120,100,'Me')+SVGH.ball(120,84)+SVGH.bl('M116 80 L82 40')+SVGH.bl('M124 80 L158 40')+SVGH.mv('M50 104 L104 104'),
+ triangle:()=>SVGH.cone(120,18)+SVGH.cone(52,98)+SVGH.cone(188,98)+SVGH.pl(52,82,'Me')+SVGH.ball(70,92)+SVGH.bl('M66 78 L108 28')+SVGH.mv('M136 28 L180 86')+SVGH.bl('M178 104 L66 104'),
+ shuttle:()=>[0,1,2,3].map(i=>SVGH.cone(30+i*60,60)).join('')+SVGH.pl(14,60,'Me')+SVGH.mv('M30 48 L208 48')+SVGH.mv('M210 74 L34 74')+SVGH.t(120,100,'sprint out, walk or jog back'),
+ tgrid:()=>SVGH.cone(120,100)+SVGH.cone(120,44)+SVGH.cone(60,44)+SVGH.cone(180,44)+SVGH.pl(120,112,'Me')+SVGH.mv('M120 94 L120 52')+SVGH.mv('M110 40 L66 40')+SVGH.mv('M68 34 L172 34')+SVGH.mv('M180 52 L128 90'),
+ circle:()=>SVGH.pl(50,22,'1')+SVGH.pl(190,22,'2')+SVGH.pl(50,98,'3')+SVGH.pl(190,98,'4')+SVGH.pl(120,60,'D','var(--bib)')+SVGH.bl('M62 22 L178 22')+SVGH.bl('M190 34 L190 86')+SVGH.bl('M178 98 L62 98')+SVGH.bl('M50 86 L50 34'),
+ game:()=>'<rect x="14" y="12" width="212" height="96" rx="4" fill="none" stroke="#14213d" stroke-width="2" stroke-dasharray="6 3"/><rect x="8" y="48" width="8" height="24" fill="none" stroke="#14213d" stroke-width="2"/><rect x="224" y="48" width="8" height="24" fill="none" stroke="#14213d" stroke-width="2"/>'+SVGH.pl(80,60,'Me')+SVGH.pl(150,60,'D','var(--bib)')+SVGH.ball(98,66)+SVGH.mv('M92 56 Q120 28 164 44 T214 60'),
+ jog:()=>SVGH.pl(30,58,'Me')+SVGH.mv('M46 58 Q90 38 130 58 T210 58')+SVGH.t(120,96,'easy pace, then stretch'),
+ gk:()=>SVGH.goal(70,10,100)+SVGH.pl(120,48,'GK')+SVGH.mv('M110 50 L76 60')+SVGH.mv('M130 50 L164 60')+SVGH.ball(120,104)+SVGH.bl('M120 96 L120 66')
+};
+const DRULES=[[/warm-up|warm up|walk, stretch|cool|slow down|walk it off/,'jog'],[/cone weave|figure|dribble and look/,'weave'],[/wall|wet-ball|rebound|volley|half-turn|hold-up|back-to-goal|reaction|catches/,'wall'],[/keepy|heading|balloon|cushion|picture|balance|mobility|bodyweight|circuit|strength|toe-tap|toe tap|silent|tempo|knee and hip/,'self'],[/rondo/,'circle'],[/3v3|2v2|1v1|small-sided|pressure|pass and press|jockey|delay|take-on|moves/,'game'],[/dive|claim|handling|footwork and set|distribution|wet-hands/,'gk'],[/shoot|finish|strike|chip|near-post|low and early/,'shoot'],[/triangle|box-to-box/,'triangle'],[/agility t/,'tgrid'],[/shuttle|sprint|recovery run|runs in behind|strong-side|shuffle|ladder/,'shuttle'],[/sole-roll|in-out|v-pull|tiny-box|corner tap|square|ball roll|dribble the shape|mastery|box/,'box'],[/pass|receive|scan|switch|long|look/,'pairs'],[/./,'weave']];
+function layoutOf(d){const ln=d.n.toLowerCase();for(const r of DRULES)if(r[0].test(ln))return r[1];return 'weave'}
+function drillPic(d){
+  const lay=layoutOf(d),f=DLAY[lay];if(!f)return '';
+  return '<svg class="dpic" viewBox="0 0 240 120" role="img" aria-label="Diagram for '+esc(d.n)+'. Blue arrows show the ball, pink dashed arrows show you moving.">'+
+   '<defs><marker id="ahp" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#be185d"/></marker><marker id="ahb" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#1d4ed8"/></marker></defs>'+f()+'</svg>';
+}
+/* badges and streaks */
+function streakOf(set){
+  const has=k=>set.has(k);let d=parseKey(today),cur=0;
+  if(!has(dkey(d)))d=addDays(d,-1);
+  while(has(dkey(d))){cur++;d=addDays(d,-1)}
+  const ds=[...set].sort();let best=0,run=0,prev=null;
+  ds.forEach(k=>{const dt=parseKey(k);run=(prev&&Math.round((dt-prev)/864e5)===1)?run+1:1;if(run>best)best=run;prev=dt});
+  return {cur,best};
+}
+function badgeData(){
+  const diary=new Set(Object.keys(S.diary)),sleep=new Set(Object.keys(S.sleep)),dr={},mo={};
+  Object.keys(S.ticks).forEach(k=>{if(!S.ticks[k])return;const p=k.split('|');if(p[0]==='w'){dr[p[1]]=(dr[p[1]]||0)+1}else if(p[1]==='morning'){mo[p[0]]=(mo[p[0]]||0)+1}});
+  const water=new Set(Object.keys(dr).filter(k=>dr[k]>=8)),morn=new Set(Object.keys(mo).filter(k=>mo[k]>=3));
+  const sd={diary:streakOf(diary),water:streakOf(water),sleep:streakOf(sleep),morn:streakOf(morn)};
+  const recIds=Object.keys(S.rec).filter(k=>S.rec[k]>0),pb=Object.keys(S.recHist).some(id=>{const h=S.recHist[id]||[];if(h.length<2)return false;const info=recInfo(id),first=h[0].v,vs=h.map(p=>p.v);return info.low?Math.min(...vs)<first:Math.max(...vs)>first});
+  const M=S.matches,wins=M.filter(m=>m.us>m.them).length,fullDay=Object.keys(dr).some(k=>dr[k]>=8),longSleep=Object.keys(S.sleep).filter(k=>S.sleep[k].hrs>=9).length;
+  const nD=diary.size;
+  const B=[
+   ['d1','First diary entry','Log a session in your diary',nD>=1],
+   ['d3','Diary 3 in a row','Log 3 days in a row',sd.diary.best>=3],
+   ['d7','Diary week','Log 7 days in a row',sd.diary.best>=7],
+   ['d20','Diary regular','Write 20 diary entries',nD>=20],
+   ['m1','Match reporter','Log your first match',M.length>=1],
+   ['m5','Season ticket','Log 5 matches',M.length>=5],
+   ['mw','Winner','Log a match you won',wins>=1],
+   ['g1','Goal setter','Set a goal',S.goals.length>=1],
+   ['g2','Goal getter','Finish a goal',S.goals.some(g=>g.done)],
+   ['r1','Record keeper','Save a personal best',recIds.length>=1],
+   ['r5','Record collector','Save 5 personal bests',recIds.length>=5],
+   ['rp','Personal best!','Beat your first number on any record',pb],
+   ['w1','Hydration hero','Tick all 8 drinks in a day',fullDay],
+   ['w7','Water week','8 drinks a day, 7 days in a row',sd.water.best>=7],
+   ['s5','Sleep logger','Log 5 nights of sleep',sleep.size>=5],
+   ['s9','Well rested','Sleep 9 or more hours, 3 nights',longSleep>=3],
+   ['mr','Morning routine pro','Tick 3 morning steps, 3 days in a row',sd.morn.best>=3]
+  ];
+  return {B,sd};
+}
+function viewBadges(){
+  const {B,sd}=badgeData(),earned=B.filter(b=>b[3]);let changed=false;
+  earned.forEach(b=>{if(!S.badges[b[0]]){S.badges[b[0]]=today;changed=true}});
+  if(changed)save();
+  const n=Object.keys(S.badges).length,lv=[[0,'Rookie'],[3,'Starter'],[6,'Squad player'],[10,'Captain'],[14,'Legend']];
+  let cur=lv[0],next=null;lv.forEach((l,i)=>{if(n>=l[0]){cur=l;next=lv[i+1]||null}});
+  let h='<section class="card"><h2>Badges and streaks</h2><p class="sub">Badges unlock as you use the site. Once you have one, you keep it.</p>'+
+   '<div class="cols2" style="margin:12px 0"><div><div class="small">Level</div><div class="min" style="font-size:2.4rem">'+cur[1]+'</div></div><div><div class="small">Badges earned</div><div class="min" style="font-size:2.4rem">'+n+'<span class="small"> / '+B.length+'</span></div></div></div>'+
+   (next?'<p class="small">'+(next[0]-n)+' more badge'+(next[0]-n===1?'':'s')+' to reach '+next[1]+'.</p>':'<p class="small">You have reached the top level. Legend!</p>')+'</section>';
+  const sc=(t,o,u)=>'<div class="streak"><div class="small">'+t+'</div><div class="min" style="font-size:2.2rem">'+o.cur+'<span class="small"> '+(o.cur===1?'day':u)+'</span></div><div class="small">Best: '+o.best+'</div></div>';
+  h+='<section class="card" style="margin-top:16px"><h3>Streaks</h3><p class="sub">Days in a row. Your streak carries on if you do it today.</p><div class="cols2" style="margin-top:10px">'+sc('Diary',sd.diary,'days')+sc('Drinks (8 a day)',sd.water,'days')+sc('Sleep log',sd.sleep,'days')+sc('Morning routine',sd.morn,'days')+'</div></section>';
+  h+='<section class="card" style="margin-top:16px"><h3>Badges</h3><div class="badges-grid">'+B.map(b=>{const on=!!S.badges[b[0]];return '<div class="badge'+(on?' on':'')+'"><div class="bi" aria-hidden="true">'+(on?'★':'☆')+'</div><b>'+esc(b[1])+'</b><span>'+esc(b[2])+'</span>'+(on&&S.badges[b[0]]===today?'<em>New today!</em>':'')+'<span class="sr">'+(on?'Earned':'Locked')+'</span></div>'}).join('')+'</div></section>';
+  return h;
+}
+
+const VIEWS={badges:viewBadges,more:viewMore,today:viewToday,routines:viewRoutines,calendar:viewCalendar,diary:viewDiary,match:viewMatch,goals:viewGoals,sleep:viewSleep,home:viewHome,meals:viewMeals,tips:viewTips,me:viewMe};
 const TABN={today:'Today',routines:'Routines',calendar:'Calendar',diary:'Diary',match:'Match day',goals:'Goals',sleep:'Sleep',home:'At home',meals:'Meals',tips:'Tips',me:'Me'};
 function render(keepScroll){
   const y=window.scrollY;
