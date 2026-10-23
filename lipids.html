@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lipid Calculator</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22 width=%2264%22 height=%2264%22%3E%3Crect x=%222%22 y=%222%22 width=%2260%22 height=%2260%22 rx=%2214%22 fill=%22%230e5a62%22/%3E%3Cpath d=%22M32 6 C32 6 12 28 12 41 A20 20 0 0 0 52 41 C52 28 32 6 32 6 Z%22 fill=%22%23f2545b%22 transform=%22translate(9.6 8.55) scale(0.7)%22/%3E%3Cpath d=%22M23 38 C23 34 25 31 27.5 28.5%22 fill=%22none%22 stroke=%22%23ffffff%22 stroke-opacity=%220.55%22 stroke-width=%222.6%22 stroke-linecap=%22round%22/%3E%3C/svg%3E">
+<style>:root{color-scheme:light}body{margin:0}[hidden]{display:none!important}</style>
+<style>
+/* Layout: one narrow column, phone first. Inputs on top, a single large pass/fail panel, then a scaled bar showing where the current level sits against the 40% target. */
+:root {
+  --bg: #f1f5f5;
+  --surface: #ffffff;
+  --fg: #12201f;
+  --muted: #4f6564;
+  --line: #cfdcdb;
+  --accent: #0e5a62;
+  --idle-bg: #e6eded;
+  --good-bg: #dcf2e2;
+  --good-fg: #09562a;
+  --good-solid: #1f8a46;
+  --bad-bg: #fbe2df;
+  --bad-fg: #8a1b12;
+  --bad-solid: #c8372d;
+  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-num: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0c1515;
+    --surface: #152120;
+    --fg: #e6f0ef;
+    --muted: #9bb2b0;
+    --line: #2b3d3b;
+    --accent: #6cc5cd;
+    --idle-bg: #1d2d2c;
+    --good-bg: #12311d;
+    --good-fg: #8fe0a9;
+    --good-solid: #3fb96a;
+    --bad-bg: #3b1916;
+    --bad-fg: #ffb6ad;
+    --bad-solid: #e5584c;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0c1515;
+  --surface: #152120;
+  --fg: #e6f0ef;
+  --muted: #9bb2b0;
+  --line: #2b3d3b;
+  --accent: #6cc5cd;
+  --idle-bg: #1d2d2c;
+  --good-bg: #12311d;
+  --good-fg: #8fe0a9;
+  --good-solid: #3fb96a;
+  --bad-bg: #3b1916;
+  --bad-fg: #ffb6ad;
+  --bad-solid: #e5584c;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.5;
+  padding-block: 24px 40px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap {
+  width: 100%;
+  max-width: 460px;
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+h1 {
+  margin: 0;
+  font-size: 1.75rem;
+  line-height: 1.15;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+.lede { margin: 6px 0 0; color: var(--muted); text-wrap: pretty; }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 18px;
+}
+form { display: grid; gap: 16px; }
+.field { display: grid; gap: 6px; min-width: 0; }
+label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+input {
+  width: 100%;
+  min-width: 0;
+  font-family: var(--font-num);
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: var(--fg);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-variant-numeric: tabular-nums;
+}
+input:focus-visible,
+button:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+.actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+button {
+  font: inherit;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--accent);
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 14px;
+  cursor: pointer;
+}
+button:hover { border-color: var(--accent); }
+
+/* Result */
+.result {
+  border-radius: 10px;
+  padding: 20px 18px;
+  background: var(--idle-bg);
+  color: var(--fg);
+  display: grid;
+  gap: 10px;
+  border: 2px solid transparent;
+}
+.result[data-state="pass"] { background: var(--good-bg); color: var(--good-fg); border-color: var(--good-solid); }
+.result[data-state="fail"] { background: var(--bad-bg); color: var(--bad-fg); border-color: var(--bad-solid); }
+.status { display: flex; align-items: center; gap: 10px; font-size: 1.25rem; font-weight: 600; }
+.badge {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--muted);
+  color: var(--surface);
+  font-size: 1rem;
+  line-height: 1;
+}
+.result[data-state="pass"] .badge { background: var(--good-solid); color: #fff; }
+.result[data-state="fail"] .badge { background: var(--bad-solid); color: #fff; }
+.big {
+  font-family: var(--font-num);
+  font-weight: 600;
+  font-size: clamp(2.5rem, 14vw, 3.5rem);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+.detail { margin: 0; text-wrap: pretty; }
+
+/* Scale bar: original level is the full length */
+.scale { display: grid; gap: 12px; }
+.scale h2 {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.track {
+  position: relative;
+  height: 22px;
+  border-radius: 6px;
+  background: var(--idle-bg);
+  border: 1px solid var(--line);
+}
+.fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0;
+  border-radius: 5px 0 0 5px;
+  background: var(--muted);
+  transition: width 0.25s ease;
+}
+.track[data-state="pass"] .fill { background: var(--good-solid); }
+.track[data-state="fail"] .fill { background: var(--bad-solid); }
+.tick {
+  position: absolute;
+  top: -5px;
+  bottom: -5px;
+  width: 0;
+  border-left: 2px dashed var(--fg);
+}
+.tick.orig { border-left-style: solid; }
+dl {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+dl div { min-width: 0; }
+dt { font-size: 0.8125rem; color: var(--muted); }
+dd {
+  margin: 0;
+  font-family: var(--font-num);
+  font-size: 1.125rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+.foot { margin: 0; font-size: 0.8125rem; color: var(--muted); text-wrap: pretty; }
+
+@media (prefers-reduced-motion: reduce) {
+  .fill { transition: none; }
+}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header>
+    <h1>Lipid Calculator</h1>
+    <p class="lede">Enter the original level and the current level to check for a drop of at least 40%.</p>
+  </header>
+
+  <section class="card" aria-label="Levels">
+    <form id="form" novalidate>
+      <div class="field">
+        <label for="orig">Original level</label>
+        <input id="orig" name="orig" type="text" inputmode="decimal" autocomplete="off" value="5.8">
+      </div>
+      <div class="field">
+        <label for="curr">Current level</label>
+        <input id="curr" name="curr" type="text" inputmode="decimal" autocomplete="off" value="3.2">
+      </div>
+      <div class="actions">
+        <button type="button" id="clear">Clear</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="result" id="result" data-state="idle" aria-live="polite">
+    <div class="status"><span class="badge" id="badge" aria-hidden="true">–</span><span id="status">Enter both levels</span></div>
+    <div class="big" id="big">–</div>
+    <p class="detail" id="detail">The result appears here as soon as both levels are filled in.</p>
+  </section>
+
+  <section class="card scale" aria-label="Scale">
+    <h2>Where the current level sits</h2>
+    <div class="track" id="track" data-state="idle">
+      <div class="fill" id="fill"></div>
+      <div class="tick" id="tickTarget" style="left:60%"></div>
+      <div class="tick orig" id="tickOrig" style="left:100%"></div>
+    </div>
+    <dl>
+      <div><dt>Current</dt><dd id="vCurr">–</dd></div>
+      <div><dt>Target, or lower</dt><dd id="vTarget">–</dd></div>
+      <div><dt>Original</dt><dd id="vOrig">–</dd></div>
+    </dl>
+    <p class="foot">The dashed line marks a 40% drop from the original level. A bar that stops at or before it meets the target.</p>
+  </section>
+
+</main>
+
+<script>
+// calc-start
+function parseLevel(s) {
+  var t = String(s == null ? "" : s).trim().replace(",", ".");
+  if (t === "" || !/^\d*\.?\d+$|^\d+\.$/.test(t)) return NaN;
+  return parseFloat(t);
+}
+function calc(orig, curr) {
+  if (!isFinite(orig) || !isFinite(curr) || orig <= 0 || curr < 0) return null;
+  var dropPct = (orig - curr) / orig * 100;
+  var target = orig * 0.6;
+  var met = curr <= target + 1e-9;
+  return { dropPct: dropPct, target: target, met: met };
+}
+// calc-end
+
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var elOrig = $("orig"), elCurr = $("curr");
+  var result = $("result"), track = $("track");
+
+  function fmt(n) {
+    return n.toLocaleString("en-GB", { maximumFractionDigits: 2 });
+  }
+  function floor2(n) { return Math.floor(n * 100 + 1e-9) / 100; }
+  function trunc1(n) { return Math.floor(Math.abs(n) * 10 + 1e-9) / 10; }
+
+  function setState(state) {
+    result.setAttribute("data-state", state);
+    track.setAttribute("data-state", state);
+  }
+
+  function idle(message) {
+    setState("idle");
+    $("badge").textContent = "–";
+    $("detail").hidden = false;
+    $("status").textContent = "Enter both levels";
+    $("big").textContent = "–";
+    $("detail").textContent = message;
+    $("fill").style.width = "0";
+    $("tickTarget").style.left = "60%";
+    $("tickOrig").style.left = "100%";
+    $("vCurr").textContent = "–";
+    $("vTarget").textContent = "–";
+    $("vOrig").textContent = "–";
+  }
+
+  function update() {
+    var o = parseLevel(elOrig.value), c = parseLevel(elCurr.value);
+    var emptyO = elOrig.value.trim() === "", emptyC = elCurr.value.trim() === "";
+    if (emptyO || emptyC) { idle("The result appears here as soon as both levels are filled in."); return; }
+    if (isNaN(o) || isNaN(c)) { idle("Use numbers only, for example 5.8 or 3.2."); return; }
+    var r = calc(o, c);
+    if (!r) { idle("The original level must be greater than zero."); return; }
+
+    var up = r.dropPct < 0;
+    var pct = trunc1(r.dropPct);
+    var dir = up ? "Up" : "Down";
+    setState(r.met ? "pass" : "fail");
+    $("badge").textContent = r.met ? "✓" : "✕";
+    $("detail").hidden = r.met;
+    $("status").textContent = r.met ? "Target met" : "Target not met";
+    $("big").textContent = (up ? "+" : "−") + fmt(pct) + "%";
+    if (r.dropPct === 0) $("big").textContent = "0%";
+    $("detail").textContent = r.met
+      ? dir + " " + fmt(pct) + "% from the original level. That is a drop of at least 40%."
+      : (up ? "Up " : "Down ") + fmt(pct) + "% from the original level. The level needs to fall to " + fmt(floor2(r.target)) + " or lower for a 40% drop.";
+
+    var max = Math.max(o, c);
+    $("fill").style.width = (c / max * 100) + "%";
+    $("tickTarget").style.left = (r.target / max * 100) + "%";
+    $("tickOrig").style.left = (o / max * 100) + "%";
+    $("vCurr").textContent = fmt(c);
+    $("vTarget").textContent = fmt(floor2(r.target));
+    $("vOrig").textContent = fmt(o);
+  }
+
+  elOrig.addEventListener("input", update);
+  elCurr.addEventListener("input", update);
+  $("form").addEventListener("submit", function (e) { e.preventDefault(); update(); });
+  $("clear").addEventListener("click", function () {
+    elOrig.value = ""; elCurr.value = ""; update(); elOrig.focus();
+  });
+  update();
+})();
+</script>
+</body>
+</html>
