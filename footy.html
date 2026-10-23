@@ -784,6 +784,7 @@ function viewToday(){
     '<div><div class="lab" style="font-weight:600">What is the weather like?</div>'+weatherChips(k)+'</div>'+
     '<div><div class="lab" style="font-weight:600">How do you feel today?</div>'+feelChips(k)+'</div></section>';
   h+=challengeCard();
+  h+='<section class="card"><div class="sec-head"><h3>Words from the pros</h3><button class="btn alt" data-a="shuffle" data-k="q">Another</button></div>'+quoteHTML(quoteOfDay())+'</section>';
   h+='<div class="grid">';
   h+='<section class="card">'+sessionHTML(k)+'</section>';
   const tb=buildTeam(k);
@@ -867,14 +868,13 @@ function viewTips(){
   const shown=list.filter(t=>!t.pos||!ui.tipMine||t.pos===S.profile.pos);
   const t0=tipOfDay();
   let h='<section class="card potd tip" style="grid-template-columns:5.2rem 1fr"><span class="c">Tip of the day</span><p>'+esc(t0.t)+'</p></section>';
-  h+='<section class="card"><h2>Words from women footballers</h2><p class="sub" style="margin-bottom:8px">Quotes from players including Mia Hamm, Alex Morgan, Leah Williamson and Megan Rapinoe, with a note on what they mean for your training.</p><div class="cols2">'+QUOTES.map(q=>quoteHTML(q)).join('')+'</div><p class="small" style="margin-top:10px">Quote wording is as published at girlssoccernetwork.com and brainyquote.com.</p></section>';
   h+='<div class="grid"><section class="card"><h2>Tips and ideas</h2><div class="chips" role="group" aria-label="Tip category">'+cats.map(c=>'<button class="chip" data-a="tipcat" data-v="'+c[0]+'" aria-pressed="'+(ui.tipCat===c[0])+'">'+c[1]+'</button>').join('')+'</div>'+
    '<div class="checks"><label><input type="checkbox" data-a="tipmine"'+(ui.tipMine?' checked':'')+'> Only tips for my position ('+POSN[S.profile.pos].toLowerCase()+')</label></div><div style="margin-top:8px">'+
    shown.map(t=>'<div class="tip"><span class="c">'+TC[t.c]+(t.pos?' · '+POSN[t.pos].split(' ')[0]:'')+'</span><p>'+esc(t.t)+'</p></div>').join('')+'</div></section>';
   h+='<div style="display:grid;gap:16px;align-content:start"><section class="card"><h3>My records</h3><p class="sub">Your personal bests. Saved on this device. Leave a box at 0 until you set one.</p>'+
    RECG.map(g=>'<h4 style="margin:14px 0 6px">'+g[0]+'</h4><div class="form">'+g[1].map(x=>'<div class="field"><label for="rec-'+x[0]+'">'+x[1]+'</label><input id="rec-'+x[0]+'" type="number" min="0" '+(x[3]?'step="0.1" inputmode="decimal"':'inputmode="numeric"')+' data-rec="'+x[0]+'" data-dec="'+(x[3]?1:0)+'" value="'+(S.rec[x[0]]||0)+'"></div>').join('')+'</div>').join('')+'</section>'+recChart()+
    '<section class="card"><h3>Weekly challenges</h3><div class="checks" style="display:grid;gap:10px;margin-top:8px">'+CHAL.map(c=>'<label><input type="checkbox" data-chal="'+c[0]+'"'+(S.chal[c[0]]?' checked':'')+'> '+c[1]+'</label>').join('')+'</div><button class="btn alt" style="margin-top:12px" data-a="chalreset">Start a new week</button></section></div></div>';
-  h+='<section class="card"><div class="sec-head"><h3>Words from the pros</h3><button class="btn alt" data-a="shuffle" data-k="q">Another</button></div>'+quoteHTML(quoteOfDay())+'</section>';
+  h+='<section class="card"><h2>Words from women footballers</h2><p class="sub" style="margin-bottom:8px">Quotes from players including Mia Hamm, Alex Morgan, Leah Williamson and Megan Rapinoe, with a note on what they mean for your training.</p><div class="cols2">'+QUOTES.map(q=>quoteHTML(q)).join('')+'</div><p class="small" style="margin-top:10px">Quote wording is as published at girlssoccernetwork.com and brainyquote.com.</p></section>';
   return h;
 }
 function viewMe(){
