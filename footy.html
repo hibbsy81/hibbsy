@@ -749,7 +749,7 @@ function viewMeals(){
   const pickSel=n=>'<div class="field" style="margin:8px 0 0"><label class="small" for="sw-'+hash(n)+'">Swap into my plan</label><select id="sw-'+hash(n)+'" data-swapmeal="'+esc(n)+'"><option value="">Choose a slot…</option>'+plan.map((p,i)=>'<option value="'+i+'">'+esc(p[1])+'</option>').join('')+'</select></div>';
   h+='<section class="card" id="ideas"><div class="sec-head"><h2>Meal ideas</h2></div>'+swapBanner+'<div class="chips" role="group" aria-label="Meal type">'+[['all','All']].concat(Object.keys(SLOTS).map(s=>[s,SLOTS[s]])).map(x=>'<button class="chip" data-a="mfilter" data-v="'+x[0]+'" aria-pressed="'+(ui.mFilter===x[0])+'">'+x[1]+'</button>').join('')+'</div><div class="mgrid">'+
    M.filter(m=>mealOK(m)&&(ui.mFilter==='all'||m.slots.includes(ui.mFilter))).map(m=>mealCard(m,m.slots.map(s=>SLOTS[s]).join(' · '),'',(sIdx!=null&&plan[sIdx]?'<div class="row" style="margin-top:8px"><button class="btn" data-a="swap-use" data-name="'+esc(m.n)+'">Use this meal for '+esc(plan[sIdx][1])+'</button></div>':pickSel(m.n)))).join('')+'</div></section>';
-  return h;
+  return h+'<div id="shopping" style="margin-top:16px">'+viewShop()+'</div>';
 }
 const RECG=[['Keepy-uppies',[['jug','Both feet'],['left','Left foot'],['right','Right foot'],['thigh','Thighs and feet'],['head','Headers']]],['In one minute',[['toe','Toe taps'],['wall','Wall passes'],['cone','Cone touches']]],['Shooting',[['shot','Shots on target out of 10'],['pen','Penalties scored out of 5']]],['Speed and fitness (seconds, lower is better)',[['sprint','20 metre sprint',0,1],['weave','Cone weave',0,1],['k1','1 km run',0,1]]],['Strength',[['plank','Plank hold (seconds)'],['squat','Squats in one minute']]]];
 function viewTips(){
@@ -986,8 +986,8 @@ function viewSleep(){
   return h;
 }
 
-const VIEWS={today:viewToday,routines:viewRoutines,calendar:viewCalendar,diary:viewDiary,match:viewMatch,goals:viewGoals,sleep:viewSleep,home:viewHome,meals:viewMeals,tips:viewTips,me:viewMe,shop:viewShop};
-const TABN={today:'Today',routines:'Routines',calendar:'Calendar',diary:'Diary',match:'Match day',goals:'Goals',sleep:'Sleep',home:'At home',meals:'Meals',tips:'Tips',me:'Me',shop:'Shopping'};
+const VIEWS={today:viewToday,routines:viewRoutines,calendar:viewCalendar,diary:viewDiary,match:viewMatch,goals:viewGoals,sleep:viewSleep,home:viewHome,meals:viewMeals,tips:viewTips,me:viewMe};
+const TABN={today:'Today',routines:'Routines',calendar:'Calendar',diary:'Diary',match:'Match day',goals:'Goals',sleep:'Sleep',home:'At home',meals:'Meals',tips:'Tips',me:'Me'};
 function render(keepScroll){
   const y=window.scrollY;
   $('#tabs').innerHTML=Object.keys(TABN).map(t=>'<button data-a="tab" data-v="'+t+'"'+(ui.tab===t?' aria-current="page"':'')+'>'+TABN[t]+'</button>').join('');
