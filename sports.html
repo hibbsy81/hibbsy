@@ -13,10 +13,23 @@
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 body{margin:0;background:radial-gradient(1200px 500px at 50% -200px,#14402a 0,var(--bg) 70%) no-repeat,var(--bg);color:var(--tx);font:16px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;min-height:100vh}
 main{max-width:680px;margin:0 auto;padding:max(20px,env(safe-area-inset-top)) 14px 48px}
-h1{font-size:26px;margin:0 0 16px;letter-spacing:-.02em;text-align:center}
+header{position:relative;display:flex;align-items:center;justify-content:center;min-height:44px;padding:0 56px;margin-bottom:18px}
+h1{font-size:24px;margin:0;letter-spacing:-.02em;text-align:center;line-height:1.15}
+.menu-btn{position:absolute;right:0;top:0;width:44px;height:44px;padding:0;border-radius:12px;border:1px solid var(--bd);background:rgba(14,33,24,.6);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);cursor:pointer;color:var(--tx)}
+.menu-btn span{position:absolute;left:12px;right:12px;top:calc(50% - 1px);height:2px;border-radius:2px;background:currentColor;transition:transform .25s ease,opacity .2s ease}
+.menu-btn span:nth-child(1){transform:translateY(-6px)}
+.menu-btn span:nth-child(3){transform:translateY(6px)}
+.menu-btn[aria-expanded="true"] span:nth-child(1){transform:rotate(45deg)}
+.menu-btn[aria-expanded="true"] span:nth-child(2){opacity:0}
+.menu-btn[aria-expanded="true"] span:nth-child(3){transform:rotate(-45deg)}
+.menu{position:absolute;top:50px;right:6px;min-width:160px;padding:6px;border-radius:14px;border:1px solid rgba(255,255,255,.14);background:rgba(10,30,20,.72);-webkit-backdrop-filter:blur(16px) saturate(1.4);backdrop-filter:blur(16px) saturate(1.4);box-shadow:0 12px 32px rgba(0,0,0,.45);opacity:0;visibility:hidden;transform:translateY(-6px) scale(.98);transform-origin:top right;transition:opacity .2s,transform .2s,visibility .2s;z-index:20}
+.menu.open{opacity:1;visibility:visible;transform:none}
+.menu a{display:block;padding:10px 12px;border-radius:9px;color:var(--tx);text-decoration:none;font-size:15px;font-weight:600;white-space:nowrap}
+.menu a:hover{background:rgba(255,255,255,.08)}
+.menu a[aria-current="page"]{background:rgba(255,255,255,.14)}
 .month{font-size:13px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--mu);margin:22px 2px 10px}
-.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;margin-bottom:12px;scrollbar-width:none}
-.chip{flex:none;display:flex;align-items:center;gap:8px;border:1px solid var(--bd);background:var(--card);color:var(--tx);padding:7px 14px 7px 8px;border-radius:999px;font:600 14px inherit;font-family:inherit;cursor:pointer}
+.chips{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-bottom:4px}
+.chip{flex:none;display:flex;align-items:center;gap:8px;border:1px solid var(--bd);background:var(--card);color:var(--tx);padding:6px 13px 6px 6px;border-radius:999px;font:600 14px inherit;font-family:inherit;cursor:pointer}
 .chip[aria-pressed="true"]{background:var(--tx);color:#06130c;border-color:var(--tx)}
 .chip.all{padding-left:14px}
 .crest{position:relative;flex:none;width:var(--s,28px);height:var(--s,28px);border-radius:50%;background:var(--c);color:#fff;display:grid;place-items:center;font-weight:800;font-size:calc(var(--s,28px)*.38);overflow:hidden}
@@ -41,11 +54,19 @@ h1{font-size:26px;margin:0 0 16px;letter-spacing:-.02em;text-align:center}
 .empty,.foot{color:var(--mu);font-size:13px;text-align:center;margin-top:20px}
 .foot a{color:inherit}
 </style>
-  <script src="menu.js?v=9" defer></script>
 </head>
 <body>
 <main>
+<header>
 <h1>Fixtures &amp; TV Guide</h1>
+<button class="menu-btn" id="menuBtn" type="button" aria-label="Menu" aria-expanded="false" aria-controls="menu"><span></span><span></span><span></span></button>
+<nav class="menu" id="menu" aria-label="Site menu">
+<a href="/">Home</a>
+<a href="para.html">DZ Wind Forecast</a>
+<a href="sports.html" aria-current="page">Football Tracker</a>
+<a href="https://webmail.hibbs.org.uk/">Webmail</a>
+</nav>
+</header>
 <div class="chips" id="chips"></div>
 <div id="list"></div>
 <p class="foot">Club logos: <a href="https://football-logos.cc/">football-logos.cc</a></p>
@@ -98,6 +119,14 @@ function chips(){
   c.innerHTML='<button class="chip all" data-k="all" aria-pressed="'+(sel==="all")+'">All</button>'+Object.keys(T).map(k=>'<button class="chip" data-k="'+k+'" aria-pressed="'+(sel===k)+'">'+crest(k,24)+T[k].n+'</button>').join("");
   c.onclick=e=>{const b=e.target.closest("[data-k]");if(b){sel=b.dataset.k;chips();render();}};
 }
+(function(){
+  const b=document.getElementById("menuBtn"),m=document.getElementById("menu");
+  const set=o=>{m.classList.toggle("open",o);b.setAttribute("aria-expanded",o);};
+  b.onclick=e=>{e.stopPropagation();set(!m.classList.contains("open"));};
+  document.addEventListener("click",e=>{if(!m.contains(e.target))set(false);});
+  document.addEventListener("keydown",e=>{if(e.key==="Escape")set(false);});
+  m.onclick=e=>{if(e.target.closest("a"))set(false);};
+})();
 chips();render();setInterval(render,60000);
 </script>
 </body>
