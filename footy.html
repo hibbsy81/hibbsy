@@ -241,9 +241,9 @@ const longDate=k=>{const d=parseKey(k);return DAYS[d.getDay()]+' '+d.getDate()+'
 
 /* ---------- state ---------- */
 const DEF={profile:{name:'',age:'a2',pos:'mid',wake:'07:00',leave:'08:15',bed:'21:30',who:'f',dur:45,travel:20,early:15,diet:[],setup:false},
-  week:{0:'recover',1:'rest',2:'train',3:'solo',4:'train',5:'rest',6:'match'},overrides:{},weather:{},ticks:{},shuffle:{},rec:{jug:0,left:0,right:0},chal:{},picks:{},team:{week:{},dates:{}},teamRow:{},feel:{},diary:{},focus:{},recHist:{},matches:[],mTicks:{},goals:[],sleep:{},badges:{},daily:{},gifts:[],giftRoll:{},shop:{ticks:{},extra:[]},_t:0};
+  week:{0:'recover',1:'rest',2:'train',3:'solo',4:'train',5:'rest',6:'match'},overrides:{},weather:{},ticks:{},shuffle:{},rec:{jug:0,left:0,right:0},chal:{},picks:{},team:{week:{},dates:{}},teamRow:{},feel:{},diary:{},focus:{},recHist:{},matches:[],mTicks:{},goals:[],sleep:{},badges:{},mday:{ko:'10:00',len:60},daily:{},gifts:[],giftRoll:{},shop:{ticks:{},extra:[]},_t:0};
 let S=JSON.parse(JSON.stringify(DEF));
-function merge(o){S=Object.assign({},JSON.parse(JSON.stringify(DEF)),o);S.teamRow=S.teamRow||{};S.profile=Object.assign({},DEF.profile,o.profile||{});S.week=Object.assign({},DEF.week,o.week||{});S.rec=Object.assign({},DEF.rec,o.rec||{});S.badges=S.badges||{};S.daily=S.daily||{};S.gifts=S.gifts||[];S.giftRoll=S.giftRoll||{};S.shop=Object.assign({},DEF.shop,o.shop||{});S.shop.ticks=S.shop.ticks||{};S.shop.extra=S.shop.extra||[];S.team=Object.assign({},DEF.team,o.team||{});S.team.week=S.team.week||{};S.team.dates=S.team.dates||{}}
+function merge(o){S=Object.assign({},JSON.parse(JSON.stringify(DEF)),o);S.teamRow=S.teamRow||{};S.profile=Object.assign({},DEF.profile,o.profile||{});S.week=Object.assign({},DEF.week,o.week||{});S.rec=Object.assign({},DEF.rec,o.rec||{});S.mday=Object.assign({},DEF.mday,o.mday||{});S.badges=S.badges||{};S.daily=S.daily||{};S.gifts=S.gifts||[];S.giftRoll=S.giftRoll||{};S.shop=Object.assign({},DEF.shop,o.shop||{});S.shop.ticks=S.shop.ticks||{};S.shop.extra=S.shop.extra||[];S.team=Object.assign({},DEF.team,o.team||{});S.team.week=S.team.week||{};S.team.dates=S.team.dates||{}}
 function load(){try{const v=localStorage.getItem('pitchplan_v1');if(v)merge(JSON.parse(v))}catch(e){}}
 function save(){S._t=Date.now();try{localStorage.setItem('pitchplan_v1',JSON.stringify(S))}catch(e){}}
 load();
@@ -557,7 +557,7 @@ function tlHTML(rows,kind,k){
       }
     }
     return '<li class="'+(x.end?'end':'')+'">'+tm+
-      '<span>'+(x.end?'<b>'+esc(x.t)+'</b>':'<label><input type="checkbox" data-tick="'+key+'"'+on+'><span>'+esc(x.t)+' <span class="mins">'+x.m+' min</span>'+(x.edited?' <span class="tag">edited</span>':'')+'</span></label>')+extra+'</span></li>'}).join('')+'</ul>';
+      '<span>'+(x.end?'<b>'+esc(x.t)+'</b>':'<label><input type="checkbox" data-tick="'+key+'"'+on+'><span>'+esc(x.t)+(x.m?' <span class="mins">'+x.m+' min</span>':'')+(x.edited?' <span class="tag">edited</span>':'')+'</span></label>')+extra+'</span></li>'}).join('')+'</ul>';
 }
 
 /* ---------- meals ---------- */
@@ -793,6 +793,7 @@ function viewToday(){
   const m=buildMorning(k,type),n=buildNight(k,type);
   h+='<section class="card"><div class="sec-head"><h3>Morning routine</h3><button class="btn alt" data-a="go" data-v="routines" data-kind="morning">Open</button></div>'+(m.warn?'<div class="note">'+m.warn+'</div>':'')+tlHTML(m.rows,'morning',k)+'</section>';
   h+='<section class="card"><div class="sec-head"><h3>Night routine</h3><button class="btn alt" data-a="go" data-v="routines" data-kind="night">Open</button></div><p class="small">'+n.msg+'</p>'+(n.warn?'<div class="note">'+n.warn+'</div>':'')+tlHTML(n.rows,'night',k)+'</section>';
+  if(type==='match'){const mb=buildMatchDay(k);h+='<section class="card"><div class="sec-head"><h3>Match day routine</h3><button class="btn" data-a="go" data-v="routines" data-kind="match">Open</button></div><p class="small">Kick-off '+mb.ko+'. Leave home at '+mb.leave+'. The full plan runs from wake-up to bedtime.</p>'+(mb.warn?'<div class="note">'+mb.warn+'</div>':'')+'</section>'}
   h+='</div>';
   const t=tipOfDay();
   h+='<section class="card potd tip" style="grid-template-columns:5.2rem 1fr"><span class="c">'+TC[t.c]+'</span><p>'+esc(t.t)+'</p></section>';
@@ -800,14 +801,55 @@ function viewToday(){
   h+='<section class="card"><div class="sec-head"><h3>Short on space or time?</h3><button class="btn" data-a="go" data-v="home">Home session</button></div><p class="sub">Ten to thirty minute sessions for a hallway, bedroom, garage or garden.</p></section>';
   return h;
 }
+function matchKO(k){const tm=teamOf(k);if(tm&&typeOf(k)==='match')return {ko:tm.start,fromTeam:true,end:tm.end};return {ko:S.mday.ko,fromTeam:false}}
+function buildMatchDay(k){
+  const P=S.profile,pos=P.pos,wk=toMin(P.wake),travel=+P.travel||0,e=matchKO(k),ko=toMin(e.ko),len=Math.max(20,+S.mday.len||60);
+  const arrive=ko-Math.max(+P.early||0,35),leave=arrive-travel,wx=weatherOf(k),rows=[];
+  const add=(id,time,t,m,end)=>rows.push({id:id,time:fmt(time),_t:time,t:t,m:m||0,end:!!end});
+  const wake=Math.min(wk,leave-60);
+  let warn='';
+  if(wk>leave-45)warn='To be ready on time you need to wake up by '+fmt(leave-60)+'. Your usual wake-up time in Me is '+P.wake+'.';
+  add('wake',wake,'Wake up and drink a glass of water.',5);
+  const meal=ko-180;
+  if(meal>=wake+20){
+    add('brk',wake+15,'Breakfast: porridge, toast and banana, or cereal and milk. A normal match-day breakfast.',20);
+    add('meal',meal,'Pre-match meal, finished about 3 hours before kick-off: pasta or rice, a little chicken, and veg. Nothing new today.',25);
+  }else add('meal',Math.max(wake+15,ko-165),'Match breakfast, finished about 2 to 3 hours before kick-off: porridge or toast with banana, and a glass of milk or juice. Nothing new today.',25);
+  add('mind',ko-120>wake+30?ko-120:wake+35,'Two quiet minutes: picture your first touch, a good pass and the team celebrating. Then think of one thing to focus on.',3);
+  if(ko-75>meal+30)add('snack',ko-75,'Light snack and water: banana, rice cakes or a yoghurt.',10);
+  const wxbag=wx==='rain'?', waterproof jacket and spare dry socks':wx==='cold'?', warm layers and gloves':wx==='hot'?', sun cream and extra water':wx==='wind'?', a layer you can take off':'';
+  add('bag',leave-10,'Final bag check with the checklist on the Match day page: boots, shin pads, kit, water, snack'+wxbag+'.',5);
+  add('leave',leave,'Leave home',0,true);
+  add('arrive',arrive,'Arrive, change and say hello to everyone.',10);
+  add('warm',ko-30,'Warm-up with the team: jog, leg swings, passes, a few short sprints. Do your own position prep too.',20);
+  add('talk',ko-6,'Team talk. Slow breaths. Your focus: '+(MATCHF[pos]||'enjoy it and give your best.'),5);
+  add('ko',ko,'Kick-off',0,true);
+  add('ht',ko+Math.round(len/2),'Half-time: sip water, have a piece of orange, listen to your coach and reset.',5);
+  add('ft',ko+len,'Full time. Shake hands and thank the referee.',0,true);
+  add('cool',ko+len+8,'Cool-down: walk for 2 minutes, then stretch calves, thighs and hips for 20 seconds each.',8);
+  add('post',ko+len+20,'Recovery snack and a drink within 30 to 60 minutes: chocolate milk and a banana, or a bowl of cereal with yoghurt.',10);
+  add('home',ko+len+travel+10,'Home',0,true);
+  add('dinner',ko+len+travel+25,'Dinner with protein, carbs and veg, then a shower and a rest.',40);
+  add('diary',ko+len+travel+90,'Log your match on the Match day page: score, how you played and your best moment.',5);
+  const bed=toMin(P.bed);
+  rows.push({id:'bed',time:fmt(bed),_t:bed<wake?bed+1440:bed,t:'Early night after a big day. Lights out.',m:0,end:false});
+  rows.sort((a,b)=>a._t-b._t);
+  return {rows,warn,ko:e.ko,fromTeam:e.fromTeam,leave:fmt(leave),len};
+}
 function viewRoutines(){
   const k=today,type=ui.rType||typeOf(k),kind=ui.rKind;
   let h='<section class="card"><div class="sec-head"><h2>Routines</h2><button class="btn alt" data-a="shuffle" data-k="'+(kind==='night'?'n':'m')+k+'">Shuffle ideas</button></div>'+
-   '<div class="chips" role="group" aria-label="Routine"><button class="chip" data-a="rkind" data-v="morning" aria-pressed="'+(kind==='morning')+'">Morning</button><button class="chip" data-a="rkind" data-v="team" aria-pressed="'+(kind==='team')+'">Team session</button><button class="chip" data-a="rkind" data-v="night" aria-pressed="'+(kind==='night')+'">Night</button></div>'+
+   '<div class="chips" role="group" aria-label="Routine"><button class="chip" data-a="rkind" data-v="morning" aria-pressed="'+(kind==='morning')+'">Morning</button><button class="chip" data-a="rkind" data-v="team" aria-pressed="'+(kind==='team')+'">Team session</button><button class="chip" data-a="rkind" data-v="match" aria-pressed="'+(kind==='match')+'">Match day</button><button class="chip" data-a="rkind" data-v="night" aria-pressed="'+(kind==='night')+'">Night</button></div>'+
    '<div class="lab small">Type of day</div><div class="chips" role="group" aria-label="Day type for routine">'+TKEYS.map(t=>'<button class="chip" data-a="rtype" data-v="'+t+'" aria-pressed="'+(type===t)+'">'+TYPES[t]+'</button>').join('')+'</div>';
   if(kind==='morning'){
     const m=buildMorning(k,type);
     h+='<p class="sub">Up at '+S.profile.wake+', out of the door at '+(m.team?fmt(toMin(m.team.start)-(+S.profile.travel||0)-(+S.profile.early||0))+' for team training':S.profile.leave)+'. Change these in Me.</p>'+(m.warn?'<div class="note">'+m.warn+'</div>':'')+(m.dropped?'<p class="small">Skipped '+m.dropped+' optional step'+(m.dropped>1?'s':'')+' to fit your morning.</p>':'')+tlHTML(m.rows,'morning',k);
+  }else if(kind==='match'){
+    const mb=buildMatchDay(k);
+    h+='<p class="sub">A full plan for the day of a match, worked back from kick-off. Tick things off as you go.</p>'+
+     '<div class="form" style="margin:10px 0">'+(mb.fromTeam?'<p class="small">Using your team match time of '+mb.ko+'. Change it in the <a href="#calendar" style="color:inherit;font-weight:600">Calendar</a>.</p>':'<div class="field"><label for="md-ko">Kick-off time</label><input id="md-ko" type="time" data-mday="ko" value="'+esc(S.mday.ko)+'"></div>')+
+     '<div class="field"><label for="md-len">Match length (minutes)</label><input id="md-len" type="number" min="20" max="120" inputmode="numeric" data-mday="len" value="'+esc(S.mday.len)+'"></div></div>'+
+     '<p class="small">Leave home at <b>'+mb.leave+'</b> for a '+mb.ko+' kick-off.</p>'+(mb.warn?'<div class="note">'+mb.warn+'</div>':'')+tlHTML(mb.rows,'match',k);
   }else if(kind==='team'){
     const tb=buildTeam(k);
     if(!tb)h+='<div class="note">No team session set for today. Add one in the <a href="#calendar" style="color:inherit;font-weight:600">Calendar</a>, or set your weekly team days in <a href="#me" style="color:inherit;font-weight:600">Me</a>.</div>';
@@ -1448,6 +1490,7 @@ document.addEventListener('change',e=>{
   if(t.dataset.rec){const v=Math.max(0,(t.dataset.dec==='1'?parseFloat(t.value):parseInt(t.value,10))||0),id=t.dataset.rec;S.rec[id]=v;const h=(S.recHist[id]=S.recHist[id]||[]).filter(p=>p.d!==today);if(v>0)h.push({d:today,v:v});S.recHist[id]=h;if(v>0)ui.rChart=id;save();render(true);return}
   if(t.dataset.shop!==undefined){S.shop.ticks[t.dataset.shop]=t.checked;save();render(true);return}
   if(t.id==='sl-date'){if(t.value&&t.value<=today){ui.sDate=t.value;ui.sDraft=null;ui.sMsg='';render(true)}return}
+  if(t.dataset.mday){const f=t.dataset.mday;S.mday[f]=f==='len'?Math.max(20,Math.min(120,parseInt(t.value,10)||60)):t.value;save();render(true);return}
   if(t.dataset.rchart){ui.rChart=t.value;render(true);return}
   if(t.dataset.mtick!==undefined){S.mTicks[t.dataset.mtick]=t.checked;save();return}
   if(t.dataset.md&&t.dataset.md==='date'){ui.mDraft=ui.mDraft||{};ui.mDraft.date=t.value;return}
