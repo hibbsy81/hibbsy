@@ -186,7 +186,7 @@ input[type=checkbox]{accent-color:var(--bib)}
 .more-grid button b{font-family:var(--font-d);text-transform:uppercase;font-size:1.3rem;color:var(--pitch);letter-spacing:.03em}
 .more-grid button:nth-child(even) b{color:var(--bib)}
 .more-grid button span{font-size:.9rem;color:var(--muted)}
-.dpic{display:block;width:100%;max-width:300px;margin:10px 0 0;background:var(--surface2);border-radius:6px;border:1px solid var(--line)}
+.dfig{margin:10px 0 0;max-width:420px}.dpic{display:block;width:100%;height:auto;background:var(--surface2);border-radius:8px;border:1px solid var(--line)}.dfig figcaption{font-size:.85rem;color:var(--muted);margin-top:4px}
 .badges-grid{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));margin-top:10px}
 .badge{border:2px dashed var(--line);border-radius:8px;padding:12px;display:grid;gap:3px;opacity:.7;background:var(--bg)}
 .badge.on{opacity:1;border:2px solid var(--pitch);background:linear-gradient(160deg,var(--surface2),var(--bib-soft))}
@@ -368,6 +368,40 @@ const SLEEP={a1:[9,11],a2:[8.5,10.5],a3:[8,10]};
 
 /* ---------- session builder ---------- */
 function weatherOf(k){return S.weather[k]||'cloud'}
+function tailorWarm(base,items,o){
+  o=o||{};const tags=new Set(),names=items.map(d=>d.n);
+  items.forEach(d=>{const n=d.n.toLowerCase();
+    if(HI.has(d.n)||d.k==='g'||/sprint|shuttle|agility|runs in behind|recovery run/.test(n))tags.add('speed');
+    if(/turn|take-on|moves|cruyff|jockey|shuffle|hook|drag|v-pull/.test(n))tags.add('turning');
+    if(/shoot|finish|chip|strike|long pass|switch|pass|volley/.test(n))tags.add('striking');
+    if((d.pos||[]).includes('gk')||/catch|handling|dive|claim/.test(n))tags.add('keeper');
+    if(/dribble|weave|mastery|touch|keepy|tap|sole|toe|box|figure|balloon/.test(n))tags.add('touch');
+    if(/bodyweight|circuit|balance|strength|mobility/.test(n))tags.add('strength');
+  });
+  const feel=o.feel||'ok',pos=o.pos,steps=[];
+  steps.push(base.s[0]);
+  const mob=[];
+  if(tags.has('speed')||tags.has('turning'))mob.push('Legs and hips: leg swings, walking lunges with a twist, A-skips: 10 each');
+  if(tags.has('striking'))mob.push('Kicking leg: leg swings forwards and across your body, hip and ankle circles: 10 each');
+  if(tags.has('keeper'))mob.push('Shoulders, wrists and hips: arm circles, wrist rolls, hip circles: 10 each');
+  if(tags.has('strength')&&!mob.length)mob.push('Squats, calf raises and hip circles: 10 each, nice and slow');
+  if(tags.has('touch')&&!mob.length)mob.push('Ankles and toes: ankle circles, calf raises and toe taps on the ball: 20 each');
+  if(!mob.length)mob.push(base.s[1]);
+  steps.push(mob[0]);if(mob[1]&&!o.home)steps.push(mob[1]);
+  if(items.length)steps.push('Get the ball ready: 1 minute of easy touches, then 3 slow reps of '+names[0]);
+  const POS={gk:'Keeper prep: set your feet, then shuffle side to side 5 times and drop to your knees to gather the ball',def:'Defender prep: backpedal, side-shuffle and open your hips, 2 lengths of 5 metres',mid:'Midfielder prep: jog and check over each shoulder 10 times before you pass',att:'Forward prep: two short bursts onto a pass at 80% speed'};
+  if(!o.home&&pos&&POS[pos]&&(o.team||tags.size))steps.push(POS[pos]);
+  if(feel==='sore'||feel==='hurt')steps.push('You are sore, so skip any fast running. Keep it easy and stop if anything hurts.');
+  else if(feel==='tired')steps.push('You are tired, so build up slowly. No all-out sprints today.');
+  else if(tags.has('speed'))steps.push(base.s[2]||'3 build-up runs at 70%, 80%, then 90%');
+  else if(!o.home)steps.push('2 short accelerations at 70% over 10 steps, then walk back');
+  const lab={speed:'speed',turning:'turning',striking:'passing',keeper:'keeper work',touch:'close control',strength:'balance'};
+  const f=[...tags].map(t=>lab[t]).slice(0,2);
+  const nm=f.length?'Warm-up for '+(f.length>1?f.slice(0,-1).join(', ')+' and '+f[f.length-1]:f[0]):base.n;
+  const out=Object.assign({},base,{n:nm,s:o.home?steps.slice(0,3):steps.slice(0,6)});
+  if(names.length)out.tip='Matched to today: '+names.slice(0,3).join(', ')+(names.length>3?' and more':'')+'.';
+  return out;
+}
 function buildSession(k){
   const type=typeOf(k),w=weatherOf(k),P=S.profile,sh=S.shuffle['s'+k]||0;
   const feel=S.feel[k]||'ok';
@@ -389,7 +423,8 @@ function buildSession(k){
   if(game&&left>=game.m){items.push(game);left-=game.m}
   for(const d of shuf(pool.filter(d=>d.k==='t'),r)){if(d.m<=left){items.unshift(d);left-=d.m}}
   const order={t:0,p:1,g:2};items.sort((a,b)=>order[a.k]-order[b.k]);
-  const all=[Object.assign({tagw:'Warm-up'},warm)].concat(items,[Object.assign({tagw:'Cool-down'},cool)]);
+  const wt=tailorWarm(warm,items,{feel:feel,pos:P.pos,team:!!tm});
+  const all=[Object.assign({tagw:'Warm-up'},wt)].concat(items,[Object.assign({tagw:'Cool-down'},cool)]);
   return {type,w,all,total:all.reduce((s,d)=>s+d.m,0),r,team:tm,feel:feel};
 }
 function whoTag(d){return d.who==='t'?'Group':d.who==='f'?'With a mate':'Solo'}
@@ -701,7 +736,7 @@ function buildHome(){
   for(const d of balls){if(d.m<=left){items.push(d);left-=d.m}}
   const warm={tagw:'Warm-up',n:place==='in'?'Indoor warm-up':'Outdoor warm-up',m:2,s:['March on the spot, high knees, ankle hops: 30 seconds each','Hip circles and leg swings: 10 each']};
   const cool={tagw:'Cool-down',n:'Slow down',m:2,s:['Walk it off, calf and thigh stretches 20 seconds each','Drink some water']};
-  const all=[warm].concat(items,[cool]);
+  const all=[Object.assign({},tailorWarm(warm,items,{feel:feel,home:true}),{tagw:'Warm-up'})].concat(items,[cool]);
   return {all,place,auto,total:all.reduce((a,b)=>a+b.m,0),w,feel};
 }
 function viewHome(){
@@ -1057,33 +1092,52 @@ function viewMore(){return '<section class="card"><h2>More</h2><p class="sub">Ev
 const SVGH={
  cone:(x,y)=>'<path d="M'+(x-5)+' '+(y+5)+'L'+x+' '+(y-6)+'L'+(x+5)+' '+(y+5)+'Z" fill="#f59e0b" stroke="#92400e" stroke-width="1"/>',
  ball:(x,y)=>'<circle cx="'+x+'" cy="'+y+'" r="4.5" fill="#fff" stroke="#14213d" stroke-width="1.5"/>',
- pl:(x,y,t,c)=>'<circle cx="'+x+'" cy="'+y+'" r="8.5" fill="'+(c||'var(--pitch)')+'"/><text x="'+x+'" y="'+(y+3)+'" text-anchor="middle" font-size="8" font-weight="700" fill="#fff">'+t+'</text>',
+ pl:(x,y,t,c)=>'<circle cx="'+x+'" cy="'+y+'" r="8.5" fill="'+(c||'var(--pitch)')+'" stroke="#fff" stroke-width="1.5"/><text x="'+x+'" y="'+(y+3)+'" text-anchor="middle" font-size="8" font-weight="700" fill="#fff">'+t+'</text>',
  mv:d=>'<path d="'+d+'" fill="none" stroke="var(--bib)" stroke-width="2" stroke-dasharray="5 3" stroke-linecap="round" marker-end="url(#ahp)"/>',
  bl:d=>'<path d="'+d+'" fill="none" stroke="var(--pitch)" stroke-width="2.2" stroke-linecap="round" marker-end="url(#ahb)"/>',
- t:(x,y,s,a)=>'<text x="'+x+'" y="'+y+'" text-anchor="'+(a||'middle')+'" font-size="8" fill="var(--muted)">'+s+'</text>',
- goal:(x,y,w)=>'<rect x="'+x+'" y="'+y+'" width="'+w+'" height="12" fill="rgba(255,255,255,.6)" stroke="#14213d" stroke-width="2"/>'
+ t:(x,y,s,a,b)=>'<text x="'+x+'" y="'+y+'" text-anchor="'+(a||'middle')+'" font-size="7.5" '+(b?'font-weight="700" ':'')+'fill="var(--ink)">'+s+'</text>',
+ goal:(x,y,w)=>'<rect x="'+x+'" y="'+y+'" width="'+w+'" height="12" fill="rgba(255,255,255,.7)" stroke="#14213d" stroke-width="2"/><path d="M'+(x+w/4)+' '+y+'v12M'+(x+w/2)+' '+y+'v12M'+(x+3*w/4)+' '+y+'v12" stroke="#14213d" stroke-opacity=".3"/>',
+ dim:(x1,y,x2,s)=>s?'<path d="M'+x1+' '+y+'H'+x2+'M'+x1+' '+(y-3)+'v6M'+x2+' '+(y-3)+'v6" stroke="var(--muted)" stroke-width="1" fill="none"/><rect x="'+((x1+x2)/2-14)+'" y="'+(y-6)+'" width="28" height="12" rx="3" fill="var(--surface)" stroke="var(--muted)" stroke-width=".8"/><text x="'+((x1+x2)/2)+'" y="'+(y+2.6)+'" text-anchor="middle" font-size="7.5" font-weight="700" fill="var(--ink)">'+s+'</text>':''
 };
+function drillDist(d,mode){
+  const txt=(d.s||[]).join(' . ');
+  const M='(\\d+(?:\\.\\d+)?)\\s*(?:metres?|m)\\b';
+  const find=re=>{const m=txt.match(re);return m?(m[1]+' m'):''};
+  if(mode==='apart')return find(new RegExp(M+'\\s*apart','i'))||find(new RegExp(M,'i'));
+  if(mode==='from')return find(new RegExp(M+'\\s*from','i'))||find(new RegExp(M,'i'));
+  return find(new RegExp(M,'i'));
+}
 const DLAY={
- weave:()=>[1,2,3,4,5].map(i=>SVGH.cone(30+i*30,60)).join('')+SVGH.pl(22,60,'Me')+SVGH.ball(36,68)+SVGH.mv('M32 56 Q60 34 75 60 T135 60 T195 60')+SVGH.bl('M200 60 L226 60')+SVGH.cone(232,60),
- wall:()=>'<line x1="28" y1="14" x2="28" y2="106" stroke="#14213d" stroke-width="6"/>'+SVGH.t(28,10,'wall')+SVGH.pl(175,60,'Me')+SVGH.ball(150,60)+SVGH.bl('M144 52 L38 52')+SVGH.bl('M38 70 L144 70'),
- self:()=>SVGH.pl(100,72,'Me')+SVGH.ball(100,30)+SVGH.bl('M92 40 Q70 55 90 66')+SVGH.bl('M110 40 Q130 55 112 64')+SVGH.t(100,108,'Stay in one small space'),
- box:()=>SVGH.cone(70,22)+SVGH.cone(170,22)+SVGH.cone(70,98)+SVGH.cone(170,98)+SVGH.pl(120,60,'Me')+SVGH.ball(140,70)+SVGH.mv('M78 28 L162 28 L162 92 L78 92 L78 36'),
- pairs:()=>SVGH.pl(35,60,'Me')+SVGH.pl(205,60,'F','#14213d')+SVGH.ball(55,50)+SVGH.bl('M60 52 L186 52')+SVGH.bl('M186 68 L60 68')+SVGH.t(120,95,'keep the gap steady'),
- shoot:()=>SVGH.goal(70,8,100)+SVGH.cone(78,34)+SVGH.cone(162,34)+SVGH.pl(120,100,'Me')+SVGH.ball(120,84)+SVGH.bl('M116 80 L82 40')+SVGH.bl('M124 80 L158 40')+SVGH.mv('M50 104 L104 104'),
- triangle:()=>SVGH.cone(120,18)+SVGH.cone(52,98)+SVGH.cone(188,98)+SVGH.pl(52,82,'Me')+SVGH.ball(70,92)+SVGH.bl('M66 78 L108 28')+SVGH.mv('M136 28 L180 86')+SVGH.bl('M178 104 L66 104'),
- shuttle:()=>[0,1,2,3].map(i=>SVGH.cone(30+i*60,60)).join('')+SVGH.pl(14,60,'Me')+SVGH.mv('M30 48 L208 48')+SVGH.mv('M210 74 L34 74')+SVGH.t(120,100,'sprint out, walk or jog back'),
- tgrid:()=>SVGH.cone(120,100)+SVGH.cone(120,44)+SVGH.cone(60,44)+SVGH.cone(180,44)+SVGH.pl(120,112,'Me')+SVGH.mv('M120 94 L120 52')+SVGH.mv('M110 40 L66 40')+SVGH.mv('M68 34 L172 34')+SVGH.mv('M180 52 L128 90'),
- circle:()=>SVGH.pl(50,22,'1')+SVGH.pl(190,22,'2')+SVGH.pl(50,98,'3')+SVGH.pl(190,98,'4')+SVGH.pl(120,60,'D','var(--bib)')+SVGH.bl('M62 22 L178 22')+SVGH.bl('M190 34 L190 86')+SVGH.bl('M178 98 L62 98')+SVGH.bl('M50 86 L50 34'),
- game:()=>'<rect x="14" y="12" width="212" height="96" rx="4" fill="none" stroke="#14213d" stroke-width="2" stroke-dasharray="6 3"/><rect x="8" y="48" width="8" height="24" fill="none" stroke="#14213d" stroke-width="2"/><rect x="224" y="48" width="8" height="24" fill="none" stroke="#14213d" stroke-width="2"/>'+SVGH.pl(80,60,'Me')+SVGH.pl(150,60,'D','var(--bib)')+SVGH.ball(98,66)+SVGH.mv('M92 56 Q120 28 164 44 T214 60'),
- jog:()=>SVGH.pl(30,58,'Me')+SVGH.mv('M46 58 Q90 38 130 58 T210 58')+SVGH.t(120,96,'easy pace, then stretch'),
- gk:()=>SVGH.goal(70,10,100)+SVGH.pl(120,48,'GK')+SVGH.mv('M110 50 L76 60')+SVGH.mv('M130 50 L164 60')+SVGH.ball(120,104)+SVGH.bl('M120 96 L120 66')
+ weave:(m,dm)=>[1,2,3,4,5].map(i=>SVGH.cone(30+i*30,60)).join('')+SVGH.pl(20,60,'Me')+SVGH.t(20,78,'start')+SVGH.ball(38,68)+SVGH.mv('M32 56 Q60 34 75 60 T135 60 T195 60')+SVGH.bl('M203 60 L224 60')+SVGH.cone(230,60)+SVGH.t(230,78,'finish')+SVGH.dim(60,98,90,dm),
+ wall:(m,dm)=>'<rect x="24" y="14" width="7" height="92" fill="#14213d"/>'+SVGH.t(27,11,'wall')+SVGH.pl(190,60,'Me')+SVGH.ball(160,60)+SVGH.bl('M154 50 L38 50')+SVGH.bl('M38 70 L154 70')+SVGH.dim(31,92,160,dm),
+ self:()=>SVGH.pl(100,72,'Me')+SVGH.ball(100,28)+SVGH.bl('M90 38 Q66 54 88 66')+SVGH.bl('M112 38 Q136 54 114 64')+SVGH.t(100,100,'stay in one small space',undefined,1),
+ box:(m,dm)=>SVGH.cone(70,22)+SVGH.cone(170,22)+SVGH.cone(70,90)+SVGH.cone(170,90)+SVGH.pl(120,56,'Me')+SVGH.ball(140,66)+SVGH.mv('M78 28 L162 28 L162 84 L78 84 L78 36')+SVGH.dim(70,106,170,dm),
+ pairs:(m,dm)=>SVGH.pl(35,56,'Me')+SVGH.pl(205,56,'F','#14213d')+SVGH.t(205,76,'partner')+SVGH.ball(55,46)+SVGH.bl('M60 48 L186 48')+SVGH.bl('M186 64 L60 64')+SVGH.dim(35,96,205,dm),
+ shoot:()=>SVGH.goal(70,8,100)+SVGH.t(120,36,'goal',undefined,1)+SVGH.cone(78,34)+SVGH.cone(162,34)+SVGH.t(60,48,'target')+SVGH.t(180,48,'target')+SVGH.pl(120,100,'Me')+SVGH.ball(120,84)+SVGH.bl('M116 80 L82 42')+SVGH.bl('M124 80 L158 42')+SVGH.mv('M44 104 L104 104'),
+ triangle:()=>SVGH.cone(120,18)+SVGH.cone(52,98)+SVGH.cone(188,98)+SVGH.pl(52,82,'Me')+SVGH.ball(70,92)+SVGH.bl('M66 78 L108 28')+SVGH.t(76,50,'pass')+SVGH.mv('M136 28 L180 86')+SVGH.t(166,50,'move')+SVGH.bl('M178 108 L66 108')+SVGH.t(120,104,'pass back'),
+ shuttle:(m,dm)=>[0,1,2,3].map(i=>SVGH.cone(30+i*60,56)).join('')+SVGH.pl(12,56,'Me')+SVGH.t(30,74,'start')+SVGH.t(210,74,'turn')+SVGH.mv('M30 44 L208 44')+SVGH.mv('M210 66 L34 66')+SVGH.dim(30,92,210,dm)+SVGH.t(120,110,'sprint out, jog back',undefined,1),
+ tgrid:()=>SVGH.cone(120,100)+SVGH.cone(120,44)+SVGH.cone(60,44)+SVGH.cone(180,44)+SVGH.pl(120,112,'Me')+SVGH.t(150,104,'start')+SVGH.mv('M120 92 L120 52')+SVGH.t(138,72,'forward')+SVGH.mv('M110 38 L66 38')+SVGH.mv('M68 30 L172 30')+SVGH.t(120,24,'shuffle side to side',undefined,1)+SVGH.mv('M180 52 L128 90')+SVGH.t(170,80,'back')+SVGH.t(120,58,'',undefined),
+ circle:()=>SVGH.pl(50,22,'1')+SVGH.pl(190,22,'2')+SVGH.pl(50,98,'3')+SVGH.pl(190,98,'4')+SVGH.pl(120,60,'D','var(--bib)')+SVGH.t(120,78,'defender')+SVGH.bl('M62 22 L178 22')+SVGH.bl('M190 34 L190 86')+SVGH.bl('M178 98 L62 98')+SVGH.bl('M50 86 L50 34'),
+ game:()=>'<rect x="14" y="12" width="212" height="96" rx="4" fill="rgba(255,255,255,.5)" stroke="#14213d" stroke-width="2" stroke-dasharray="6 3"/><rect x="8" y="48" width="8" height="24" fill="#fff" stroke="#14213d" stroke-width="2"/><rect x="224" y="48" width="8" height="24" fill="#fff" stroke="#14213d" stroke-width="2"/>'+SVGH.t(120,22,'small pitch, cones at the corners')+SVGH.pl(80,64,'Me')+SVGH.pl(150,64,'D','var(--bib)')+SVGH.t(150,82,'defender')+SVGH.ball(98,70)+SVGH.mv('M92 60 Q120 34 164 46 T214 60')+SVGH.t(228,44,'goal','end'),
+ jog:()=>SVGH.pl(30,52,'Me')+SVGH.mv('M46 52 Q90 32 130 52 T210 52')+SVGH.t(120,92,'easy pace, then stretch',undefined,1),
+ gk:()=>SVGH.goal(70,10,100)+SVGH.pl(120,48,'GK')+SVGH.mv('M110 50 L76 60')+SVGH.mv('M130 50 L164 60')+SVGH.t(70,74,'dive')+SVGH.t(170,74,'dive')+SVGH.ball(120,104)+SVGH.t(150,108,'ball')+SVGH.bl('M120 96 L120 66')
 };
-const DRULES=[[/warm-up|warm up|walk, stretch|cool|slow down|walk it off/,'jog'],[/cone weave|figure|dribble and look/,'weave'],[/wall|wet-ball|rebound|volley|half-turn|hold-up|back-to-goal|reaction|catches/,'wall'],[/keepy|heading|balloon|cushion|picture|balance|mobility|bodyweight|circuit|strength|toe-tap|toe tap|silent|tempo|knee and hip/,'self'],[/rondo/,'circle'],[/3v3|2v2|1v1|small-sided|pressure|pass and press|jockey|delay|take-on|moves/,'game'],[/dive|claim|handling|footwork and set|distribution|wet-hands/,'gk'],[/shoot|finish|strike|chip|near-post|low and early/,'shoot'],[/triangle|box-to-box/,'triangle'],[/agility t/,'tgrid'],[/shuttle|sprint|recovery run|runs in behind|strong-side|shuffle|ladder/,'shuttle'],[/sole-roll|in-out|v-pull|tiny-box|corner tap|square|ball roll|dribble the shape|mastery|box/,'box'],[/pass|receive|scan|switch|long|look/,'pairs'],[/./,'weave']];
+const DCAP={weave:'Dribble through the cones, then finish at the end.',wall:'Pass against the wall and control the rebound.',self:'You and the ball in one small space.',box:'Work inside the marked square.',pairs:'Pass back and forth with a partner, or against a wall if you are on your own.',shoot:'Strike the ball at the target corners.',triangle:'Pass, then move to the next cone.',shuttle:'Run out to the far cone and back.',tgrid:'Move round the T of cones: forward, side to side, back.',circle:'Four players pass around the outside while one defends.',game:'Play on a small pitch against a defender.',jog:'Keep moving at an easy pace.',gk:'Keeper in goal: react, dive and recover.'};
+const DRULES=[[/warm-up|warm up|walk, stretch|cool|slow down|walk it off/,'jog'],[/cone weave|figure|dribble and look/,'weave'],[/wall|wet-ball|volley|half-turn|hold-up|back-to-goal|reaction|catches/,'wall'],[/keepy|heading|balloon|cushion|picture|balance|mobility|bodyweight|circuit|strength|toe-tap|toe tap|silent|tempo|knee and hip/,'self'],[/rondo/,'circle'],[/3v3|2v2|1v1|small-sided|pressure|pass and press|jockey|delay|take-on|moves/,'game'],[/dive|claim|handling|footwork and set|distribution|wet-hands/,'gk'],[/shoot|finish|strike|chip|near-post|low and early/,'shoot'],[/triangle|box-to-box/,'triangle'],[/agility t/,'tgrid'],[/shuttle|sprint|recovery run|runs in behind|strong-side|shuffle|ladder/,'shuttle'],[/sole-roll|in-out|v-pull|tiny-box|corner tap|square|ball roll|dribble the shape|mastery|box/,'box'],[/pass|receive|scan|switch|long|look/,'pairs'],[/./,'weave']];
 function layoutOf(d){const ln=d.n.toLowerCase();for(const r of DRULES)if(r[0].test(ln))return r[1];return 'weave'}
 function drillPic(d){
   const lay=layoutOf(d),f=DLAY[lay];if(!f)return '';
-  return '<svg class="dpic" viewBox="0 0 240 120" role="img" aria-label="Diagram for '+esc(d.n)+'. Blue arrows show the ball, pink dashed arrows show you moving.">'+
-   '<defs><marker id="ahp" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#be185d"/></marker><marker id="ahb" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#1d4ed8"/></marker></defs>'+f()+'</svg>';
+  const mode=lay==='weave'?'apart':lay==='wall'?'from':'apart',dm=drillDist(d,mode);
+  const leg='<g transform="translate(10 158)" font-size="8" fill="var(--ink)">'+
+   '<path d="M0 6L5 -4L10 6Z" fill="#f59e0b" stroke="#92400e"/><text x="14" y="5">cone</text>'+
+   '<circle cx="48" cy="1" r="4.5" fill="#fff" stroke="#14213d" stroke-width="1.5"/><text x="56" y="5">ball</text>'+
+   '<circle cx="86" cy="1" r="6" fill="var(--pitch)"/><text x="95" y="5">you</text>'+
+   '<path d="M120 1H146" stroke="var(--pitch)" stroke-width="2.2" marker-end="url(#ahb)"/><text x="152" y="5">ball moves</text>'+
+   '<path d="M205 1H231" stroke="var(--bib)" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#ahp)"/><text x="237" y="5">you move</text></g>';
+  return '<figure class="dfig"><svg class="dpic" viewBox="0 0 300 172" role="img" aria-label="Diagram. '+esc(DCAP[lay]||'')+' Blue arrows show the ball, pink dashed arrows show you moving.">'+
+   '<defs><marker id="ahp" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#be185d"/></marker><marker id="ahb" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#1d4ed8"/></marker></defs>'+
+   '<rect x="2" y="2" width="296" height="150" rx="8" fill="rgba(255,255,255,.55)" stroke="var(--line)"/>'+
+   '<g transform="translate(0 0) scale(1.2 1.2)">'+f(null,dm)+'</g>'+leg+'</svg><figcaption>'+esc(DCAP[lay]||'')+'</figcaption></figure>';
 }
 /* badges and streaks */
 function streakOf(set){
