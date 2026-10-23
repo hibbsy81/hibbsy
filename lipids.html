@@ -27,12 +27,9 @@
   --line: rgba(12, 26, 27, 0.09);
   --accent: #0e5a62;
   --accent-soft: rgba(14, 90, 98, 0.22);
-  --pass-from: #1c9a52;
-  --pass-to: #0f6b37;
-  --pass-glow: rgba(15, 107, 55, 0.55);
-  --fail-from: #e5484d;
-  --fail-to: #b3262d;
-  --fail-glow: rgba(179, 38, 45, 0.55);
+  --ready-from: #14808c;
+  --ready-to: #0a4a52;
+  --ready-glow: rgba(10, 74, 82, 0.55);
   --on-solid: #ffffff;
   --shadow: 0 1px 2px rgba(12, 26, 27, 0.06), 0 14px 30px -14px rgba(12, 26, 27, 0.25);
   --font: ui-rounded, "SF Pro Rounded", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
@@ -49,12 +46,9 @@
     --line: rgba(255, 255, 255, 0.10);
     --accent: #6cc5cd;
     --accent-soft: rgba(108, 197, 205, 0.30);
-    --pass-from: #22a85c;
-    --pass-to: #11743b;
-    --pass-glow: rgba(34, 168, 92, 0.45);
-    --fail-from: #ec5a5c;
-    --fail-to: #ac262d;
-    --fail-glow: rgba(236, 90, 92, 0.40);
+    --ready-from: #1b8f9c;
+    --ready-to: #0b4d56;
+    --ready-glow: rgba(60, 170, 180, 0.40);
     --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 16px 34px -14px rgba(0, 0, 0, 0.65);
     color-scheme: dark;
   }
@@ -70,12 +64,9 @@
   --line: rgba(255, 255, 255, 0.10);
   --accent: #6cc5cd;
   --accent-soft: rgba(108, 197, 205, 0.30);
-  --pass-from: #22a85c;
-  --pass-to: #11743b;
-  --pass-glow: rgba(34, 168, 92, 0.45);
-  --fail-from: #ec5a5c;
-  --fail-to: #ac262d;
-  --fail-glow: rgba(236, 90, 92, 0.40);
+  --ready-from: #1b8f9c;
+  --ready-to: #0b4d56;
+  --ready-glow: rgba(60, 170, 180, 0.40);
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 16px 34px -14px rgba(0, 0, 0, 0.65);
   color-scheme: dark;
 }
@@ -106,8 +97,7 @@ body {
   grid-template-areas:
     "title  clear"
     "inputs inputs"
-    "result result"
-    "scale  scale";
+    "result result";
   gap: 14px 12px;
   align-items: center;
 }
@@ -125,7 +115,7 @@ h1 {
 .inputs {
   grid-area: inputs;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   gap: 12px;
 }
 .field {
@@ -187,26 +177,16 @@ input::placeholder { color: var(--muted); opacity: 0.45; }
   box-shadow: var(--shadow);
   transition: box-shadow 0.3s ease;
 }
-.result[data-state="pass"] {
-  --from: var(--pass-from);
-  --to: var(--pass-to);
+.result[data-state="ready"] {
+  --from: var(--ready-from);
+  --to: var(--ready-to);
   --shine: rgba(255, 255, 255, 0.28);
   color: var(--on-solid);
   border-color: transparent;
-  box-shadow: 0 18px 34px -16px var(--pass-glow);
-  animation: pop-a 0.3s ease;
+  box-shadow: 0 18px 34px -16px var(--ready-glow);
+  animation: pop 0.3s ease;
 }
-.result[data-state="fail"] {
-  --from: var(--fail-from);
-  --to: var(--fail-to);
-  --shine: rgba(255, 255, 255, 0.28);
-  color: var(--on-solid);
-  border-color: transparent;
-  box-shadow: 0 18px 34px -16px var(--fail-glow);
-  animation: pop-b 0.3s ease;
-}
-@keyframes pop-a { from { transform: scale(0.98); } to { transform: scale(1); } }
-@keyframes pop-b { from { transform: scale(0.98); } to { transform: scale(1); } }
+@keyframes pop { from { transform: scale(0.98); } to { transform: scale(1); } }
 .status {
   justify-self: start;
   display: inline-flex;
@@ -218,8 +198,7 @@ input::placeholder { color: var(--muted); opacity: 0.45; }
   font-size: 0.9375rem;
   font-weight: 600;
 }
-.result[data-state="pass"] .status,
-.result[data-state="fail"] .status { background: rgba(0, 0, 0, 0.22); }
+.result[data-state="ready"] .status { background: rgba(0, 0, 0, 0.22); }
 .badge {
   flex: none;
   width: 24px;
@@ -233,12 +212,12 @@ input::placeholder { color: var(--muted); opacity: 0.45; }
   font-weight: 700;
   line-height: 1;
 }
-.result[data-state="pass"] .badge { background: #ffffff; color: var(--pass-to); }
-.result[data-state="fail"] .badge { background: #ffffff; color: var(--fail-to); }
+.result[data-state="ready"] .badge { background: #ffffff; color: var(--ready-to); }
 .big {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
-  gap: 0.04em;
+  gap: 0 0.18em;
   font-size: clamp(3.25rem, 19vw, 4.5rem);
   font-weight: 700;
   letter-spacing: -0.04em;
@@ -247,68 +226,9 @@ input::placeholder { color: var(--muted); opacity: 0.45; }
   overflow-wrap: anywhere;
 }
 .result[data-state="idle"] .big { color: var(--muted); }
-.unit { font-size: 0.5em; font-weight: 600; letter-spacing: 0; opacity: 0.85; }
+.unit { font-size: 0.4em; font-weight: 600; letter-spacing: -0.01em; opacity: 0.85; }
 
 /* Scale */
-.scale {
-  grid-area: scale;
-  display: grid;
-  gap: 16px;
-  padding: 20px 18px 16px;
-  background: var(--surface);
-  -webkit-backdrop-filter: blur(14px);
-  backdrop-filter: blur(14px);
-  border: 1px solid var(--line);
-  border-radius: 24px;
-  box-shadow: var(--shadow);
-}
-.track {
-  --from: var(--muted);
-  --to: var(--muted);
-  position: relative;
-  height: 14px;
-  border-radius: 999px;
-  background: var(--field);
-}
-.track[data-state="pass"] { --from: var(--pass-from); --to: var(--pass-to); }
-.track[data-state="fail"] { --from: var(--fail-from); --to: var(--fail-to); }
-.fill {
-  position: absolute;
-  inset: 0 auto 0 0;
-  width: 0;
-  border-radius: 999px;
-  background: linear-gradient(90deg, var(--from), var(--to));
-  transition: width 0.3s cubic-bezier(0.3, 0.7, 0.2, 1);
-}
-.tick {
-  position: absolute;
-  top: -5px;
-  bottom: -5px;
-  width: 4px;
-  margin-left: -2px;
-  border-radius: 2px;
-  background: var(--fg);
-  box-shadow: 0 0 0 2px var(--bg);
-}
-.tick.orig { width: 2px; margin-left: -1px; opacity: 0.35; box-shadow: none; }
-dl {
-  margin: 0;
-  display: grid;
-  grid-template-columns: auto auto auto;
-  justify-content: space-between;
-  gap: 8px;
-}
-dl div { min-width: 0; }
-dl div:nth-child(2) { text-align: center; }
-dl div:nth-child(3) { text-align: right; }
-dt { font-size: 0.75rem; font-weight: 500; color: var(--muted); }
-dd {
-  margin: 0;
-  font-size: 1.25rem;
-  font-weight: 650;
-  font-variant-numeric: tabular-nums;
-  overflow-wrap: anywhere;
-}
 
 /* Clear */
 .clear {
@@ -331,7 +251,7 @@ dd {
 .clear:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 
 @media (prefers-reduced-motion: reduce) {
-  .fill, .field, .result, .clear { transition: none; }
+  .field, .result, .clear { transition: none; }
   .result[data-state] { animation: none; }
 }
 </style>
@@ -343,30 +263,13 @@ dd {
   <form id="form" class="inputs" novalidate>
     <div class="field">
       <label for="orig">Original level</label>
-      <input id="orig" name="orig" type="text" inputmode="decimal" enterkeyhint="next" autocomplete="off" placeholder="0.0">
-    </div>
-    <div class="field">
-      <label for="curr">Current level</label>
-      <input id="curr" name="curr" type="text" inputmode="decimal" enterkeyhint="done" autocomplete="off" placeholder="0.0">
+      <input id="orig" name="orig" type="text" inputmode="decimal" enterkeyhint="done" autocomplete="off" placeholder="0.0">
     </div>
   </form>
 
   <section class="result" id="result" data-state="idle" aria-live="polite">
-    <div class="status"><span class="badge" id="badge" aria-hidden="true">–</span><span id="status">Enter both levels</span></div>
-    <div class="big"><span id="bigNum">–</span><span class="unit" id="unit" hidden>%</span></div>
-  </section>
-
-  <section class="scale" aria-label="Scale">
-    <div class="track" id="track" data-state="idle">
-      <div class="fill" id="fill"></div>
-      <div class="tick" id="tickTarget" style="left:60%"></div>
-      <div class="tick orig" id="tickOrig" style="left:100%"></div>
-    </div>
-    <dl>
-      <div><dt>Current</dt><dd id="vCurr">–</dd></div>
-      <div><dt>Target, or lower</dt><dd id="vTarget">–</dd></div>
-      <div><dt>Original</dt><dd id="vOrig">–</dd></div>
-    </dl>
+    <div class="status"><span class="badge" id="badge" aria-hidden="true">–</span><span id="status">Enter the original level</span></div>
+    <div class="big"><span id="bigNum">–</span><span class="unit" id="unit" hidden>or lower</span></div>
   </section>
 
   <button type="button" id="clear" class="clear">Clear</button>
@@ -379,29 +282,24 @@ function parseLevel(s) {
   if (t === "" || !/^\d*\.?\d+$|^\d+\.$/.test(t)) return NaN;
   return parseFloat(t);
 }
-function calc(orig, curr) {
-  if (!isFinite(orig) || !isFinite(curr) || orig <= 0 || curr < 0) return null;
-  var dropPct = (orig - curr) / orig * 100;
-  var target = orig * 0.6;
-  var met = curr <= target + 1e-9;
-  return { dropPct: dropPct, target: target, met: met };
+function calc(orig) {
+  if (!isFinite(orig) || orig <= 0) return null;
+  return { target: orig * 0.6, drop: orig * 0.4 };
 }
 // calc-end
 
 (function () {
   var $ = function (id) { return document.getElementById(id); };
-  var elOrig = $("orig"), elCurr = $("curr");
-  var result = $("result"), track = $("track");
+  var elOrig = $("orig");
+  var result = $("result");
 
   function fmt(n) {
     return n.toLocaleString("en-GB", { maximumFractionDigits: 2 });
   }
   function floor2(n) { return Math.floor(n * 100 + 1e-9) / 100; }
-  function trunc1(n) { return Math.floor(Math.abs(n) * 10 + 1e-9) / 10; }
 
   function setState(state) {
     result.setAttribute("data-state", state);
-    track.setAttribute("data-state", state);
   }
 
   function idle(label) {
@@ -410,50 +308,29 @@ function calc(orig, curr) {
     $("status").textContent = label;
     $("bigNum").textContent = "–";
     $("unit").hidden = true;
-    $("fill").style.width = "0";
-    $("tickTarget").style.left = "60%";
-    $("tickOrig").style.left = "100%";
-    $("vCurr").textContent = "–";
-    $("vTarget").textContent = "–";
-    $("vOrig").textContent = "–";
   }
 
   function update() {
-    var o = parseLevel(elOrig.value), c = parseLevel(elCurr.value);
-    var emptyO = elOrig.value.trim() === "", emptyC = elCurr.value.trim() === "";
-    if (emptyO || emptyC) { idle("Enter both levels"); return; }
-    if (isNaN(o) || isNaN(c)) { idle("Enter numbers only"); return; }
-    var r = calc(o, c);
-    if (!r) { idle("Original must be above 0"); return; }
+    if (elOrig.value.trim() === "") { idle("Enter the original level"); return; }
+    var o = parseLevel(elOrig.value);
+    if (isNaN(o)) { idle("Enter numbers only"); return; }
+    var r = calc(o);
+    if (!r) { idle("Level must be above 0"); return; }
 
-    var up = r.dropPct < 0;
-    var pct = trunc1(r.dropPct);
-    setState(r.met ? "pass" : "fail");
-    $("badge").textContent = r.met ? "✓" : "✕";
-    $("status").textContent = r.met ? "Target met" : "Target not met";
-    $("bigNum").textContent = pct === 0 ? "0" : (up ? "+" : "−") + fmt(pct);
+    setState("ready");
+    $("badge").textContent = "↓";
+    $("status").textContent = "Target for a 40% drop";
+    $("bigNum").textContent = fmt(floor2(r.target));
     $("unit").hidden = false;
-
-    var max = Math.max(o, c);
-    $("fill").style.width = (c / max * 100) + "%";
-    $("tickTarget").style.left = (r.target / max * 100) + "%";
-    $("tickOrig").style.left = (o / max * 100) + "%";
-    $("vCurr").textContent = fmt(c);
-    $("vTarget").textContent = fmt(floor2(r.target));
-    $("vOrig").textContent = fmt(o);
   }
 
   elOrig.addEventListener("input", update);
-  elCurr.addEventListener("input", update);
   elOrig.addEventListener("keydown", function (e) {
-    if (e.key === "Enter") { e.preventDefault(); elCurr.focus(); }
-  });
-  elCurr.addEventListener("keydown", function (e) {
-    if (e.key === "Enter") { e.preventDefault(); elCurr.blur(); }
+    if (e.key === "Enter") { e.preventDefault(); elOrig.blur(); }
   });
   $("form").addEventListener("submit", function (e) { e.preventDefault(); update(); });
   $("clear").addEventListener("click", function () {
-    elOrig.value = ""; elCurr.value = ""; update(); elOrig.focus();
+    elOrig.value = ""; update(); elOrig.focus();
   });
   update();
 })();
