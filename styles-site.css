@@ -92,23 +92,15 @@ a:hover {
 	padding: 40px 20px;
 }
 
+.logo-container picture {
+	display: block;
+}
+
 .logo-container img {
 	display: block;       /* removes the gap under inline images */
 	max-width: 100%;
 	height: auto;
 	animation: rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
-
-	/* STOPGAP for the white box around logo.jpg: white blends into the
-	   background. Delete these lines once you switch to a transparent logo. */
-	mix-blend-mode: multiply;
-}
-
-@media (prefers-color-scheme: dark) {
-	.logo-container img {
-		/* flips a dark-on-white logo to light-on-dark; delete with the above */
-		filter: invert(1) hue-rotate(180deg);
-		mix-blend-mode: screen;
-	}
 }
 
 @keyframes rise {
