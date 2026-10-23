@@ -1,0 +1,19 @@
+{
+  "id": "./footy.html",
+  "name": "Pitch Plan",
+  "short_name": "Pitch Plan",
+  "description": "Routines, training, meals and tips for a youth footballer.",
+  "start_url": "./footy.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#dce8ff",
+  "theme_color": "#1e3a8a",
+  "lang": "en-GB",
+  "categories": ["sports", "health", "lifestyle"],
+  "icons": [
+    { "src": "footy-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "footy-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "footy-icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
