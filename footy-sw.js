@@ -1,6 +1,6 @@
 /* Pitch Plan service worker: lets the app open offline.
    It only handles Pitch Plan's own files, so other pages in the same folder are not affected. */
-const V = 'footy-v2';
+const V = 'footy-v3';
 const CORE = ['./footy.html', './footy-manifest.webmanifest', './footy-icon-192.png', './footy-icon-512.png', './footy-apple-180.png'];
 const FONT_HOSTS = ['fonts.googleapis.com', 'fonts.gstatic.com'];
 
