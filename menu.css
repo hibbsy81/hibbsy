@@ -3,9 +3,12 @@
    ========================================================================== */
 
 .menu {
-	--menu-ink: var(--ink, #606060);
-	--menu-bg: rgba(255, 255, 255, 0.88);
-	--menu-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+	--menu-ink: #3a3a3a;
+	--menu-accent: var(--ink-soft, #99A7A9);
+	--menu-glass: rgba(255, 255, 255, 0.82);
+	--menu-line: rgba(0, 0, 0, 0.07);
+	--menu-font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+	--spring: cubic-bezier(0.34, 1.56, 0.64, 1);   /* bigger 1.56 = bouncier */
 
 	position: fixed;
 	top: calc(20px + env(safe-area-inset-top, 0px));
@@ -19,17 +22,34 @@
 	box-sizing: border-box;
 }
 
+/* ---- the button ---------------------------------------------------------- */
+
 .menu-toggle {
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
 	gap: 5px;
-	width: 44px;          /* comfortable tap target on phones */
-	height: 44px;
-	padding: 10px;
-	background: transparent;
-	border: 0;
+	width: 46px;
+	height: 46px;
+	padding: 0 14px;
+	background: var(--menu-glass);
+	-webkit-backdrop-filter: blur(12px);
+	backdrop-filter: blur(12px);
+	border: 1px solid var(--menu-line);
+	border-radius: 50%;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 4px 14px rgba(0, 0, 0, 0.08);
 	cursor: pointer;
+	-webkit-tap-highlight-color: transparent;
+	transition: transform 0.35s var(--spring), box-shadow 0.2s ease;
+}
+
+.menu-toggle:active {
+	transform: scale(0.88);              /* squishes when pressed, springs back */
+}
+
+.menu-toggle:focus-visible {
+	outline: 2px solid var(--menu-accent);
+	outline-offset: 3px;
 }
 
 .menu-toggle span {
@@ -37,93 +57,115 @@
 	width: 100%;
 	height: 2px;
 	background: var(--menu-ink);
-	border-radius: 1px;
-	transition: transform 0.3s ease, opacity 0.2s ease;
+	border-radius: 2px;
+	transition: transform 0.5s var(--spring), opacity 0.2s ease, width 0.3s var(--spring);
 }
 
-/* Hamburger -> cross (bar height 2px + gap 5px = 7px travel) */
+/* shorter middle bar, aligned right: a little modern detail */
+.menu-toggle span:nth-child(2) {
+	width: 65%;
+	align-self: flex-end;
+}
+
+@media (hover: hover) {
+	.menu-toggle:hover span:nth-child(2) {
+		width: 100%;
+	}
+}
+
+/* hamburger -> cross, with a springy overshoot (bar 2px + gap 5px = 7px travel) */
 .menu-toggle[aria-expanded="true"] span:nth-child(1) {
 	transform: translateY(7px) rotate(45deg);
 }
 
 .menu-toggle[aria-expanded="true"] span:nth-child(2) {
 	opacity: 0;
+	transform: scaleX(0.2);
 }
 
 .menu-toggle[aria-expanded="true"] span:nth-child(3) {
 	transform: translateY(-7px) rotate(-45deg);
 }
 
+/* ---- the dropdown -------------------------------------------------------- */
+
 .menu-list {
 	position: absolute;
-	top: 100%;
+	top: calc(100% + 10px);
 	right: 0;
-	margin: 6px 0 0;
-	padding: 6px;
-	width: max-content;     /* grows to fit the longest link */
-	min-width: 160px;
+	margin: 0;
+	padding: 8px;
+	width: max-content;
+	min-width: 220px;
 	list-style: none;
-	background: var(--menu-bg);
-	-webkit-backdrop-filter: blur(14px);
-	backdrop-filter: blur(14px);
-	border: 1px solid rgba(0, 0, 0, 0.06);
-	border-radius: 14px;
-	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04),
-	            0 8px 24px rgba(0, 0, 0, 0.10);
+	background: var(--menu-glass);
+	-webkit-backdrop-filter: blur(18px) saturate(160%);
+	backdrop-filter: blur(18px) saturate(160%);
+	border: 1px solid var(--menu-line);
+	border-radius: 20px;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04),
+	            0 14px 36px rgba(0, 0, 0, 0.14);
 
-	/* closed state: invisible, slightly shrunk, anchored to the button */
+	/* closed: tucked up behind the button */
 	transform-origin: top right;
 	opacity: 0;
 	visibility: hidden;
-	transform: translateY(-6px) scale(0.92);
+	transform: translateY(-10px) scale(0.85);
 	transition: opacity 0.15s ease,
 	            transform 0.2s ease,
 	            visibility 0s linear 0.2s;
 }
 
-/* open state: springs down and out from the button */
+/* open: drops down and bounces slightly past its final size */
 .menu-toggle[aria-expanded="true"] + .menu-list {
 	opacity: 1;
 	visibility: visible;
 	transform: translateY(0) scale(1);
 	transition: opacity 0.2s ease,
-	            transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+	            transform 0.55s var(--spring),
 	            visibility 0s;
 }
 
-/* each item fades and slides in one after the other */
+/* links pop in one after another */
 .menu-list li {
 	opacity: 0;
-	transform: translateY(-6px);
-	transition: opacity 0.15s ease, transform 0.15s ease;
+	transform: translateY(-10px) scale(0.96);
+	transition: opacity 0.12s ease, transform 0.12s ease;
 }
 
 .menu-toggle[aria-expanded="true"] + .menu-list li {
 	opacity: 1;
-	transform: translateY(0);
-	transition: opacity 0.25s ease, transform 0.3s ease;
+	transform: none;
+	transition: opacity 0.25s ease, transform 0.5s var(--spring);
 }
 
-.menu-toggle[aria-expanded="true"] + .menu-list li:nth-child(1) { transition-delay: 0.05s; }
-.menu-toggle[aria-expanded="true"] + .menu-list li:nth-child(2) { transition-delay: 0.10s; }
-.menu-toggle[aria-expanded="true"] + .menu-list li:nth-child(3) { transition-delay: 0.15s; }
-.menu-toggle[aria-expanded="true"] + .menu-list li:nth-child(4) { transition-delay: 0.20s; }
-.menu-toggle[aria-expanded="true"] + .menu-list li:nth-child(5) { transition-delay: 0.25s; }
+.menu-toggle[aria-expanded="true"] + .menu-list li:nth-child(1) { transition-delay: 0.06s; }
+.menu-toggle[aria-expanded="true"] + .menu-list li:nth-child(2) { transition-delay: 0.11s; }
+.menu-toggle[aria-expanded="true"] + .menu-list li:nth-child(3) { transition-delay: 0.16s; }
+.menu-toggle[aria-expanded="true"] + .menu-list li:nth-child(4) { transition-delay: 0.21s; }
+.menu-toggle[aria-expanded="true"] + .menu-list li:nth-child(5) { transition-delay: 0.26s; }
+.menu-toggle[aria-expanded="true"] + .menu-list li:nth-child(6) { transition-delay: 0.31s; }
+
+/* ---- the links ----------------------------------------------------------- */
 
 .menu-list a {
-	display: block;
-	padding: 9px 14px;
-	border-radius: 9px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 20px;
+	padding: 12px 14px;
+	border-radius: 13px;
 	color: var(--menu-ink);
 	font-family: var(--menu-font);
-	font-size: 14px;
+	font-size: 15px;
 	font-weight: 500;
-	line-height: 1.7;
+	line-height: 1.3;
+	letter-spacing: -0.01em;
 	text-transform: none;
-	letter-spacing: 0;
 	white-space: nowrap;
 	text-decoration: none;
-	transition: background-color 0.15s ease;
+	-webkit-tap-highlight-color: transparent;
+	transition: background-color 0.15s ease, transform 0.3s var(--spring);
 }
 
 .menu-list a:hover,
@@ -133,16 +175,36 @@
 	outline: none;
 }
 
-/* the page you are on */
+.menu-list a:active {
+	transform: scale(0.96);
+}
+
+/* the page you are on: bold, with a dot */
 .menu-list a[aria-current="page"] {
-	background: rgba(0, 0, 0, 0.07);
-	font-weight: 700;
+	font-weight: 600;
+}
+
+.menu-list a[aria-current="page"]::after {
+	content: "";
+	width: 7px;
+	height: 7px;
+	border-radius: 50%;
+	background: var(--menu-accent);
+}
+
+/* links that leave the site get a small arrow */
+.menu-list a[href^="http"]::after {
+	content: "\2197";
+	font-size: 14px;
+	opacity: 0.45;
 }
 
 @media (prefers-reduced-motion: reduce) {
+	.menu-toggle,
 	.menu-toggle span,
 	.menu-list,
-	.menu-list li {
+	.menu-list li,
+	.menu-list a {
 		transition: none !important;
 		transition-delay: 0s !important;
 	}

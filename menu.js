@@ -1,6 +1,6 @@
 /* Shared hamburger menu.
    Add it to any page with one line (in <head> or before </body>):
-       <script src="menu.js?v=9" defer></script>
+       <script src="menu.js?v=10" defer></script>
    Bump the ?v= number whenever menu.js or menu.css changes.
    To add or rename a link, edit the `items` list below. */
 (function () {
@@ -37,6 +37,19 @@
   css.href = base + 'menu.css' + query;
   css.onload = css.onerror = function () { nav.style.visibility = ''; };
   document.head.appendChild(css);
+
+  // Modern font (falls back to the phone's system font if it can't load)
+  [['preconnect', 'https://fonts.googleapis.com'],
+   ['preconnect', 'https://fonts.gstatic.com', true],
+   ['stylesheet', 'https://fonts.googleapis.com/css2?family=Inter:wght@500;600&display=swap']
+  ].forEach(function (f) {
+    var l = document.createElement('link');
+    l.rel = f[0];
+    l.href = f[1];
+    if (f[2]) l.crossOrigin = '';
+    document.head.appendChild(l);
+  });
+
   document.body.appendChild(nav);
 
   var toggle = nav.querySelector('.menu-toggle');
