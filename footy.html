@@ -198,6 +198,16 @@ input[type=checkbox]{accent-color:var(--bib)}
 .badge em{font-style:normal;font-weight:700;color:var(--bib);font-size:.85rem}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 .streak{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:10px}
+.chal-text{font-size:1.15rem;font-weight:600;margin:6px 0 10px;line-height:1.35}
+.gift-pop{margin-top:12px;padding:14px;border-radius:10px;background:linear-gradient(135deg,var(--surface2),var(--bib-soft));border:2px solid var(--bib);animation:giftpop .6s ease-out}
+.gift-pop b{display:block;font-family:var(--font-d);text-transform:uppercase;font-size:1.3rem;color:var(--bib);margin-top:2px}
+.gift-sticker{display:inline-block;animation:giftspin 1s ease-out}
+@keyframes giftpop{0%{transform:scale(.6) rotate(-4deg);opacity:0}60%{transform:scale(1.06) rotate(1deg);opacity:1}100%{transform:none}}
+@keyframes giftspin{from{transform:rotate(-200deg) scale(.3)}to{transform:none}}
+@media (prefers-reduced-motion:reduce){.gift-pop,.gift-sticker{animation:none}}
+.stickers{display:grid;gap:8px;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));margin-top:8px}
+.stk{display:grid;justify-items:center;gap:2px;text-align:center;font-size:.8rem;color:var(--muted);opacity:.75}
+.stk.on{opacity:1;color:var(--ink);font-weight:600}
 </style>
 
 <header class="hdr"><div class="wrap"><div><h1>Pitch Plan</h1><p>Routines, training, food and tips, built around your week.</p></div><div class="small" style="color:inherit;opacity:.8" id="clock"></div></div></header>
@@ -231,14 +241,14 @@ const longDate=k=>{const d=parseKey(k);return DAYS[d.getDay()]+' '+d.getDate()+'
 
 /* ---------- state ---------- */
 const DEF={profile:{name:'',age:'a2',pos:'mid',wake:'07:00',leave:'08:15',bed:'21:30',who:'f',dur:45,travel:20,early:15,diet:[],setup:false},
-  week:{0:'recover',1:'rest',2:'train',3:'solo',4:'train',5:'rest',6:'match'},overrides:{},weather:{},ticks:{},shuffle:{},rec:{jug:0,left:0,right:0},chal:{},picks:{},team:{week:{},dates:{}},teamRow:{},feel:{},diary:{},focus:{},recHist:{},matches:[],mTicks:{},goals:[],sleep:{},badges:{},shop:{ticks:{},extra:[]},_t:0};
+  week:{0:'recover',1:'rest',2:'train',3:'solo',4:'train',5:'rest',6:'match'},overrides:{},weather:{},ticks:{},shuffle:{},rec:{jug:0,left:0,right:0},chal:{},picks:{},team:{week:{},dates:{}},teamRow:{},feel:{},diary:{},focus:{},recHist:{},matches:[],mTicks:{},goals:[],sleep:{},badges:{},daily:{},gifts:[],giftRoll:{},shop:{ticks:{},extra:[]},_t:0};
 let S=JSON.parse(JSON.stringify(DEF));
-function merge(o){S=Object.assign({},JSON.parse(JSON.stringify(DEF)),o);S.teamRow=S.teamRow||{};S.profile=Object.assign({},DEF.profile,o.profile||{});S.week=Object.assign({},DEF.week,o.week||{});S.rec=Object.assign({},DEF.rec,o.rec||{});S.badges=S.badges||{};S.shop=Object.assign({},DEF.shop,o.shop||{});S.shop.ticks=S.shop.ticks||{};S.shop.extra=S.shop.extra||[];S.team=Object.assign({},DEF.team,o.team||{});S.team.week=S.team.week||{};S.team.dates=S.team.dates||{}}
+function merge(o){S=Object.assign({},JSON.parse(JSON.stringify(DEF)),o);S.teamRow=S.teamRow||{};S.profile=Object.assign({},DEF.profile,o.profile||{});S.week=Object.assign({},DEF.week,o.week||{});S.rec=Object.assign({},DEF.rec,o.rec||{});S.badges=S.badges||{};S.daily=S.daily||{};S.gifts=S.gifts||[];S.giftRoll=S.giftRoll||{};S.shop=Object.assign({},DEF.shop,o.shop||{});S.shop.ticks=S.shop.ticks||{};S.shop.extra=S.shop.extra||[];S.team=Object.assign({},DEF.team,o.team||{});S.team.week=S.team.week||{};S.team.dates=S.team.dates||{}}
 function load(){try{const v=localStorage.getItem('pitchplan_v1');if(v)merge(JSON.parse(v))}catch(e){}}
 function save(){S._t=Date.now();try{localStorage.setItem('pitchplan_v1',JSON.stringify(S))}catch(e){}}
 load();
 const today=dkey(new Date());
-const ui={tab:'today',sel:today,month:[new Date().getFullYear(),new Date().getMonth()],rKind:'morning',rType:null,mType:null,mFilter:'all',plate:{},tipCat:'all',tipMine:false,confirm:false,hPlace:null,hSpace:'tiny',hMin:15,msg:'',swapIdx:null,editRow:null,wk:0,dDate:null,draft:null,mDraft:null,gDraft:null,mMsg:'',gMsg:'',rChart:null,sDate:null,sDraft:null,sMsg:''};
+const ui={tab:'today',sel:today,month:[new Date().getFullYear(),new Date().getMonth()],rKind:'morning',rType:null,mType:null,mFilter:'all',plate:{},tipCat:'all',tipMine:false,confirm:false,hPlace:null,hSpace:'tiny',hMin:15,msg:'',swapIdx:null,editRow:null,wk:0,dDate:null,draft:null,mDraft:null,gDraft:null,mMsg:'',gMsg:'',rChart:null,reveal:null,sDate:null,sDraft:null,sMsg:''};
 const FEEL={fresh:'Fresh',ok:'Okay',tired:'Tired',sore:'Sore',hurt:'Something hurts'};
 const HI=new Set(['Dive and recover','Jockey and shuffle','Delay and win it','Runs in behind','Short shuttle sprints','Mini bodyweight circuit','Take-on moves']);
 const HURTN='<div class="note"><b>Something hurts.</b> Do not train through pain. Tell a parent, carer or coach, and get it checked if it lasts more than a day. If you took a knock to the head, or you feel dizzy or sick, stop and tell an adult straight away. Rest and easy walking are fine until it is checked.</div>';
@@ -773,6 +783,7 @@ function viewToday(){
     '<div class="row"><span class="pill t-'+type+'">'+TYPES[type]+'</span>'+(teamOf(k)?'<span class="pill" style="background:var(--surface2);color:var(--ink)">Team '+teamOf(k).start+' to '+teamOf(k).end+'</span>':'')+'<span class="small">'+POSN[P.pos]+' · '+AGEN[P.age]+'</span></div>'+
     '<div><div class="lab" style="font-weight:600">What is the weather like?</div>'+weatherChips(k)+'</div>'+
     '<div><div class="lab" style="font-weight:600">How do you feel today?</div>'+feelChips(k)+'</div></section>';
+  h+=challengeCard();
   h+='<section class="card"><div class="sec-head"><h3>Words from the pros</h3><button class="btn alt" data-a="shuffle" data-k="q">Another</button></div>'+quoteHTML(quoteOfDay())+'</section>';
   h+='<div class="grid">';
   h+='<section class="card">'+sessionHTML(k)+'</section>';
@@ -1085,6 +1096,87 @@ function viewSleep(){
   return h;
 }
 
+/* daily challenge and surprise gifts */
+const CHALL=[
+ ['Do 20 keepy-uppies without the ball touching the floor. You get 5 tries.',1],
+ ['Get 30 toe taps in 20 seconds.',1],
+ ['Hit 10 wall passes in a row with your weaker foot.',1],
+ ['Balance on one leg for 45 seconds each side, tapping the ball with your other foot.',1],
+ ['Hold a plank for 45 seconds.',1],
+ ['Beat one of your records from the Tips page.',1],
+ ['Score 5 out of 5 shots on target at a small goal.',0],
+ ['Learn one new skill move, like a step-over, and show someone at home.',1],
+ ['Drink all 8 drinks today. Tick them off on the Today page.',1],
+ ['Do a 5 minute stretch before bed tonight.',1],
+ ['Sprint 6 times over 10 metres, walking back each time.',0],
+ ['Dribble through 5 shoes in a line 3 times without touching one.',1],
+ ['Do 20 sole rolls with each foot.',1],
+ ['Get 10 thigh touches in a row.',1],
+ ['Write down 3 things you did well this week.',1],
+ ['Watch one minute of a match and only follow the player in your position. What did she do?',1],
+ ['Pass 10 times at a target from 5 metres: how many hit?',0],
+ ['Go to bed 30 minutes earlier than usual and log your sleep.',1],
+ ['Eat a fruit or veg with every meal today.',1],
+ ['Teach a friend or sibling one of your skills.',1],
+ ['Do 15 squats, 15 lunges and 15 calf raises.',1],
+ ['Dribble for 2 minutes without looking down at the ball.',0],
+ ['Do 3 different turns, 5 of each.',1],
+ ['Say something kind or encouraging to a teammate today.',1],
+ ['Try 10 chips over a cone. How many land past it?',0],
+ ['Do a 5 minute mobility flow: hips, hamstrings and calves.',1],
+ ['Do 10 catches with each hand against a wall.',1],
+ ['Try something new from today’s session, then rate how it felt in your diary.',1],
+ ['Do 30 seconds of keepy-uppies with only your weaker foot.',1],
+ ['Take 100 touches on the ball in 5 minutes.',1]
+];
+const FACTS=['Most footballers run around 10 kilometres in a match, mostly jogging and walking with short sprints.','Sleep is when your muscles repair. Young players need around 8 to 11 hours.','Looking over your shoulder before you receive the ball is called scanning. Top midfielders do it every few seconds.','Your first touch decides your second move. A good touch gives you time.','Water makes up about 60% of your body. Even a small drop can make you feel tired.','Warming up raises your muscle temperature, which helps you move faster and stay injury free.','Using your weaker foot makes your brain build new links. That is why it feels clumsy at first.','Colourful fruit and veg gives you different vitamins. Try to eat a few colours every day.','Keeper gloves grip better when they are slightly damp, so keepers often wet them.','Short bursts of practice, like 10 minutes a day, beat one long session a week.','The first women’s international football match was played in 1881 between Scotland and England.','Passing and moving is faster than dribbling. The ball travels quicker than you can run.','Stretching after a session helps your body relax and recover for tomorrow.','Visualising a pass or a goal before you do it uses the same part of your brain as doing it.','Breathing in through your nose and out through your mouth can help you calm down before a penalty.'];
+const STICKERS=[['Golden boot',0],['Clean sheet',0],['Captain’s armband',0],['Lucky socks',0],['Hat-trick hero',0],['Rainbow flick',0],['Wall of steel',0],['Sprint spark',0],['Cone master',0],['Top corner',0],['Golden ball',1],['Golden glove',1],['Golden whistle',1]];
+function rollGift(from){
+  const x=Math.random(),own=S.gifts.filter(g=>g.opened);
+  let r;
+  if(x<0.08){const g=STICKERS.filter(s=>s[1]);r={kind:'sticker',name:g[Math.floor(Math.random()*g.length)][0],rare:1}}
+  else if(x<0.32){const g=STICKERS.filter(s=>!s[1]);r={kind:'sticker',name:g[Math.floor(Math.random()*g.length)][0],rare:0}}
+  else if(x<0.62){const got=new Set(own.filter(o=>o.r.kind==='fact').map(o=>o.r.text)),l=FACTS.filter(f=>!got.has(f)),p=l.length?l:FACTS;r={kind:'fact',text:p[Math.floor(Math.random()*p.length)]}}
+  else{const got=new Set(own.filter(o=>o.r.kind==='quote').map(o=>o.r.text)),l=QUOTES.filter(q=>!got.has(q.q)),p=l.length?l:QUOTES,q=p[Math.floor(Math.random()*p.length)];r={kind:'quote',text:q.q,who:q.who}}
+  S.gifts.push({id:Date.now()+Math.floor(Math.random()*1000),date:today,from:from,r:r,opened:false});
+}
+function challengeOf(k){
+  const wx=weatherOf(k),indoor=(wx==='rain'||wx==='frost'||wx==='cold');
+  const pl=indoor?CHALL.filter(c=>c[1]):CHALL;
+  return pl[hash('chal'+k)%pl.length][0];
+}
+function stickerSVG(name,rare,on){
+  const c1=rare?'#fbbf24':'var(--pitch)',c2=rare?'#f59e0b':'var(--bib)';
+  return '<svg viewBox="0 0 80 80" width="64" height="64" role="img" aria-label="'+esc(name)+' sticker"><defs><linearGradient id="sg'+(rare?'r':'n')+'" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="'+c1+'"/><stop offset="1" stop-color="'+c2+'"/></linearGradient></defs><circle cx="40" cy="40" r="34" fill="'+(on?'url(#sg'+(rare?'r':'n')+')':'var(--line)')+'" stroke="#fff" stroke-width="4"/><path d="M40 16l7 15 16 2-12 11 4 16-15-9-15 9 4-16-12-11 16-2z" fill="#fff" fill-opacity="'+(on?'.9':'.5')+'"/></svg>';
+}
+function giftReveal(g){
+  const r=g.r;let b;
+  if(r.kind==='sticker')b='<div class="gift-sticker">'+stickerSVG(r.name,r.rare,true)+'</div><b>'+(r.rare?'Golden sticker! ':'New sticker: ')+esc(r.name)+'</b><p class="small">It has gone into your sticker book on the Badges page.</p>';
+  else if(r.kind==='fact')b='<b>Did you know?</b><p>'+esc(r.text)+'</p>';
+  else b='<b>A word from '+esc(r.who)+'</b><p>“'+esc(r.text)+'”</p>';
+  return '<div class="gift-pop" role="status"><div class="small">You opened a surprise gift</div>'+b+'</div>';
+}
+function giftsHTML(){
+  const un=S.gifts.filter(g=>!g.opened);let h='';
+  if(ui.reveal)h+=giftReveal(ui.reveal);
+  if(un.length)h+='<div class="note" style="margin-top:10px"><b>You have '+un.length+' unopened gift'+(un.length===1?'':'s')+'.</b> <button class="btn" style="margin-left:6px" data-a="gift-open">Open a gift</button></div>';
+  return h;
+}
+function challengeCard(){
+  const k=today,d=S.daily[k],done=d&&d.done,ds=new Set(Object.keys(S.daily).filter(x=>S.daily[x].done)),st=streakOf(ds);
+  return '<section class="card" id="challenge"><div class="sec-head"><h3>Daily challenge</h3><span class="tag">'+(done?'Done today':'New today')+'</span></div>'+
+   '<p class="chal-text">'+esc(challengeOf(k))+'</p>'+
+   (done?'<p class="small">Nice work. Come back tomorrow for a new one.</p>':'<div class="row"><button class="btn" data-a="chal-done">I did it!</button></div><p class="small" style="margin-top:6px">Finish the challenge to win a surprise gift.</p>')+
+   '<p class="small" style="margin-top:8px">Challenge streak: <b>'+st.cur+'</b> day'+(st.cur===1?'':'s')+' · best '+st.best+'</p>'+giftsHTML()+'</section>';
+}
+function viewGifts(){
+  const op=S.gifts.filter(g=>g.opened),stk={};op.filter(g=>g.r.kind==='sticker').forEach(g=>{stk[g.r.name]=(stk[g.r.name]||0)+1});
+  let h='<section class="card" style="margin-top:16px"><h3>Surprise gifts</h3><p class="sub">Win gifts by finishing the daily challenge, and sometimes when you save a diary entry. Stickers, quotes and facts are all in here.</p>'+giftsHTML()+
+   '<h4 style="margin-top:14px">Sticker book ('+Object.keys(stk).length+' of '+STICKERS.length+')</h4><div class="stickers">'+STICKERS.map(s=>{const on=!!stk[s[0]];return '<div class="stk'+(on?' on':'')+'">'+stickerSVG(s[0],s[1],on)+'<span>'+(on?esc(s[0]):'???')+(stk[s[0]]>1?' ×'+stk[s[0]]:'')+'</span></div>'}).join('')+'</div>';
+  const prize=op.filter(g=>g.r.kind!=='sticker').slice(-8).reverse();
+  if(prize.length)h+='<h4 style="margin-top:14px">Prize box</h4><ul class="kit">'+prize.map(g=>'<li>'+(g.r.kind==='quote'?'“'+esc(g.r.text)+'” <b>'+esc(g.r.who)+'</b>':esc(g.r.text))+'</li>').join('')+'</ul>';
+  return h+'</section>';
+}
 const BN=[['today','Today','<path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/>'],['calendar','Calendar','<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>'],['meals','Meals','<path d="M7 3v8M4 3v5a3 3 0 0 0 6 0V3M7 11v10M17 3c-2 2-3 5-3 8h3v10"/>'],['diary','Diary','<path d="M5 3h12a2 2 0 0 1 2 2v16H7a2 2 0 0 1-2-2z"/><path d="M9 8h6M9 12h6"/>'],['more','More','<circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/>']];
 const MORE=[['routines','Routines','Morning and night steps'],['match','Match day','Checklist and match log'],['goals','Goals','Set targets and track them'],['badges','Badges','Streaks and achievements'],['sleep','Sleep','Sleep and mood log'],['home','At home','Small-space sessions'],['tips','Tips','Tips, records and challenges'],['me','Me','Your settings and backup']];
 function viewMore(){return '<section class="card"><h2>More</h2><p class="sub">Everything else in Pitch Plan.</p><div class="more-grid">'+MORE.map(m=>'<button data-a="tab" data-v="'+m[0]+'"><b>'+m[1]+'</b><span>'+m[2]+'</span></button>').join('')+'</div></section>'}
@@ -1152,7 +1244,7 @@ function badgeData(){
   const diary=new Set(Object.keys(S.diary)),sleep=new Set(Object.keys(S.sleep)),dr={},mo={};
   Object.keys(S.ticks).forEach(k=>{if(!S.ticks[k])return;const p=k.split('|');if(p[0]==='w'){dr[p[1]]=(dr[p[1]]||0)+1}else if(p[1]==='morning'){mo[p[0]]=(mo[p[0]]||0)+1}});
   const water=new Set(Object.keys(dr).filter(k=>dr[k]>=8)),morn=new Set(Object.keys(mo).filter(k=>mo[k]>=3));
-  const sd={diary:streakOf(diary),water:streakOf(water),sleep:streakOf(sleep),morn:streakOf(morn)};
+  const cd=new Set(Object.keys(S.daily).filter(x=>S.daily[x].done));const sd={chal:streakOf(cd),diary:streakOf(diary),water:streakOf(water),sleep:streakOf(sleep),morn:streakOf(morn)};
   const recIds=Object.keys(S.rec).filter(k=>S.rec[k]>0),pb=Object.keys(S.recHist).some(id=>{const h=S.recHist[id]||[];if(h.length<2)return false;const info=recInfo(id),first=h[0].v,vs=h.map(p=>p.v);return info.low?Math.min(...vs)<first:Math.max(...vs)>first});
   const M=S.matches,wins=M.filter(m=>m.us>m.them).length,fullDay=Object.keys(dr).some(k=>dr[k]>=8),longSleep=Object.keys(S.sleep).filter(k=>S.sleep[k].hrs>=9).length;
   const nD=diary.size;
@@ -1173,6 +1265,12 @@ function badgeData(){
    ['w7','Water week','8 drinks a day, 7 days in a row',sd.water.best>=7],
    ['s5','Sleep logger','Log 5 nights of sleep',sleep.size>=5],
    ['s9','Well rested','Sleep 9 or more hours, 3 nights',longSleep>=3],
+   ['c1','Challenger','Finish your first daily challenge',cd.size>=1],
+   ['c3','Challenge streak','Finish the daily challenge 3 days in a row',sd.chal.best>=3],
+   ['c10','Challenge champion','Finish 10 daily challenges',cd.size>=10],
+   ['k1','Gift opener','Open your first surprise gift',S.gifts.some(g=>g.opened)],
+   ['k5','Sticker collector','Collect 5 different stickers',new Set(S.gifts.filter(g=>g.opened&&g.r.kind==='sticker').map(g=>g.r.name)).size>=5],
+   ['kg','Golden find','Find a golden sticker',S.gifts.some(g=>g.opened&&g.r.rare)],
    ['mr','Morning routine pro','Tick 3 morning steps, 3 days in a row',sd.morn.best>=3]
   ];
   return {B,sd};
@@ -1188,6 +1286,7 @@ function viewBadges(){
    (next?'<p class="small">'+(next[0]-n)+' more badge'+(next[0]-n===1?'':'s')+' to reach '+next[1]+'.</p>':'<p class="small">You have reached the top level. Legend!</p>')+'</section>';
   const sc=(t,o,u)=>'<div class="streak"><div class="small">'+t+'</div><div class="min" style="font-size:2.2rem">'+o.cur+'<span class="small"> '+(o.cur===1?'day':u)+'</span></div><div class="small">Best: '+o.best+'</div></div>';
   h+='<section class="card" style="margin-top:16px"><h3>Streaks</h3><p class="sub">Days in a row. Your streak carries on if you do it today.</p><div class="cols2" style="margin-top:10px">'+sc('Diary',sd.diary,'days')+sc('Drinks (8 a day)',sd.water,'days')+sc('Sleep log',sd.sleep,'days')+sc('Morning routine',sd.morn,'days')+'</div></section>';
+  h+=viewGifts();
   h+='<section class="card" style="margin-top:16px"><h3>Badges</h3><div class="badges-grid">'+B.map(b=>{const on=!!S.badges[b[0]];return '<div class="badge'+(on?' on':'')+'"><div class="bi" aria-hidden="true">'+(on?'★':'☆')+'</div><b>'+esc(b[1])+'</b><span>'+esc(b[2])+'</span>'+(on&&S.badges[b[0]]===today?'<em>New today!</em>':'')+'<span class="sr">'+(on?'Earned':'Locked')+'</span></div>'}).join('')+'</div></section>';
   return h;
 }
@@ -1202,7 +1301,7 @@ function render(keepScroll){
   if(keepScroll)window.scrollTo(0,y);
   const c=$('#clock');if(c)c.textContent=longDate(today);
 }
-function go(tab,keep){ui.tab=tab;ui.msg='';ui.mMsg='';ui.gMsg='';ui.sMsg='';ui.editRow=null;try{history.replaceState(null,'','#'+tab)}catch(e){};render(keep);if(!keep)window.scrollTo(0,0)}
+function go(tab,keep){ui.tab=tab;ui.msg='';ui.mMsg='';ui.gMsg='';ui.sMsg='';ui.reveal=null;ui.editRow=null;try{history.replaceState(null,'','#'+tab)}catch(e){};render(keep);if(!keep)window.scrollTo(0,0)}
 
 /* ---------- session timer ---------- */
 let run=null,runTick=null;
@@ -1288,7 +1387,9 @@ document.addEventListener('click',e=>{
    case 'run-stop':stopRun();return
    case 'd-kind':ui.draft=ui.draft||{};ui.draft.kind=v;document.querySelectorAll('[data-a=d-kind]').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.v===v)));return
    case 'd-rate':ui.draft=ui.draft||{};ui.draft.rate=+v;document.querySelectorAll('[data-a=d-rate]').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.v===v)));return
-   case 'd-save':{const dk=ui.dDate||today,d=ui.draft||{};const win=(($('#dy-win')||{}).value||'').trim(),work=(($('#dy-work')||{}).value||'').trim();if(!d.rate){ui.msg='Pick how it felt, from 1 to 5, then save.';render(true);return}S.diary[dk]={rate:d.rate,kind:d.kind||defaultKind(dk),win:win,work:work};ui.msg='Saved. Nice work.';ui.draft=null;break}
+   case 'chal-done':{if(!(S.daily[today]&&S.daily[today].done)){S.daily[today]={done:true};rollGift('challenge');ui.reveal=null}break}
+   case 'gift-open':{const g=S.gifts.find(x=>!x.opened);if(g){g.opened=true;ui.reveal=g}break}
+   case 'd-save':{const dk=ui.dDate||today,d=ui.draft||{};const win=(($('#dy-win')||{}).value||'').trim(),work=(($('#dy-work')||{}).value||'').trim();if(!d.rate){ui.msg='Pick how it felt, from 1 to 5, then save.';render(true);return}S.diary[dk]={rate:d.rate,kind:d.kind||defaultKind(dk),win:win,work:work};ui.msg='Saved. Nice work.';if(!S.giftRoll[today]&&dk===today){S.giftRoll[today]=1;if(Math.random()<0.3){rollGift('diary');ui.msg='Saved. Nice work. Surprise! You found a gift. Open it on the Today page or the Badges page.'}}ui.draft=null;break}
    case 'd-del':{delete S.diary[ui.dDate||today];ui.msg='Entry deleted.';ui.draft=null;break}
    case 'd-edit':ui.dDate=k;ui.draft=null;ui.msg='';save();render(true);window.scrollTo(0,0);return
    case 'm-rate':ui.mDraft=ui.mDraft||{};ui.mDraft.rate=+v;document.querySelectorAll('[data-a=m-rate]').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.v===v)));return
