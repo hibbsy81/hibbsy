@@ -4,7 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Lipid Calculator</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22 width=%2264%22 height=%2264%22%3E%3Crect x=%222%22 y=%222%22 width=%2260%22 height=%2260%22 rx=%2214%22 fill=%22%230e5a62%22/%3E%3Cpath d=%22M32 6 C32 6 12 28 12 41 A20 20 0 0 0 52 41 C52 28 32 6 32 6 Z%22 fill=%22%23f2545b%22 transform=%22translate(9.6 8.55) scale(0.7)%22/%3E%3Cpath d=%22M23 38 C23 34 25 31 27.5 28.5%22 fill=%22none%22 stroke=%22%23ffffff%22 stroke-opacity=%220.55%22 stroke-width=%222.6%22 stroke-linecap=%22round%22/%3E%3C/svg%3E">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Lipids">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#f1f5f5" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0c1515" media="(prefers-color-scheme: dark)">
 <style>:root{color-scheme:light}body{margin:0}[hidden]{display:none!important}</style>
 <style>
 /* Layout: one narrow column, phone first. Inputs on top, a single large pass/fail panel, then a scaled bar showing where the current level sits against the 40% target. */
@@ -67,7 +75,7 @@ body {
   font-family: var(--font-body);
   font-size: 16px;
   line-height: 1.5;
-  padding-block: 24px 40px;
+  padding-block: 16px 24px;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
@@ -77,25 +85,25 @@ body {
   margin-inline: auto;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 14px;
 }
 h1 {
   margin: 0;
-  font-size: 1.75rem;
+  font-size: 1.5rem;
   line-height: 1.15;
   font-weight: 600;
   letter-spacing: -0.01em;
   text-wrap: balance;
 }
-.lede { margin: 6px 0 0; color: var(--muted); text-wrap: pretty; }
+.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 
 .card {
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 10px;
-  padding: 18px;
+  padding: 14px;
 }
-form { display: grid; gap: 16px; }
+form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .field { display: grid; gap: 6px; min-width: 0; }
 label {
   font-size: 0.8125rem;
@@ -108,13 +116,13 @@ input {
   width: 100%;
   min-width: 0;
   font-family: var(--font-num);
-  font-size: 1.5rem;
+  font-size: 1.375rem;
   font-weight: 500;
   color: var(--fg);
   background: var(--bg);
   border: 1px solid var(--line);
   border-radius: 8px;
-  padding: 10px 14px;
+  padding: 10px 12px;
   font-variant-numeric: tabular-nums;
 }
 input:focus-visible,
@@ -122,7 +130,6 @@ button:focus-visible {
   outline: 3px solid var(--accent);
   outline-offset: 2px;
 }
-.actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 button {
   font: inherit;
   font-size: 0.9375rem;
@@ -139,11 +146,11 @@ button:hover { border-color: var(--accent); }
 /* Result */
 .result {
   border-radius: 10px;
-  padding: 20px 18px;
+  padding: 14px 16px;
   background: var(--idle-bg);
   color: var(--fg);
   display: grid;
-  gap: 10px;
+  gap: 6px;
   border: 2px solid transparent;
 }
 .result[data-state="pass"] { background: var(--good-bg); color: var(--good-fg); border-color: var(--good-solid); }
@@ -166,7 +173,7 @@ button:hover { border-color: var(--accent); }
 .big {
   font-family: var(--font-num);
   font-weight: 600;
-  font-size: clamp(2.5rem, 14vw, 3.5rem);
+  font-size: clamp(2.25rem, 12vw, 3rem);
   line-height: 1;
   font-variant-numeric: tabular-nums;
   overflow-wrap: anywhere;
@@ -174,7 +181,7 @@ button:hover { border-color: var(--accent); }
 .detail { margin: 0; text-wrap: pretty; }
 
 /* Scale bar: original level is the full length */
-.scale { display: grid; gap: 12px; }
+.scale { display: grid; gap: 10px; }
 .scale h2 {
   margin: 0;
   font-size: 0.8125rem;
@@ -233,23 +240,20 @@ dd {
 </head>
 <body>
 <main class="wrap">
-  <header>
+  <header class="top">
     <h1>Lipid Calculator</h1>
-    <p class="lede">Enter the original level and the current level to check for a drop of at least 40%.</p>
+    <button type="button" id="clear">Clear</button>
   </header>
 
   <section class="card" aria-label="Levels">
     <form id="form" novalidate>
       <div class="field">
         <label for="orig">Original level</label>
-        <input id="orig" name="orig" type="text" inputmode="decimal" autocomplete="off" value="5.8">
+        <input id="orig" name="orig" type="text" inputmode="decimal" autocomplete="off" placeholder="0.0">
       </div>
       <div class="field">
         <label for="curr">Current level</label>
-        <input id="curr" name="curr" type="text" inputmode="decimal" autocomplete="off" value="3.2">
-      </div>
-      <div class="actions">
-        <button type="button" id="clear">Clear</button>
+        <input id="curr" name="curr" type="text" inputmode="decimal" autocomplete="off" placeholder="0.0">
       </div>
     </form>
   </section>
@@ -257,7 +261,6 @@ dd {
   <section class="result" id="result" data-state="idle" aria-live="polite">
     <div class="status"><span class="badge" id="badge" aria-hidden="true">–</span><span id="status">Enter both levels</span></div>
     <div class="big" id="big">–</div>
-    <p class="detail" id="detail">The result appears here as soon as both levels are filled in.</p>
   </section>
 
   <section class="card scale" aria-label="Scale">
@@ -272,7 +275,6 @@ dd {
       <div><dt>Target, or lower</dt><dd id="vTarget">–</dd></div>
       <div><dt>Original</dt><dd id="vOrig">–</dd></div>
     </dl>
-    <p class="foot">The dashed line marks a 40% drop from the original level. A bar that stops at or before it meets the target.</p>
   </section>
 
 </main>
@@ -312,10 +314,8 @@ function calc(orig, curr) {
   function idle(message) {
     setState("idle");
     $("badge").textContent = "–";
-    $("detail").hidden = false;
     $("status").textContent = "Enter both levels";
     $("big").textContent = "–";
-    $("detail").textContent = message;
     $("fill").style.width = "0";
     $("tickTarget").style.left = "60%";
     $("tickOrig").style.left = "100%";
@@ -337,13 +337,9 @@ function calc(orig, curr) {
     var dir = up ? "Up" : "Down";
     setState(r.met ? "pass" : "fail");
     $("badge").textContent = r.met ? "✓" : "✕";
-    $("detail").hidden = r.met;
     $("status").textContent = r.met ? "Target met" : "Target not met";
     $("big").textContent = (up ? "+" : "−") + fmt(pct) + "%";
     if (r.dropPct === 0) $("big").textContent = "0%";
-    $("detail").textContent = r.met
-      ? dir + " " + fmt(pct) + "% from the original level. That is a drop of at least 40%."
-      : (up ? "Up " : "Down ") + fmt(pct) + "% from the original level. The level needs to fall to " + fmt(floor2(r.target)) + " or lower for a 40% drop.";
 
     var max = Math.max(o, c);
     $("fill").style.width = (c / max * 100) + "%";
@@ -362,6 +358,13 @@ function calc(orig, curr) {
   });
   update();
 })();
+</script>
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", function () {
+    navigator.serviceWorker.register("sw.js").catch(function () {});
+  });
+}
 </script>
 </body>
 </html>
