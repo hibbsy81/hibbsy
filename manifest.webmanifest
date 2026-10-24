@@ -1,5 +1,5 @@
 {
-  "name": "DZ Wind Forecasts",
+  "name": "DZ Wind Forecast",
   "short_name": "DZ Winds",
   "description": "Winds aloft, temperatures, QNH and magnetic variation for drop zones, up to 25,000 ft.",
   "start_url": "./para.html",
