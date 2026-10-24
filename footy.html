@@ -34,6 +34,13 @@ button,select,input{font:inherit;color:inherit}
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='520' height='140' viewBox='0 0 520 140'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='.13' stroke-width='3'%3E%3Ccircle cx='430' cy='70' r='52'/%3E%3Cline x1='430' y1='-10' x2='430' y2='150'/%3E%3Crect x='486' y='30' width='60' height='80'/%3E%3C/g%3E%3C/svg%3E"),linear-gradient(100deg,var(--hdr) 30%,var(--hdr2));background-repeat:no-repeat,no-repeat;background-position:right top,0 0}
 .hdr .wrap{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .hdr{position:relative}
+/* hover glow */
+.btn,.chip,.acct-btn,.acct-pop input[type=email],.acct-pop input[type=password]{transition:box-shadow .18s,filter .18s}
+@media (hover:hover){
+.btn:not(:disabled):hover,.chip:not(:disabled):hover,.acct-btn:hover{box-shadow:0 0 0 2px rgba(245,196,0,.55),0 0 14px 4px rgba(245,196,0,.65);filter:brightness(1.05)}
+.btn.warn:not(:disabled):hover{box-shadow:0 0 0 2px rgba(220,38,38,.45),0 0 14px 4px rgba(220,38,38,.5)}
+.acct-pop input[type=email]:hover,.acct-pop input[type=password]:hover{box-shadow:0 0 0 2px rgba(245,196,0,.55),0 0 12px 3px rgba(245,196,0,.55)}
+}
 .hdr-r{margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
 .acct-btn{background:#fff;color:#1e3a8a;border:2px solid #fff;border-radius:999px;padding:8px 14px;min-height:40px;font:inherit;font-weight:600;cursor:pointer;text-shadow:none;box-shadow:0 1px 3px rgba(0,0,0,.25)}
 .acct-btn:focus-visible{outline:3px solid #f5c400;outline-offset:2px}
