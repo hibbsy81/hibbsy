@@ -42,7 +42,7 @@ button,select,input{font:inherit;color:inherit}
 .acct-pop input[type=email]:hover,.acct-pop input[type=password]:hover{box-shadow:0 0 0 2px rgba(245,196,0,.55),0 0 12px 3px rgba(245,196,0,.55)}
 }
 .hdr-r{margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
-.acct-btn{background:#fff;color:#1e3a8a;border:2px solid #fff;border-radius:999px;padding:8px 14px;min-height:40px;font:inherit;font-weight:600;cursor:pointer;text-shadow:none;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.acct-btn{max-width:min(16rem,70vw);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;background:#fff;color:#1e3a8a;border:2px solid #fff;border-radius:999px;padding:8px 14px;min-height:40px;font:inherit;font-weight:600;cursor:pointer;text-shadow:none;box-shadow:0 1px 3px rgba(0,0,0,.25)}
 .acct-btn:focus-visible{outline:3px solid #f5c400;outline-offset:2px}
 .acct-pop{position:absolute;top:100%;right:max(16px,env(safe-area-inset-right,0px));margin-top:8px;width:min(22rem,calc(100vw - 32px));max-height:75vh;overflow:auto;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:14px;box-shadow:0 8px 24px rgba(0,0,0,.3);z-index:60;text-shadow:none;text-align:left}
 .acct-pop[hidden]{display:none}
@@ -230,7 +230,7 @@ input[type=checkbox]{accent-color:var(--bib)}
 :root[data-theme="dark"] #clock{color:#fff}
 </style>
 
-<header class="hdr"><div class="wrap"><div><h1>Pitch Plan</h1><p>Routines, training, food and tips, built around your week.</p></div><div class="hdr-r"><button type="button" class="acct-btn" id="acct-btn" aria-expanded="false" aria-controls="acct-pop" data-a="acct-toggle">Log in / Create account</button><div class="small" style="color:inherit;opacity:.8" id="clock"></div><div id="acct-pop" class="acct-pop" hidden></div></div></div></header>
+<header class="hdr"><div class="wrap"><div><h1>Pitch Plan</h1><p>Routines, training, food and tips, built around your week.</p></div><div class="hdr-r"><button type="button" class="acct-btn" id="acct-btn" aria-expanded="false" aria-controls="acct-pop" data-a="acct-toggle">Log In</button><div class="small" style="color:inherit;opacity:.8" id="clock"></div><div id="acct-pop" class="acct-pop" hidden></div></div></div></header>
 <nav aria-label="Sections"><div class="wrap" id="tabs"></div></nav>
 <div class="wrap"><main id="app" aria-live="polite"></main>
 <footer>Pitch Plan is a guide, not medical advice. If something hurts for more than a day, you feel dizzy or sick, or you take a knock to the head, stop and tell a parent, carer or coach. Check any food plan with a parent or carer, and tell them about allergies. Weather is picked by hand here, so choose what it is like outside.</footer></div>
@@ -265,7 +265,7 @@ const DEF={profile:{name:'',age:'a2',pos:'mid',wake:'07:00',leave:'08:15',bed:'2
 let S=JSON.parse(JSON.stringify(DEF));
 function merge(o){S=Object.assign({},JSON.parse(JSON.stringify(DEF)),o);S.teamRow=S.teamRow||{};S.profile=Object.assign({},DEF.profile,o.profile||{});S.week=Object.assign({},DEF.week,o.week||{});S.rec=Object.assign({},DEF.rec,o.rec||{});S.mday=Object.assign({},DEF.mday,o.mday||{});S.badges=S.badges||{};S.daily=S.daily||{};S.gifts=S.gifts||[];S.giftRoll=S.giftRoll||{};S.shop=Object.assign({},DEF.shop,o.shop||{});S.shop.ticks=S.shop.ticks||{};S.shop.extra=S.shop.extra||[];S.team=Object.assign({},DEF.team,o.team||{});S.team.week=S.team.week||{};S.team.dates=S.team.dates||{}}
 function load(){try{const v=localStorage.getItem('pitchplan_v1');if(v)merge(JSON.parse(v))}catch(e){}}
-function save(){S._t=Date.now();try{localStorage.setItem('pitchplan_v1',JSON.stringify(S))}catch(e){}if(window.__footy&&window.__footy.onSave)window.__footy.onSave()}
+function save(){S._t=Date.now();try{localStorage.setItem('pitchplan_v1',JSON.stringify(S))}catch(e){}if(window.__footy&&window.__footy.onSave)window.__footy.onSave();try{renderAcct()}catch(e){}}
 load();
 const today=dkey(new Date());
 let deferredPrompt=null;
@@ -971,7 +971,7 @@ function acctHTML(){
 let acctLast='';
 function renderAcct(){
   const c=window.__footyCloud,btn=$('#acct-btn'),pop=$('#acct-pop');if(!btn||!pop)return;
-  btn.textContent=c.state==='in'&&c.user?'Account':'Log in / Create account';
+  btn.textContent=c.state==='in'&&c.user?((S.profile&&S.profile.name||'').trim()||'Account'):'Log In';
   btn.setAttribute('aria-expanded',ui.acct?'true':'false');
   pop.hidden=!ui.acct;
   if(!ui.acct)return;
