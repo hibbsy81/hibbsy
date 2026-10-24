@@ -191,7 +191,7 @@ kbd{font-family:var(--f-mono);font-size:.78rem;border:1px solid var(--line);bord
   <header>
     <span class="eyebrow">Hydrogen to calcium</span>
     <h1>First Twenty Elements</h1>
-    <p class="lede">Learn the names, symbols and electron configurations of elements 1 to 20. Build each atom electron by electron, then test yourself.</p>
+    <p class="lede">Learn the names, symbols and electron arrangements of elements 1 to 20. Build each atom electron by electron, then test yourself.</p>
     <div class="tabs" role="tablist" id="tabs"></div>
   </header>
   <main id="view"></main>
@@ -210,26 +210,26 @@ var CATS={
   nonmetal:{n:'Nonmetal',h:145},halogen:{n:'Halogen',h:310},noble:{n:'Noble gas',h:250},post:{n:'Post-transition metal',h:250,cm:.25}
 };
 var RAW=[
-[1,'H','Hydrogen','1.008',1,1,'nonmetal','The lightest element, and the most abundant in the universe.'],
-[2,'He','Helium','4.0026',18,1,'noble','Named after the Sun (Greek helios): it was first detected in sunlight.'],
-[3,'Li','Lithium','6.94',1,2,'alkali','The lightest metal. It is soft enough to cut with a knife and powers rechargeable batteries.'],
-[4,'Be','Beryllium','9.0122',2,2,'earth','Transparent to X-rays, so it is used for X-ray tube windows.'],
-[5,'B','Boron','10.81',13,2,'metalloid','Added to glass to make it heat resistant, as in borosilicate lab glassware.'],
-[6,'C','Carbon','12.011',14,2,'nonmetal','The basis of organic chemistry. Diamond and graphite are both pure carbon.'],
-[7,'N','Nitrogen','14.007',15,2,'nonmetal','Makes up about 78% of the air we breathe.'],
-[8,'O','Oxygen','15.999',16,2,'nonmetal','About 21% of air, and the most abundant element in Earth’s crust by mass.'],
-[9,'F','Fluorine','18.998',17,2,'halogen','The most electronegative element, and the most reactive nonmetal.'],
-[10,'Ne','Neon','20.180',18,2,'noble','Glows red-orange in a discharge tube, which is how neon signs work.'],
-[11,'Na','Sodium','22.990',1,3,'alkali','Reacts vigorously with water. Table salt is sodium chloride.'],
-[12,'Mg','Magnesium','24.305',2,3,'earth','Burns with a brilliant white flame, and sits at the centre of chlorophyll.'],
-[13,'Al','Aluminium','26.982',13,3,'post','The most abundant metal in Earth’s crust.'],
-[14,'Si','Silicon','28.085',14,3,'metalloid','The second most abundant element in Earth’s crust, and the base of computer chips.'],
-[15,'P','Phosphorus','30.974',15,3,'nonmetal','Essential to DNA and to ATP, the cell’s energy currency.'],
-[16,'S','Sulfur','32.06',16,3,'nonmetal','A yellow solid known since antiquity as brimstone.'],
-[17,'Cl','Chlorine','35.45',17,3,'halogen','Used to disinfect drinking water and swimming pools.'],
-[18,'Ar','Argon','39.948',18,3,'noble','About 0.93% of air. It is so unreactive it is used to protect welds.'],
-[19,'K','Potassium','39.098',1,4,'alkali','Reacts violently with water and burns with a lilac flame. Also an essential nutrient.'],
-[20,'Ca','Calcium','40.078',2,4,'earth','The main mineral in bones and teeth, and in chalk and limestone.']
+[1,'H','Hydrogen','1',1,1,'nonmetal','The lightest element, and the most abundant in the universe.'],
+[2,'He','Helium','4',18,1,'noble','Named after the Sun (Greek helios): it was first detected in sunlight.'],
+[3,'Li','Lithium','7',1,2,'alkali','The lightest metal. It is soft enough to cut with a knife and powers rechargeable batteries.'],
+[4,'Be','Beryllium','9',2,2,'earth','Transparent to X-rays, so it is used for X-ray tube windows.'],
+[5,'B','Boron','11',13,2,'metalloid','Added to glass to make it heat resistant, as in borosilicate lab glassware.'],
+[6,'C','Carbon','12',14,2,'nonmetal','The basis of organic chemistry. Diamond and graphite are both pure carbon.'],
+[7,'N','Nitrogen','14',15,2,'nonmetal','Makes up about 78% of the air we breathe.'],
+[8,'O','Oxygen','16',16,2,'nonmetal','About 21% of air, and the most abundant element in Earth’s crust by mass.'],
+[9,'F','Fluorine','19',17,2,'halogen','The most electronegative element, and the most reactive nonmetal.'],
+[10,'Ne','Neon','20',18,2,'noble','Glows red-orange in a discharge tube, which is how neon signs work.'],
+[11,'Na','Sodium','23',1,3,'alkali','Reacts vigorously with water. Table salt is sodium chloride.'],
+[12,'Mg','Magnesium','24',2,3,'earth','Burns with a brilliant white flame, and sits at the centre of chlorophyll.'],
+[13,'Al','Aluminium','27',13,3,'post','The most abundant metal in Earth’s crust.'],
+[14,'Si','Silicon','28',14,3,'metalloid','The second most abundant element in Earth’s crust, and the base of computer chips.'],
+[15,'P','Phosphorus','31',15,3,'nonmetal','Essential to DNA and to ATP, the cell’s energy currency.'],
+[16,'S','Sulfur','32',16,3,'nonmetal','A yellow solid known since antiquity as brimstone.'],
+[17,'Cl','Chlorine','35.5',17,3,'halogen','Used to disinfect drinking water and swimming pools.'],
+[18,'Ar','Argon','40',18,3,'noble','About 0.93% of air. It is so unreactive it is used to protect welds.'],
+[19,'K','Potassium','39',1,4,'alkali','Reacts violently with water and burns with a lilac flame. Also an essential nutrient.'],
+[20,'Ca','Calcium','40',2,4,'earth','The main mineral in bones and teeth, and in chalk and limestone.']
 ];
 function fill(step){var left=step;return SUB.map(function(s){var c=Math.min(s.cap,left);left-=c;return c})}
 function parts(counts){var out=[];SUB.forEach(function(s,i){if(counts[i]>0)out.push({lab:s.n+s.l,c:counts[i],n:s.n,i:i})});return out}
@@ -239,7 +239,7 @@ var E=RAW.map(function(r){
   SUB.forEach(function(s,i){sh[s.n-1]+=c[i]});
   var last=pp[pp.length-1],b=SUB[last.i].cap/2,unp=last.c<=b?last.c:SUB[last.i].cap-last.c;
   return {z:z,sym:r[1],name:r[2],mass:r[3],group:r[4],period:r[5],cat:r[6],fact:r[7],counts:c,parts:pp,maxN:mn,
-    shells:sh.slice(0,mn),val:sh[mn-1],unp:unp,last:last};
+    shells:sh.slice(0,mn),ukg:(r[4]<=2?r[4]:r[4]===18?0:r[4]-10),val:sh[mn-1],unp:unp,last:last};
 });
 function coreOf(z){return z<=2?null:z<=10?{sym:'He',k:1}:z<=18?{sym:'Ne',k:3}:{sym:'Ar',k:5}}
 
@@ -259,7 +259,7 @@ function wrongHTML(list){return list.map(function(p){return '<span class="sub">'
 function catStyle(c){var d=CATS[c];return '--h:'+d.h+';--cm:'+(d.cm||1)}
 
 /* ---------- state ---------- */
-var S={tab:'explore',sel:8,step:8,filter:null,range:'all'};
+var S={tab:'explore',sel:8,step:8,filter:null,range:'all',level:'y9'};
 function poolZs(){return S.range==='1-10'?E.slice(0,10):S.range==='11-20'?E.slice(10):E.slice()}
 
 /* ---------- tabs ---------- */
@@ -281,18 +281,18 @@ function renderExplore(){
   function col(g){return g===1?2:g===2?3:g-8}
   var html='<div class="explore"><section><div class="ptable" aria-label="First twenty elements">';
   html+='<div class="ph" style="grid-row:1;grid-column:1">P</div>';
-  cols.forEach(function(g){html+='<div class="gh" style="grid-row:1;grid-column:'+col(g)+'">'+g+'</div>'});
+  cols.forEach(function(g){html+='<div class="gh" style="grid-row:1;grid-column:'+col(g)+'">'+(g<=2?g:g===18?0:g-10)+'</div>'});
   [1,2,3,4].forEach(function(p){html+='<div class="ph" style="grid-row:'+(p+1)+';grid-column:1">'+p+'</div>'});
   html+='<div class="gap"></div>';
   E.forEach(function(e){
     html+='<button class="tile'+(S.filter&&S.filter!==e.cat?' dim':'')+'" data-z="'+e.z+'" aria-pressed="'+(S.sel===e.z)+'" aria-label="'+e.name+', atomic number '+e.z+'" style="grid-row:'+(e.period+1)+';grid-column:'+col(e.group)+';'+catStyle(e.cat)+'">'
       +'<span class="z">'+e.z+'</span><span class="sy">'+e.sym+'</span><span class="nm">'+e.name+'</span></button>';
   });
-  html+='<div class="pnote">Next: 3d fills from scandium (21)</div>';
+  html+='<div class="pnote">Next: transition metals from scandium (21)</div>';
   html+='</div>';
   html+='<div class="legend" role="group" aria-label="Filter by type">'+Object.keys(CATS).map(function(k){
     return '<button class="chip" data-cat="'+k+'" aria-pressed="'+(S.filter===k)+'" style="'+catStyle(k)+'">'+CATS[k].n+'</button>'}).join('')+'</div>';
-  html+='<p class="caption">Column numbers are groups; row numbers are periods. Groups 3 to 12 (the d-block) sit between calcium and aluminium and are left out. Tap a type to highlight it.</p></section>';
+  html+='<p class="caption">Column numbers are groups (the noble gases are group 0). Row numbers are periods. The transition metals sit between calcium and aluminium and are left out. Tap a type to highlight it.</p></section>';
   html+='<section class="panel" id="detail" aria-live="polite"></section></div>';
   $('#view').innerHTML=html;
   renderDetail();
@@ -300,10 +300,10 @@ function renderExplore(){
 function renderDetail(){
   var e=E[S.sel-1],core=coreOf(e.z);
   var html='<div class="ehead"><div class="bigtile" style="'+catStyle(e.cat)+'"><span class="z">'+e.z+'</span><span class="sy">'+e.sym+'</span><span class="ms">'+e.mass+'</span></div>'
-    +'<div><h2>'+e.name+'</h2><p class="meta">'+CATS[e.cat].n+' · Period '+e.period+' · Group '+e.group+'</p></div></div>';
-  html+='<div class="cfgbox"><span class="eyebrow">Electron configuration</span><div class="cfg full">'+cfgHTML(e)+'</div>'
+    +'<div><h2>'+e.name+'</h2><p class="meta">'+CATS[e.cat].n+' · Period '+e.period+' · Group '+e.ukg+'</p></div></div>';
+  html+='<div class="cfgbox"><span class="eyebrow">Electron configuration (subshells)</span><div class="cfg full">'+cfgHTML(e)+'</div>'
     +(core?'<div class="cfg short">Short form: '+cfgHTML(e,true)+'</div>':'')+'</div>';
-  html+='<div class="stats"><span>Electrons <b>'+e.z+'</b></span><span>Per shell <b>'+e.shells.join(', ')+'</b></span><span>Valence electrons <b>'+e.val+'</b></span><span>Unpaired <b>'+e.unp+'</b></span></div>';
+  html+='<div class="stats"><span>Electrons <b>'+e.z+'</b></span><span>Electronic structure <b>'+e.shells.join(', ')+'</b></span><span>Outer shell electrons <b>'+e.val+'</b></span><span>Relative atomic mass <b>'+e.mass+'</b></span></div>';
   html+='<p class="fact">'+e.fact+'</p>';
   html+='<div class="stepper"><h3>Build it one electron at a time</h3>'
     +'<div class="stepbar"><button class="btn sq" id="s0" aria-label="Remove all electrons">⏮</button><button class="btn sq" id="sm" aria-label="Remove one electron">◀</button>'
@@ -312,7 +312,7 @@ function renderDetail(){
     +'<span class="count" id="sc"></span></div>'
     +'<p class="hint" id="hint"></p>'
     +'<div class="build"><div id="bohr"></div><div><div class="orbs" id="orb"></div>'
-    +'<div class="key"><span><i style="background:var(--core)"></i>Inner electron</span><span><i style="background:var(--val)"></i>Valence electron</span></div>'
+    +'<div class="key"><span><i style="background:var(--core)"></i>Inner electron</span><span><i style="background:var(--val)"></i>Outer shell electron</span></div>'
     +'<p class="live" id="live"></p></div></div></div>';
   $('#detail').innerHTML=html;
   updateStep();
@@ -381,7 +381,7 @@ function select(z){S.sel=z;S.step=z;
 /* ---------- Rules ---------- */
 function renderRules(){
   var ranges=[['1s','H, He',1],['2s','Li, Be',3],['2p','B to Ne',5],['3s','Na, Mg',11],['3p','Al to Ar',13],['4s','K, Ca',19]];
-  var h='<div class="wrap" style="gap:18px"><section class="card"><h2>The fill order</h2>'
+  var h='<div class="wrap" style="gap:18px"><section class="card"><h2>Electron shells</h2><p>Electrons move around the nucleus in shells. The first shell holds up to 2 electrons and the second holds up to 8. For these elements the third shell fills to 8 before a fourth shell starts. Fill the lowest shell first and write the numbers in order. Sodium has 11 electrons, so its electronic structure is 2, 8, 1.</p></section><section class="card"><h2>Extension: the fill order inside shells</h2>'
     +'<p>Electrons go into the lowest-energy subshell that still has room. For the first twenty elements the order is simple. Tap a step to see where it starts.</p>'
     +'<div class="order">'+ranges.map(function(r,i){var cap=SUB[i].cap;return '<button class="step" data-z="'+r[2]+'"><span class="l">'+r[0]+'<sup>'+cap+'</sup></span><span class="r">holds '+cap+' · '+r[1]+'</span></button>'}).join('')+'</div>'
     +'<p>Note that 4s fills before 3d, which is why potassium and calcium end in 4s.</p></section>';
@@ -389,32 +389,41 @@ function renderRules(){
     +'<div class="card"><h3>Aufbau principle</h3><p>Build up from the lowest energy: 1s, 2s, 2p, 3s, 3p, 4s. Each subshell is filled before the next one starts.</p></div>'
     +'<div class="card"><h3>Pauli exclusion</h3><p>An orbital holds at most two electrons, and they must spin in opposite directions. That is why s holds 2 and p (three orbitals) holds 6.</p></div>'
     +'<div class="card"><h3>Hund’s rule</h3><p>Orbitals of equal energy, like the three 2p boxes, each get one electron before any pair up. Nitrogen has three unpaired 2p electrons; oxygen has two.</p></div></div>';
-  h+='<section class="card"><h2>Reading a configuration</h2><div class="read">'
+  h+='<section class="card"><h2>Extension: reading a configuration</h2><div class="read">'
     +'<div class="part"><span class="glyph">2</span>shell number</div><div class="part"><span class="glyph">p</span>subshell type</div><div class="part"><span class="glyph">4</span>electrons in it</div>'
     +'<div class="part"><span class="glyph" style="color:var(--val)">2p<sup style="font-size:.55em;vertical-align:.6em;line-height:0">4</sup></span>oxygen’s last subshell</div></div>'
     +'<p>Add up the small superscripts to get the atomic number. Oxygen: 2 + 2 + 4 = 8.</p></section>';
   h+='<div class="rules" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr))">'
-    +'<div class="card"><h3>Period = outer shell</h3><p>Sodium is in period 3 and its outermost electron is in shell 3. Potassium is in period 4 and ends in 4s.</p></div>'
-    +'<div class="card"><h3>Group = valence electrons</h3><p>Groups 1 and 2 have 1 and 2 valence electrons. For groups 13 to 18, subtract 10: chlorine, group 17, has 7. Helium is the exception, with 2.</p></div>'
+    +'<div class="card"><h3>Period = number of shells</h3><p>Sodium has 3 shells (2, 8, 1), so it is in period 3. Potassium has 4 shells, so it is in period 4.</p></div>'
+    +'<div class="card"><h3>Group = outer electrons</h3><p>The group number is the number of electrons in the outer shell. Sodium is in group 1 and has 1. Chlorine is in group 7 and has 7. Noble gases (group 0) have a full outer shell, so they are unreactive.</p></div>'
     +'<div class="card"><h3>Noble gas shorthand</h3><p>Replace the inner part with the previous noble gas in brackets. Sodium is [Ne] 3s¹ because neon is 1s² 2s² 2p⁶.</p></div></div></div>';
   $('#view').innerHTML=h;
 }
 
 /* ---------- toolbar ---------- */
+function levelSeg(){
+  return '<div class="seg" role="group" aria-label="Level">'+[['y9','Year 9'],['ext','Extension']].map(function(r){
+    return '<button data-level="'+r[0]+'" aria-pressed="'+(S.level===r[0])+'">'+r[1]+'</button>'}).join('')+'</div>';
+}
 function rangeSeg(){
   return '<div class="seg" role="group" aria-label="Elements to practise">'+[['all','1–20'],['1-10','1–10'],['11-20','11–20']].map(function(r){
     return '<button data-range="'+r[0]+'" aria-pressed="'+(S.range===r[0])+'">'+r[1]+'</button>'}).join('')+'</div>';
 }
 
 /* ---------- Flashcards ---------- */
-var C={mode:'name-cfg',queue:[],total:0,known:0,misses:0,flipped:false};
-var MODES=[['name-cfg','Name → configuration'],['cfg-name','Configuration → name'],['sym-name','Symbol → name'],['z-sym','Atomic number → symbol']];
+var C={mode:'name-shells',queue:[],total:0,known:0,misses:0,flipped:false};
+var MODES=[['name-shells','Name → electronic structure'],['shells-name','Electronic structure → name'],['name-cfg','Name → subshell configuration (extension)'],['cfg-name','Subshell configuration → name (extension)'],['sym-name','Symbol → name'],['z-sym','Atomic number → symbol']];
 function deckStart(){C.queue=shuffle(poolZs().map(function(e){return e.z}));C.total=C.queue.length;C.known=0;C.misses=0;C.flipped=false}
 function faces(e){
   var shortLine=coreOf(e.z)?'Short form: <span class="cfg">'+cfgHTML(e,true)+'</span>':'';
+  var sh=e.shells.join(', ');
   switch(C.mode){
+    case 'name-shells':return {f:'<span class="q">Electronic structure of</span><div class="big">'+e.name+'</div><span class="small">'+e.z+' electrons</span>',
+      b:'<div class="big">'+sh+'</div><span class="small">Group '+e.ukg+' · Period '+e.period+'</span>'};
+    case 'shells-name':return {f:'<span class="q">Which element?</span><div class="big">'+sh+'</div><span class="small">'+e.z+' electrons</span>',
+      b:'<div class="big">'+e.name+'</div><span class="small">'+e.sym+' · atomic number '+e.z+'</span>'};
     case 'name-cfg':return {f:'<span class="q">Write the configuration</span><div class="big">'+e.name+'</div><span class="small">'+e.z+' electrons</span>',
-      b:'<div class="cfg cfgbig">'+cfgHTML(e)+'</div><span class="small">'+shortLine+'</span><span class="small">'+e.val+' valence electron'+(e.val>1?'s':'')+'</span>'};
+      b:'<div class="cfg cfgbig">'+cfgHTML(e)+'</div><span class="small">'+shortLine+'</span><span class="small">'+e.val+' outer shell electron'+(e.val>1?'s':'')+'</span>'};
     case 'cfg-name':return {f:'<span class="q">Which element?</span><div class="cfg cfgbig">'+cfgHTML(e)+'</div>',
       b:'<div class="big">'+e.name+'</div><span class="small">'+e.sym+' · atomic number '+e.z+'</span>'};
     case 'sym-name':return {f:'<span class="q">Name this element</span><div class="big">'+e.sym+'</div>',
@@ -478,15 +487,15 @@ function mkEl(z){
 }
 function mkVal(z){
   var e=E[z-1],nums=[1,2,3,4,5,6,7,8].filter(function(n){return n!==e.val}),o=shuffle([e.val].concat(pick(nums,3)));
-  return {prompt:'How many valence electrons does '+e.name+' have?',opts:o.map(function(n){return {key:'n'+n,html:String(n)}}),correct:'n'+e.val,
-    why:e.name+' has '+e.shells.join(', ')+' electrons per shell. The outer shell holds '+e.val+'.'};
+  return {prompt:'How many electrons are in the outer shell of '+e.name+'?',opts:o.map(function(n){return {key:'n'+n,html:String(n)}}),correct:'n'+e.val,
+    why:'The electronic structure of '+e.name+' is '+e.shells.join(', ')+'. The last number is the outer shell: '+e.val+'.'};
 }
 function mkShell(z){
   var e=E[z-1],txt=function(x){return x.shells.join(', ')},seen={},c=[];seen[txt(e)]=1;
   neighborsOf(z,4).forEach(function(n){if(!seen[txt(n)]){seen[txt(n)]=1;c.push(n)}});
   var o=shuffle([e].concat(pick(c,3)));
-  return {prompt:'Which shows the electrons in each shell of a '+e.name+' atom?',opts:o.map(function(n){return {key:'t'+txt(n),html:txt(n)}}),correct:'t'+txt(e),
-    why:'Shells fill 2, 8, 8 in order. With '+z+' electrons that gives '+txt(e)+'.'};
+  return {prompt:'What is the electronic structure of a '+e.name+' atom?',opts:o.map(function(n){return {key:'t'+txt(n),html:txt(n)}}),correct:'t'+txt(e),
+    why:'The first shell holds 2, the second holds 8, then the third fills. '+e.name+' has '+z+' electrons, which gives '+txt(e)+'.'};
 }
 function mkUnp(z){
   var e=E[z-1],L=e.last,b=SUB[L.i].cap/2;
@@ -500,24 +509,46 @@ function mkSym(z){
   return {prompt:'What is the chemical symbol for '+e.name+'?',opts:o.map(function(n){return {key:'z'+n.z,html:n.sym}}),correct:'z'+z,
     why:e.name+' is '+e.sym+', element number '+z+'.'};
 }
-var THEORY=[
+var THEORY_EXT=[
  {prompt:'How many electrons can a p subshell hold?',opts:['2','6','8','10'],correct:'6',why:'A p subshell has three orbitals, and each orbital holds two electrons.'},
  {prompt:'Which rule says each orbital in a subshell gets one electron before any pair up?',opts:['Aufbau principle','Pauli exclusion principle','Hund’s rule','Octet rule'],correct:'Hund’s rule',why:'Hund’s rule keeps electrons unpaired for as long as possible, which is why nitrogen has three unpaired 2p electrons.'},
  {prompt:'After 3p is full, which subshell fills next?',opts:['3d','4s','4p','4d'],correct:'4s',why:'The 4s subshell has lower energy than 3d, so potassium and calcium fill 4s first.'},
  {prompt:'What is the maximum number of electrons in the second shell?',opts:['2','6','8','18'],correct:'8',why:'The second shell contains 2s (2 electrons) and 2p (6 electrons), giving 8.'}
 ];
-function mkTheory(){var t=THEORY[Math.floor(Math.random()*THEORY.length)];
+var THEORY_Y9=[
+ {prompt:'How many electrons can the first shell hold?',opts:['2','4','8','18'],correct:'2',why:'The first shell is full with 2 electrons. Helium has a full first shell.'},
+ {prompt:'How many electrons can the second shell hold?',opts:['2','6','8','10'],correct:'8',why:'The second shell holds up to 8 electrons. Neon has a full second shell.'},
+ {prompt:'Why are the noble gases, like neon and argon, unreactive?',opts:['They have a full outer shell','They have one electron in the outer shell','They have no electrons','They are very heavy'],correct:'They have a full outer shell',why:'A full outer shell is very stable, so noble gas atoms do not need to gain, lose or share electrons.'},
+ {prompt:'Atoms of elements in the same group have the same number of what?',opts:['Shells','Electrons in the outer shell','Neutrons','Protons'],correct:'Electrons in the outer shell',why:'This is why elements in a group react in similar ways. Lithium, sodium and potassium all have 1 outer electron.'},
+ {prompt:'Which particles move around the nucleus in shells?',opts:['Protons','Neutrons','Electrons','Ions'],correct:'Electrons',why:'Electrons are in shells around the nucleus. Protons and neutrons are inside it.'}
+];
+function mkElSh(z){
+  var e=E[z-1],o=shuffle([e].concat(pick(neighborsOf(z,4),3)));
+  return {prompt:'Which element has the electronic structure '+e.shells.join(', ')+'?',opts:o.map(function(n){return {key:'z'+n.z,html:n.name}}),correct:'z'+z,
+    why:'Add the numbers: '+e.shells.join(' + ')+' = '+z+' electrons, so the atomic number is '+z+'. That is '+e.name+'.'};
+}
+function mkPeriod(z){
+  var e=E[z-1];
+  return {prompt:'Which period is '+e.name+' in?',opts:[1,2,3,4].map(function(n){return {key:'n'+n,html:'Period '+n}}),correct:'n'+e.period,
+    why:e.name+' has '+e.shells.length+' shell'+(e.shells.length>1?'s':'')+' ('+e.shells.join(', ')+'), so it is in period '+e.period+'.'};
+}
+function mkGroup(z){
+  var e=E[z-1],all=[1,2,3,4,5,6,7,0].filter(function(n){return n!==e.ukg}),o=shuffle([e.ukg].concat(pick(all,3)));
+  return {prompt:'Which group is '+e.name+' in?',opts:o.map(function(n){return {key:'n'+n,html:'Group '+n}}),correct:'n'+e.ukg,
+    why:e.ukg===0?e.name+' has a full outer shell, so it is a noble gas in group 0.':e.name+' has '+e.val+' electron'+(e.val>1?'s':'')+' in its outer shell, so it is in group '+e.ukg+'.'};
+}
+function mkTheory(){var TH=S.level==='ext'?THEORY_EXT:THEORY_Y9,t=TH[Math.floor(Math.random()*TH.length)];
   return {prompt:t.prompt,opts:shuffle(t.opts.map(function(o){return {key:o,html:o}})),correct:t.correct,why:t.why}}
 function quizStart(){
   var pool=shuffle(poolZs().map(function(e){return e.z})),pi=0;
   function nz(){var z=pool[pi%pool.length];pi++;return z}
-  var types=shuffle(['cfg','cfg','cfg','el','el','val','shell','unp','sym','theory']);
-  Q.qs=types.map(function(t){switch(t){case 'cfg':return mkCfg(nz());case 'el':return mkEl(nz());case 'val':return mkVal(nz());
+  var types=shuffle(S.level==='ext'?['cfg','cfg','cfg','el','el','outer','shell','unp','sym','theory']:['shell','shell','elsh','elsh','outer','outer','period','group','sym','theory']);
+  Q.qs=types.map(function(t){switch(t){case 'elsh':return mkElSh(nz());case 'period':return mkPeriod(nz());case 'group':return mkGroup(nz());case 'outer':return mkVal(nz());case 'cfg':return mkCfg(nz());case 'el':return mkEl(nz());case 'val':return mkVal(nz());
     case 'shell':return mkShell(nz());case 'unp':return mkUnp(nz());case 'sym':return mkSym(nz());default:return mkTheory()}});
   Q.i=0;Q.picked=null;Q.score=0;Q.missed=[];Q.done=false;
 }
 function renderQuizTab(){
-  $('#view').innerHTML='<div class="quiz"><div class="toolbar">'+rangeSeg()+'</div><div id="qbody" class="quiz" style="margin:0"></div></div>';
+  $('#view').innerHTML='<div class="quiz"><div class="toolbar">'+levelSeg()+rangeSeg()+'</div><div id="qbody" class="quiz" style="margin:0"></div></div>';
   if(!Q.qs.length)quizStart();
   renderQuiz();
 }
@@ -565,6 +596,7 @@ document.addEventListener('click',function(ev){
   if(t.id==='sm'){S.step=Math.max(0,S.step-1);return updateStep()}
   if(t.id==='sp'){S.step=Math.min(e.z,S.step+1);return updateStep()}
   if(t.id==='sf'){S.step=e.z;return updateStep()}
+  if(t.dataset.level){S.level=t.dataset.level;quizStart();return renderQuizTab()}
   if(t.dataset.range){S.range=t.dataset.range;if(S.tab==='cards'){deckStart();renderCardsTab()}else{quizStart();renderQuizTab()}return}
   if(t.id==='flip'||t.id==='flipbtn')return cardFlip();
   if(t.id==='miss')return cardRate(false);
