@@ -1,5 +1,5 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
-<title>First Twenty Elements</title>
+<title>Elements</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -64,7 +64,7 @@ header{display:flex;flex-direction:column;gap:10px}
 .ph{align-self:center}
 .gap{grid-column:4;grid-row:2/6;border-left:1.5px dashed var(--line);margin-left:5px}
 .pnote{grid-row:5;grid-column:5/11;font-size:.78rem;color:var(--ink-2);display:flex;align-items:center;padding-left:6px}
-.tile{--cm:1;display:flex;flex-direction:column;align-items:center;justify-content:space-between;aspect-ratio:1/1.1;padding:3px 2px 4px;
+.tile{--cm:1;display:flex;flex-direction:column;align-items:center;justify-content:space-between;aspect-ratio:1/1.2;padding:3px 2px 4px;
   background:oklch(var(--tl) calc(var(--tc)*var(--cm)) var(--h));color:oklch(var(--tfl) calc(var(--tfc)*var(--cm)) var(--h));
   border:1.5px solid oklch(var(--tbl) calc(var(--tbc)*var(--cm)) var(--h));border-radius:6px;cursor:pointer;min-width:0;transition:opacity .15s}
 .tile .z{align-self:flex-start;font-size:.62rem;line-height:1;padding-left:2px;font-variant-numeric:tabular-nums}
@@ -86,7 +86,7 @@ header{display:flex;flex-direction:column;gap:10px}
   border:1.5px solid oklch(var(--tbl) calc(var(--tbc)*var(--cm)) var(--h))}
 .bigtile .z{align-self:flex-start;font-size:.8rem;line-height:1}
 .bigtile .sy{font-family:var(--f-display);font-weight:800;font-size:2.4rem;line-height:1}
-.bigtile .ms{font-size:.66rem;line-height:1;font-variant-numeric:tabular-nums}
+.bigtile .ms{align-self:flex-start;font-size:.8rem;line-height:1;font-variant-numeric:tabular-nums}
 .ehead h2{font-size:1.7rem}
 .meta{color:var(--ink-2);font-size:.88rem}
 .cfgbox{background:var(--surface-2);border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:8px}
@@ -293,20 +293,20 @@ function renderExplore(){
   html+='<div class="gap"></div>';
   E.forEach(function(e){
     html+='<button class="tile'+(S.filter&&S.filter!==e.cat?' dim':'')+'" data-z="'+e.z+'" aria-pressed="'+(S.sel===e.z)+'" aria-label="'+e.name+', atomic number '+e.z+'" style="grid-row:'+(e.period+1)+';grid-column:'+col(e.group)+';'+catStyle(e.cat)+'">'
-      +'<span class="z">'+e.z+'</span><span class="sy">'+e.sym+'</span><span class="nm">'+e.name+'</span></button>';
+      +'<span class="z">'+e.mass+'</span><span class="sy">'+e.sym+'</span><span class="z">'+e.z+'</span></button>';
   });
   html+='<div class="pnote">Next: transition metals from scandium (21)</div>';
   html+='</div>';
   html+='<div class="legend" role="group" aria-label="Filter by type">'+Object.keys(CATS).map(function(k){
     return '<button class="chip" data-cat="'+k+'" aria-pressed="'+(S.filter===k)+'" style="'+catStyle(k)+'">'+CATS[k].n+'</button>'}).join('')+'</div>';
-  html+='<p class="caption">Column numbers are groups (the noble gases are group 0). Row numbers are periods. The transition metals sit between calcium and aluminium and are left out. Tap a type to highlight it.</p></section>';
+  html+='<p class="caption">In each square the top number is the relative atomic mass and the bottom number is the atomic number (the number of electrons). Column numbers are groups (the noble gases are group 0). Row numbers are periods. The transition metals sit between calcium and aluminium and are left out. Tap a type to highlight it.</p></section>';
   html+='<section class="panel" id="detail" aria-live="polite"></section></div>';
   $('#view').innerHTML=html;
   renderDetail();
 }
 function renderDetail(){
   var e=E[S.sel-1];
-  var html='<div class="ehead"><div class="bigtile" style="'+catStyle(e.cat)+'"><span class="z">'+e.z+'</span><span class="sy">'+e.sym+'</span><span class="ms">'+e.mass+'</span></div>'
+  var html='<div class="ehead"><div class="bigtile" style="'+catStyle(e.cat)+'"><span class="z">'+e.mass+'</span><span class="sy">'+e.sym+'</span><span class="ms">'+e.z+'</span></div>'
     +'<div><h2>'+e.name+'</h2><p class="meta">'+CATS[e.cat].n+' · Period '+e.period+' · Group '+e.ukg+'</p></div></div>';
   html+='<div class="cfgbox"><span class="eyebrow">Electronic structure</span><div class="cfg full">'+e.shells.join(', ')+'</div>'
     +'<div class="cfg short">'+e.z+' electrons in '+e.shells.length+' shell'+(e.shells.length>1?'s':'')+'</div></div>';
