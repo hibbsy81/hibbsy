@@ -1,5 +1,5 @@
 {
- "updated": "24 Oct 2026, 10:53",
+ "updated": "24 Oct 2026, 15:56",
  "fixtures": [
   {
    "t": "mc",
@@ -11,19 +11,6 @@
     "TNT Sports 1",
     "TNT Sports Ultimate",
     "HBO Max"
-   ],
-   "note": "",
-   "tbc": false
-  },
-  {
-   "t": "aw",
-   "iso": "2026-10-24T12:45:00+01:00",
-   "comp": "Women's Super League",
-   "h": "Tottenham Hotspur Women",
-   "a": "Arsenal Women",
-   "ch": [
-    "BBC One",
-    "BBC iPlayer"
    ],
    "note": "",
    "tbc": false
