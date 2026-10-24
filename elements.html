@@ -1,0 +1,600 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>First Twenty Elements</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout: tabbed study desk. Explore = short-form periodic table (groups 1-2, 13-18) beside a detail panel that builds the atom one electron at a time. */
+:root{
+  --bg:#EBEFF3; --surface:#FFFFFF; --surface-2:#E1E7ED; --ink:#14202C; --ink-2:#4A5967; --line:#C8D1DA;
+  --accent:#C8431B; --accent-ink:#FFFFFF;
+  --core:#2563A8; --val:#C2410C;
+  --good:#1E7A4C; --bad:#B3261E;
+  --tl:.93; --tc:.055; --tfl:.3; --tfc:.1; --tbl:.8; --tbc:.09;
+  --f-display:'Bricolage Grotesque','Segoe UI',system-ui,sans-serif;
+  --f-body:'IBM Plex Sans','Segoe UI',system-ui,sans-serif;
+  --f-mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0D141B; --surface:#16202A; --surface-2:#1F2B37; --ink:#E8EEF3; --ink-2:#9DAEBD; --line:#2C3B49;
+  --accent:#FF7A4D; --accent-ink:#1A0D07; --core:#7FB1EE; --val:#FF9A6B; --good:#5CD39A; --bad:#FF8A80;
+  --tl:.3; --tc:.06; --tfl:.9; --tfc:.08; --tbl:.45; --tbc:.09; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#0D141B; --surface:#16202A; --surface-2:#1F2B37; --ink:#E8EEF3; --ink-2:#9DAEBD; --line:#2C3B49;
+  --accent:#FF7A4D; --accent-ink:#1A0D07; --core:#7FB1EE; --val:#FF9A6B; --good:#5CD39A; --bad:#FF8A80;
+  --tl:.3; --tc:.06; --tfl:.9; --tfc:.08; --tbl:.45; --tbc:.09; color-scheme:dark;}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.5;
+  padding-block:20px 56px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1040px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button{font:inherit;color:inherit}
+h1{font-family:var(--f-display);font-weight:800;font-size:clamp(2rem,6vw,3.2rem);line-height:1;letter-spacing:-.02em;margin:0;text-wrap:balance}
+h2{font-family:var(--f-display);font-weight:800;font-size:1.35rem;line-height:1.15;margin:0;text-wrap:balance}
+h3{font-family:var(--f-display);font-weight:600;font-size:1.05rem;margin:0}
+p{margin:0}
+.lede{color:var(--ink-2);max-width:56ch}
+.eyebrow{font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2);font-weight:600}
+
+header{display:flex;flex-direction:column;gap:10px}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.tab{border:1px solid var(--line);background:var(--surface);padding:8px 16px;border-radius:8px;cursor:pointer;font-weight:500}
+.tab[aria-selected="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+
+.btn{padding:9px 16px;border-radius:8px;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-weight:500}
+.btn:hover:not(:disabled){border-color:var(--ink-2)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:transparent}
+.btn:disabled{opacity:.4;cursor:default}
+.btn.sq{padding:7px 12px;min-width:40px}
+
+/* configuration typography */
+.cfg{font-family:var(--f-mono);font-weight:500}
+.sub{display:inline-block;margin-right:.5em;white-space:nowrap}
+.sub sup{font-size:.64em;vertical-align:.55em;line-height:0;color:var(--ink-2);margin-left:1px}
+.sub.val{color:var(--val)} .sub.val sup{color:var(--val)}
+.core-br{color:var(--ink-2);margin-right:.5em}
+
+/* ---------- Explore ---------- */
+.explore{display:grid;grid-template-columns:minmax(0,1fr);gap:20px;align-items:start}
+@media (min-width:880px){.explore{grid-template-columns:minmax(0,430px) minmax(0,1fr)}}
+.ptable{display:grid;grid-template-columns:20px repeat(2,minmax(0,1fr)) 12px repeat(6,minmax(0,1fr));gap:4px;align-items:stretch}
+.gh,.ph{font-size:.7rem;color:var(--ink-2);text-align:center;font-variant-numeric:tabular-nums;align-self:center}
+.ph{align-self:center}
+.gap{grid-column:4;grid-row:2/6;border-left:1.5px dashed var(--line);margin-left:5px}
+.pnote{grid-row:5;grid-column:5/11;font-size:.78rem;color:var(--ink-2);display:flex;align-items:center;padding-left:6px}
+.tile{--cm:1;display:flex;flex-direction:column;align-items:center;justify-content:space-between;aspect-ratio:1/1.1;padding:3px 2px 4px;
+  background:oklch(var(--tl) calc(var(--tc)*var(--cm)) var(--h));color:oklch(var(--tfl) calc(var(--tfc)*var(--cm)) var(--h));
+  border:1.5px solid oklch(var(--tbl) calc(var(--tbc)*var(--cm)) var(--h));border-radius:6px;cursor:pointer;min-width:0;transition:opacity .15s}
+.tile .z{align-self:flex-start;font-size:.62rem;line-height:1;padding-left:2px;font-variant-numeric:tabular-nums}
+.tile .sy{font-family:var(--f-display);font-weight:800;font-size:1.3rem;line-height:1}
+.tile .nm{font-size:.56rem;line-height:1;opacity:.85;display:none;max-width:100%;overflow:hidden}
+.tile[aria-pressed="true"]{outline:3px solid var(--ink);outline-offset:1px}
+.tile.dim{opacity:.28}
+.legend{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.chip{--cm:1;font-size:.74rem;padding:3px 9px;border-radius:999px;cursor:pointer;
+  background:oklch(var(--tl) calc(var(--tc)*var(--cm)) var(--h));color:oklch(var(--tfl) calc(var(--tfc)*var(--cm)) var(--h));
+  border:1.5px solid oklch(var(--tbl) calc(var(--tbc)*var(--cm)) var(--h))}
+.chip[aria-pressed="true"]{outline:2px solid var(--ink);outline-offset:1px}
+.caption{font-size:.8rem;color:var(--ink-2);margin-top:10px;max-width:52ch}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:18px;min-width:0}
+.ehead{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.bigtile{--cm:1;width:76px;height:84px;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:6px 4px;flex:none;
+  background:oklch(var(--tl) calc(var(--tc)*var(--cm)) var(--h));color:oklch(var(--tfl) calc(var(--tfc)*var(--cm)) var(--h));
+  border:1.5px solid oklch(var(--tbl) calc(var(--tbc)*var(--cm)) var(--h))}
+.bigtile .z{align-self:flex-start;font-size:.8rem;line-height:1}
+.bigtile .sy{font-family:var(--f-display);font-weight:800;font-size:2.4rem;line-height:1}
+.bigtile .ms{font-size:.66rem;line-height:1;font-variant-numeric:tabular-nums}
+.ehead h2{font-size:1.7rem}
+.meta{color:var(--ink-2);font-size:.88rem}
+.cfgbox{background:var(--surface-2);border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.cfgbox .full{font-size:clamp(1.15rem,3.6vw,1.5rem);line-height:1.45}
+.cfgbox .short{font-size:.95rem;color:var(--ink-2)}
+.stats{display:flex;flex-wrap:wrap;gap:6px 22px;font-size:.88rem}
+.stats b{font-variant-numeric:tabular-nums}
+.fact{font-size:.92rem;color:var(--ink-2)}
+.build{display:grid;grid-template-columns:minmax(0,1fr);gap:16px}
+@media (min-width:560px){.build{grid-template-columns:minmax(0,230px) minmax(0,1fr)}}
+.bohr{width:100%;max-width:230px;height:auto;display:block;margin:0 auto}
+.bohr .ring{fill:none;stroke:var(--line);stroke-width:1.2}
+.bohr .nuc{fill:var(--ink)} .bohr .nt{fill:var(--bg);font:600 11px var(--f-mono);text-anchor:middle;dominant-baseline:central}
+.bohr .e-core{fill:var(--core)} .bohr .e-val{fill:var(--val)} .bohr .halo{fill:none;stroke:var(--accent);stroke-width:2}
+.orbs{display:flex;flex-wrap:wrap;gap:14px 16px}
+.sg{display:flex;flex-direction:column;align-items:center;gap:4px}
+.boxes{display:flex}
+.box{width:34px;height:38px;border:1.5px solid var(--ink-2);margin-left:-1.5px;display:flex;align-items:center;justify-content:center;background:var(--surface)}
+.boxes .box:first-child{margin-left:0}
+.ar{font-style:normal;width:13px;font-size:1.2rem;font-weight:600;line-height:1;text-align:center;border-radius:3px}
+.ar.core{color:var(--core)} .ar.val{color:var(--val)}
+.ar.new{background:color-mix(in srgb,var(--accent) 22%,transparent);outline:1.5px solid var(--accent)}
+.sg .lbl{font-family:var(--f-mono);font-size:.78rem;color:var(--ink-2)}
+.key{display:flex;gap:14px;flex-wrap:wrap;font-size:.76rem;color:var(--ink-2);margin-top:6px}
+.key i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+.stepper{display:flex;flex-direction:column;gap:10px;border-top:1px solid var(--line);padding-top:16px}
+.stepbar{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.stepbar input[type=range]{flex:1;min-width:120px;accent-color:var(--accent)}
+.stepbar .count{font-size:.85rem;color:var(--ink-2);font-variant-numeric:tabular-nums;min-width:8.5em}
+.hint{min-height:3em;font-size:.95rem}
+.live{font-size:.95rem;color:var(--ink-2)}
+
+/* ---------- Rules ---------- */
+.rules{display:grid;grid-template-columns:minmax(0,1fr);gap:14px}
+@media (min-width:760px){.rules{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.card p{color:var(--ink-2);font-size:.94rem}
+.order{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
+.step{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:10px 12px;cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:2px}
+.step:hover{border-color:var(--ink-2)}
+.step .l{font-family:var(--f-mono);font-weight:600;font-size:1.25rem}
+.step .l sup{font-size:.6em;color:var(--ink-2);vertical-align:.5em;line-height:0}
+.step .r{font-size:.8rem;color:var(--ink-2)}
+.read{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-end;font-family:var(--f-mono)}
+.read .part{display:flex;flex-direction:column;align-items:center;gap:4px;font-family:var(--f-body);font-size:.78rem;color:var(--ink-2)}
+.read .glyph{font-family:var(--f-mono);font-size:2rem;font-weight:600;color:var(--ink);line-height:1}
+
+/* ---------- Toolbar ---------- */
+.toolbar{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}
+.seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--surface)}
+.seg button{border:0;background:transparent;padding:7px 12px;cursor:pointer;font-size:.88rem}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+select{font:inherit;padding:7px 10px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+.prog{display:flex;align-items:center;gap:10px;font-size:.85rem;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.bar{height:6px;width:140px;background:var(--surface-2);border-radius:3px;overflow:hidden}
+.bar>i{display:block;height:100%;background:var(--accent);transition:width .25s}
+
+/* ---------- Cards ---------- */
+.deck{display:flex;flex-direction:column;gap:16px;align-items:center}
+.flip{width:100%;max-width:560px;height:270px;perspective:1200px;cursor:pointer;border:0;background:none;padding:0}
+.flip-in{position:relative;width:100%;height:100%;transition:transform .45s;transform-style:preserve-3d}
+.flip.on .flip-in{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;background:var(--surface);border:1px solid var(--line);border-radius:14px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:18px;text-align:center}
+.face.back{transform:rotateY(180deg);background:var(--surface-2)}
+.face .q{font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2);font-weight:600}
+.face .big{font-family:var(--f-display);font-weight:800;font-size:clamp(2.2rem,9vw,3.4rem);line-height:1}
+.face .cfgbig{font-size:clamp(1.2rem,5vw,1.7rem);line-height:1.5}
+.face .small{font-size:.9rem;color:var(--ink-2)}
+.rate{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.rate .btn.miss{border-color:var(--bad);color:var(--bad)}
+.rate .btn.got{border-color:var(--good);color:var(--good)}
+.keys{font-size:.78rem;color:var(--ink-2)}
+kbd{font-family:var(--f-mono);font-size:.78rem;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:0 5px;background:var(--surface)}
+.done{max-width:560px;width:100%;text-align:center;align-items:center}
+
+/* ---------- Quiz ---------- */
+.quiz{max-width:640px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+.qtop{display:flex;justify-content:space-between;font-size:.85rem;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.qprompt{font-family:var(--f-display);font-weight:600;font-size:1.3rem;line-height:1.25;text-wrap:balance}
+.qshow{background:var(--surface-2);border-radius:8px;padding:12px 14px;font-size:1.2rem;line-height:1.5}
+.opts{display:grid;grid-template-columns:minmax(0,1fr);gap:8px}
+.opt{display:flex;gap:12px;align-items:center;text-align:left;padding:12px 14px;border:1.5px solid var(--line);background:var(--surface);border-radius:10px;cursor:pointer;min-width:0}
+.opt:hover:not(:disabled){border-color:var(--ink-2)}
+.opt .k{font-family:var(--f-mono);font-size:.78rem;color:var(--ink-2);border:1px solid var(--line);border-radius:4px;min-width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;flex:none}
+.opt .t{flex:1;min-width:0;font-size:1.02rem}
+.opt .t.cfg{font-size:.98rem;line-height:1.5}
+.opt.ok{border-color:var(--good);background:color-mix(in srgb,var(--good) 14%,var(--surface))}
+.opt.no{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 12%,var(--surface))}
+.opt:disabled{cursor:default;color:var(--ink)}
+.why{padding:12px 14px;border-radius:8px;background:var(--surface-2);font-size:.93rem}
+.why b.ok{color:var(--good)} .why b.no{color:var(--bad)}
+.score{font-family:var(--f-display);font-weight:800;font-size:3.4rem;line-height:1}
+.missed{display:flex;flex-direction:column;gap:8px;text-align:left}
+.missed div{padding:10px 12px;background:var(--surface-2);border-radius:8px;font-size:.9rem}
+
+@media (prefers-reduced-motion:reduce){.flip-in,.bar>i,.tile{transition:none}}
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">Hydrogen to calcium</span>
+    <h1>First Twenty Elements</h1>
+    <p class="lede">Learn the names, symbols and electron configurations of elements 1 to 20. Build each atom electron by electron, then test yourself.</p>
+    <div class="tabs" role="tablist" id="tabs"></div>
+  </header>
+  <main id="view"></main>
+</div>
+
+<script>
+(function(){
+'use strict';
+var $=function(s,r){return (r||document).querySelector(s)};
+var store={get:function(k){try{return localStorage.getItem(k)}catch(e){return null}},set:function(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+
+/* ---------- data ---------- */
+var SUB=[{n:1,l:'s',cap:2},{n:2,l:'s',cap:2},{n:2,l:'p',cap:6},{n:3,l:'s',cap:2},{n:3,l:'p',cap:6},{n:4,l:'s',cap:2}];
+var CATS={
+  alkali:{n:'Alkali metal',h:30},earth:{n:'Alkaline earth metal',h:75},metalloid:{n:'Metalloid',h:185},
+  nonmetal:{n:'Nonmetal',h:145},halogen:{n:'Halogen',h:310},noble:{n:'Noble gas',h:250},post:{n:'Post-transition metal',h:250,cm:.25}
+};
+var RAW=[
+[1,'H','Hydrogen','1.008',1,1,'nonmetal','The lightest element, and the most abundant in the universe.'],
+[2,'He','Helium','4.0026',18,1,'noble','Named after the Sun (Greek helios): it was first detected in sunlight.'],
+[3,'Li','Lithium','6.94',1,2,'alkali','The lightest metal. It is soft enough to cut with a knife and powers rechargeable batteries.'],
+[4,'Be','Beryllium','9.0122',2,2,'earth','Transparent to X-rays, so it is used for X-ray tube windows.'],
+[5,'B','Boron','10.81',13,2,'metalloid','Added to glass to make it heat resistant, as in borosilicate lab glassware.'],
+[6,'C','Carbon','12.011',14,2,'nonmetal','The basis of organic chemistry. Diamond and graphite are both pure carbon.'],
+[7,'N','Nitrogen','14.007',15,2,'nonmetal','Makes up about 78% of the air we breathe.'],
+[8,'O','Oxygen','15.999',16,2,'nonmetal','About 21% of air, and the most abundant element in Earth’s crust by mass.'],
+[9,'F','Fluorine','18.998',17,2,'halogen','The most electronegative element, and the most reactive nonmetal.'],
+[10,'Ne','Neon','20.180',18,2,'noble','Glows red-orange in a discharge tube, which is how neon signs work.'],
+[11,'Na','Sodium','22.990',1,3,'alkali','Reacts vigorously with water. Table salt is sodium chloride.'],
+[12,'Mg','Magnesium','24.305',2,3,'earth','Burns with a brilliant white flame, and sits at the centre of chlorophyll.'],
+[13,'Al','Aluminium','26.982',13,3,'post','The most abundant metal in Earth’s crust.'],
+[14,'Si','Silicon','28.085',14,3,'metalloid','The second most abundant element in Earth’s crust, and the base of computer chips.'],
+[15,'P','Phosphorus','30.974',15,3,'nonmetal','Essential to DNA and to ATP, the cell’s energy currency.'],
+[16,'S','Sulfur','32.06',16,3,'nonmetal','A yellow solid known since antiquity as brimstone.'],
+[17,'Cl','Chlorine','35.45',17,3,'halogen','Used to disinfect drinking water and swimming pools.'],
+[18,'Ar','Argon','39.948',18,3,'noble','About 0.93% of air. It is so unreactive it is used to protect welds.'],
+[19,'K','Potassium','39.098',1,4,'alkali','Reacts violently with water and burns with a lilac flame. Also an essential nutrient.'],
+[20,'Ca','Calcium','40.078',2,4,'earth','The main mineral in bones and teeth, and in chalk and limestone.']
+];
+function fill(step){var left=step;return SUB.map(function(s){var c=Math.min(s.cap,left);left-=c;return c})}
+function parts(counts){var out=[];SUB.forEach(function(s,i){if(counts[i]>0)out.push({lab:s.n+s.l,c:counts[i],n:s.n,i:i})});return out}
+function maxNOf(counts){var m=0;SUB.forEach(function(s,i){if(counts[i]>0)m=Math.max(m,s.n)});return m}
+var E=RAW.map(function(r){
+  var z=r[0],c=fill(z),pp=parts(c),mn=maxNOf(c),sh=[0,0,0,0];
+  SUB.forEach(function(s,i){sh[s.n-1]+=c[i]});
+  var last=pp[pp.length-1],b=SUB[last.i].cap/2,unp=last.c<=b?last.c:SUB[last.i].cap-last.c;
+  return {z:z,sym:r[1],name:r[2],mass:r[3],group:r[4],period:r[5],cat:r[6],fact:r[7],counts:c,parts:pp,maxN:mn,
+    shells:sh.slice(0,mn),val:sh[mn-1],unp:unp,last:last};
+});
+function coreOf(z){return z<=2?null:z<=10?{sym:'He',k:1}:z<=18?{sym:'Ne',k:3}:{sym:'Ar',k:5}}
+
+/* ---------- helpers ---------- */
+function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
+function pick(a,n){return shuffle(a.slice()).slice(0,n)}
+function partHTML(p,mn){return '<span class="sub'+(p.n===mn?' val':'')+'">'+p.lab+'<sup>'+p.c+'</sup></span>'}
+function partsHTML(pp,mn){return pp.map(function(p){return partHTML(p,mn)}).join('')}
+function cfgHTML(e,short){
+  var core=short&&coreOf(e.z);
+  if(core){return '<span class="core-br">['+core.sym+']</span>'+partsHTML(e.parts.slice(core.k),e.maxN)}
+  return partsHTML(e.parts,e.maxN);
+}
+function cfgText(e){var sup=['⁰','¹','²','³','⁴','⁵','⁶'];return e.parts.map(function(p){return p.lab+sup[p.c]}).join(' ')}
+function cfgPlain(e){return e.parts.map(function(p){return p.lab+'^'+p.c}).join(' ')}
+function wrongHTML(list){return list.map(function(p){return '<span class="sub">'+p[0]+'<sup>'+p[1]+'</sup></span>'}).join('')}
+function catStyle(c){var d=CATS[c];return '--h:'+d.h+';--cm:'+(d.cm||1)}
+
+/* ---------- state ---------- */
+var S={tab:'explore',sel:8,step:8,filter:null,range:'all'};
+function poolZs(){return S.range==='1-10'?E.slice(0,10):S.range==='11-20'?E.slice(10):E.slice()}
+
+/* ---------- tabs ---------- */
+var TABS=[['explore','Explore'],['rules','How electrons fill'],['cards','Flashcards'],['quiz','Quiz']];
+function renderTabs(){
+  $('#tabs').innerHTML=TABS.map(function(t){return '<button class="tab" role="tab" data-tab="'+t[0]+'" aria-selected="'+(S.tab===t[0])+'">'+t[1]+'</button>'}).join('');
+}
+function go(tab){S.tab=tab;renderTabs();render();window.scrollTo({top:0})}
+function render(){
+  if(S.tab==='explore')renderExplore();
+  else if(S.tab==='rules')renderRules();
+  else if(S.tab==='cards')renderCardsTab();
+  else renderQuizTab();
+}
+
+/* ---------- Explore ---------- */
+function renderExplore(){
+  var cols=[1,2,13,14,15,16,17,18];
+  function col(g){return g===1?2:g===2?3:g-8}
+  var html='<div class="explore"><section><div class="ptable" aria-label="First twenty elements">';
+  html+='<div class="ph" style="grid-row:1;grid-column:1">P</div>';
+  cols.forEach(function(g){html+='<div class="gh" style="grid-row:1;grid-column:'+col(g)+'">'+g+'</div>'});
+  [1,2,3,4].forEach(function(p){html+='<div class="ph" style="grid-row:'+(p+1)+';grid-column:1">'+p+'</div>'});
+  html+='<div class="gap"></div>';
+  E.forEach(function(e){
+    html+='<button class="tile'+(S.filter&&S.filter!==e.cat?' dim':'')+'" data-z="'+e.z+'" aria-pressed="'+(S.sel===e.z)+'" aria-label="'+e.name+', atomic number '+e.z+'" style="grid-row:'+(e.period+1)+';grid-column:'+col(e.group)+';'+catStyle(e.cat)+'">'
+      +'<span class="z">'+e.z+'</span><span class="sy">'+e.sym+'</span><span class="nm">'+e.name+'</span></button>';
+  });
+  html+='<div class="pnote">Next: 3d fills from scandium (21)</div>';
+  html+='</div>';
+  html+='<div class="legend" role="group" aria-label="Filter by type">'+Object.keys(CATS).map(function(k){
+    return '<button class="chip" data-cat="'+k+'" aria-pressed="'+(S.filter===k)+'" style="'+catStyle(k)+'">'+CATS[k].n+'</button>'}).join('')+'</div>';
+  html+='<p class="caption">Column numbers are groups; row numbers are periods. Groups 3 to 12 (the d-block) sit between calcium and aluminium and are left out. Tap a type to highlight it.</p></section>';
+  html+='<section class="panel" id="detail" aria-live="polite"></section></div>';
+  $('#view').innerHTML=html;
+  renderDetail();
+}
+function renderDetail(){
+  var e=E[S.sel-1],core=coreOf(e.z);
+  var html='<div class="ehead"><div class="bigtile" style="'+catStyle(e.cat)+'"><span class="z">'+e.z+'</span><span class="sy">'+e.sym+'</span><span class="ms">'+e.mass+'</span></div>'
+    +'<div><h2>'+e.name+'</h2><p class="meta">'+CATS[e.cat].n+' · Period '+e.period+' · Group '+e.group+'</p></div></div>';
+  html+='<div class="cfgbox"><span class="eyebrow">Electron configuration</span><div class="cfg full">'+cfgHTML(e)+'</div>'
+    +(core?'<div class="cfg short">Short form: '+cfgHTML(e,true)+'</div>':'')+'</div>';
+  html+='<div class="stats"><span>Electrons <b>'+e.z+'</b></span><span>Per shell <b>'+e.shells.join(', ')+'</b></span><span>Valence electrons <b>'+e.val+'</b></span><span>Unpaired <b>'+e.unp+'</b></span></div>';
+  html+='<p class="fact">'+e.fact+'</p>';
+  html+='<div class="stepper"><h3>Build it one electron at a time</h3>'
+    +'<div class="stepbar"><button class="btn sq" id="s0" aria-label="Remove all electrons">⏮</button><button class="btn sq" id="sm" aria-label="Remove one electron">◀</button>'
+    +'<input type="range" id="sr" min="0" max="'+e.z+'" value="'+S.step+'" aria-label="Electrons added">'
+    +'<button class="btn sq" id="sp" aria-label="Add one electron">▶</button><button class="btn sq" id="sf" aria-label="Add all electrons">⏭</button>'
+    +'<span class="count" id="sc"></span></div>'
+    +'<p class="hint" id="hint"></p>'
+    +'<div class="build"><div id="bohr"></div><div><div class="orbs" id="orb"></div>'
+    +'<div class="key"><span><i style="background:var(--core)"></i>Inner electron</span><span><i style="background:var(--val)"></i>Valence electron</span></div>'
+    +'<p class="live" id="live"></p></div></div></div>';
+  $('#detail').innerHTML=html;
+  updateStep();
+}
+function lastLoc(step){
+  if(step<1)return null;var cum=0;
+  for(var i=0;i<SUB.length;i++){if(step<=cum+SUB[i].cap){var j=step-cum-1,b=SUB[i].cap/2;return {i:i,j:j,box:j<b?j:j-b,up:j<b}}cum+=SUB[i].cap}
+  return null;
+}
+function stepHint(step){
+  if(step===0)return 'Only the nucleus so far. Press ▶ to add the first electron.';
+  var L=lastLoc(step),s=SUB[L.i],lab=s.n+s.l,t;
+  if(s.l==='s'){t=L.j===0?'Electron '+step+' goes into the '+lab+' orbital, spin up.':'Electron '+step+' pairs up in '+lab+' with opposite spin (Pauli exclusion principle: two electrons per orbital, never the same spin).'}
+  else{t=L.j<3?'Hund’s rule: electron '+step+' takes an empty '+lab+' box. Every box gets one electron before any box gets two.':'All three '+lab+' boxes already hold one electron, so electron '+step+' pairs up with opposite spin.'}
+  if(L.j===0&&s.l==='s'&&s.n>1)t+=' The inner shell is full, so a new shell begins.';
+  if(step===19)t+=' Why 4s and not 3d? The 4s orbital sits lower in energy, so it fills first.';
+  return t;
+}
+function bohr(step,maxShell){
+  var c=fill(step),sh=[0,0,0,0];SUB.forEach(function(s,i){sh[s.n-1]+=c[i]});
+  var top=0;sh.forEach(function(v,i){if(v>0)top=i+1});
+  var L=lastLoc(step),lastShell=L?SUB[L.i].n-1:-1;
+  var R=[26,50,74,98],slots=[2,8,8,2],order8=[0,4,2,6,1,5,3,7],order2=[0,1];
+  var svg='<svg class="bohr" viewBox="0 0 220 220" role="img" aria-label="Bohr model with '+step+' electrons">';
+  for(var n=0;n<maxShell;n++)svg+='<circle class="ring" cx="110" cy="110" r="'+R[n]+'"/>';
+  svg+='<circle class="nuc" cx="110" cy="110" r="17"/><text class="nt" x="110" y="110">'+S.sel+'+</text>';
+  for(n=0;n<4;n++){
+    for(var k=0;k<sh[n];k++){
+      var slot=(slots[n]===8?order8:order2)[k],ang=(-90+slot*360/slots[n]+(n%2?22.5:0))*Math.PI/180;
+      var x=110+R[n]*Math.cos(ang),y=110+R[n]*Math.sin(ang);
+      svg+='<circle class="'+(n+1===top?'e-val':'e-core')+'" cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="5.5"/>';
+      if(n===lastShell&&k===sh[n]-1)svg+='<circle class="halo" cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="10"/>';
+    }
+  }
+  return svg+'</svg>';
+}
+function orbHTML(step,e){
+  var c=fill(step),mn=maxNOf(c),L=lastLoc(step),out='';
+  SUB.forEach(function(s,i){
+    if(e.counts[i]===0)return;
+    var b=s.cap/2,cnt=c[i],boxes='';
+    for(var k=0;k<b;k++){
+      var up=k<cnt,dn=cnt>b&&k<cnt-b,cls=(s.n===mn?'val':'core');
+      var nu=L&&L.i===i&&L.box===k&&L.up,nd=L&&L.i===i&&L.box===k&&!L.up;
+      boxes+='<span class="box">'+(up?'<i class="ar '+cls+(nu?' new':'')+'">↑</i>':'<i class="ar"></i>')+(dn?'<i class="ar '+cls+(nd?' new':'')+'">↓</i>':'<i class="ar"></i>')+'</span>';
+    }
+    out+='<div class="sg" role="group" aria-label="'+s.n+s.l+': '+cnt+' electrons"><div class="boxes">'+boxes+'</div><span class="lbl">'+s.n+s.l+'</span></div>';
+  });
+  return out;
+}
+function updateStep(){
+  var e=E[S.sel-1],st=S.step,c=fill(st),pp=parts(c);
+  $('#bohr').innerHTML=bohr(st,e.maxN);
+  $('#orb').innerHTML=orbHTML(st,e);
+  $('#hint').textContent=stepHint(st);
+  $('#sc').textContent=st+' of '+e.z+' electrons';
+  $('#sr').value=st;
+  $('#s0').disabled=$('#sm').disabled=st===0;
+  $('#sp').disabled=$('#sf').disabled=st===e.z;
+  $('#live').innerHTML=st?'So far: <span class="cfg">'+partsHTML(pp,maxNOf(c))+'</span>':'';
+}
+function select(z){S.sel=z;S.step=z;
+  document.querySelectorAll('.tile').forEach(function(t){t.setAttribute('aria-pressed',String(+t.dataset.z===z))});
+  renderDetail();}
+
+/* ---------- Rules ---------- */
+function renderRules(){
+  var ranges=[['1s','H, He',1],['2s','Li, Be',3],['2p','B to Ne',5],['3s','Na, Mg',11],['3p','Al to Ar',13],['4s','K, Ca',19]];
+  var h='<div class="wrap" style="gap:18px"><section class="card"><h2>The fill order</h2>'
+    +'<p>Electrons go into the lowest-energy subshell that still has room. For the first twenty elements the order is simple. Tap a step to see where it starts.</p>'
+    +'<div class="order">'+ranges.map(function(r,i){var cap=SUB[i].cap;return '<button class="step" data-z="'+r[2]+'"><span class="l">'+r[0]+'<sup>'+cap+'</sup></span><span class="r">holds '+cap+' · '+r[1]+'</span></button>'}).join('')+'</div>'
+    +'<p>Note that 4s fills before 3d, which is why potassium and calcium end in 4s.</p></section>';
+  h+='<div class="rules">'
+    +'<div class="card"><h3>Aufbau principle</h3><p>Build up from the lowest energy: 1s, 2s, 2p, 3s, 3p, 4s. Each subshell is filled before the next one starts.</p></div>'
+    +'<div class="card"><h3>Pauli exclusion</h3><p>An orbital holds at most two electrons, and they must spin in opposite directions. That is why s holds 2 and p (three orbitals) holds 6.</p></div>'
+    +'<div class="card"><h3>Hund’s rule</h3><p>Orbitals of equal energy, like the three 2p boxes, each get one electron before any pair up. Nitrogen has three unpaired 2p electrons; oxygen has two.</p></div></div>';
+  h+='<section class="card"><h2>Reading a configuration</h2><div class="read">'
+    +'<div class="part"><span class="glyph">2</span>shell number</div><div class="part"><span class="glyph">p</span>subshell type</div><div class="part"><span class="glyph">4</span>electrons in it</div>'
+    +'<div class="part"><span class="glyph" style="color:var(--val)">2p<sup style="font-size:.55em;vertical-align:.6em;line-height:0">4</sup></span>oxygen’s last subshell</div></div>'
+    +'<p>Add up the small superscripts to get the atomic number. Oxygen: 2 + 2 + 4 = 8.</p></section>';
+  h+='<div class="rules" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr))">'
+    +'<div class="card"><h3>Period = outer shell</h3><p>Sodium is in period 3 and its outermost electron is in shell 3. Potassium is in period 4 and ends in 4s.</p></div>'
+    +'<div class="card"><h3>Group = valence electrons</h3><p>Groups 1 and 2 have 1 and 2 valence electrons. For groups 13 to 18, subtract 10: chlorine, group 17, has 7. Helium is the exception, with 2.</p></div>'
+    +'<div class="card"><h3>Noble gas shorthand</h3><p>Replace the inner part with the previous noble gas in brackets. Sodium is [Ne] 3s¹ because neon is 1s² 2s² 2p⁶.</p></div></div></div>';
+  $('#view').innerHTML=h;
+}
+
+/* ---------- toolbar ---------- */
+function rangeSeg(){
+  return '<div class="seg" role="group" aria-label="Elements to practise">'+[['all','1–20'],['1-10','1–10'],['11-20','11–20']].map(function(r){
+    return '<button data-range="'+r[0]+'" aria-pressed="'+(S.range===r[0])+'">'+r[1]+'</button>'}).join('')+'</div>';
+}
+
+/* ---------- Flashcards ---------- */
+var C={mode:'name-cfg',queue:[],total:0,known:0,misses:0,flipped:false};
+var MODES=[['name-cfg','Name → configuration'],['cfg-name','Configuration → name'],['sym-name','Symbol → name'],['z-sym','Atomic number → symbol']];
+function deckStart(){C.queue=shuffle(poolZs().map(function(e){return e.z}));C.total=C.queue.length;C.known=0;C.misses=0;C.flipped=false}
+function faces(e){
+  var shortLine=coreOf(e.z)?'Short form: <span class="cfg">'+cfgHTML(e,true)+'</span>':'';
+  switch(C.mode){
+    case 'name-cfg':return {f:'<span class="q">Write the configuration</span><div class="big">'+e.name+'</div><span class="small">'+e.z+' electrons</span>',
+      b:'<div class="cfg cfgbig">'+cfgHTML(e)+'</div><span class="small">'+shortLine+'</span><span class="small">'+e.val+' valence electron'+(e.val>1?'s':'')+'</span>'};
+    case 'cfg-name':return {f:'<span class="q">Which element?</span><div class="cfg cfgbig">'+cfgHTML(e)+'</div>',
+      b:'<div class="big">'+e.name+'</div><span class="small">'+e.sym+' · atomic number '+e.z+'</span>'};
+    case 'sym-name':return {f:'<span class="q">Name this element</span><div class="big">'+e.sym+'</div>',
+      b:'<div class="big">'+e.name+'</div><span class="small">Atomic number '+e.z+' · '+CATS[e.cat].n+'</span>'};
+    default:return {f:'<span class="q">Symbol for atomic number</span><div class="big">'+e.z+'</div>',
+      b:'<div class="big">'+e.sym+'</div><span class="small">'+e.name+'</span>'};
+  }
+}
+function renderCardsTab(){
+  var h='<div class="deck"><div class="toolbar" style="justify-content:center"><label class="meta" for="mode">Mode</label><select id="mode">'
+    +MODES.map(function(m){return '<option value="'+m[0]+'"'+(m[0]===C.mode?' selected':'')+'>'+m[1]+'</option>'}).join('')+'</select>'+rangeSeg()+'</div>'
+    +'<div id="deckbody" class="deck" style="width:100%"></div></div>';
+  $('#view').innerHTML=h;
+  if(!C.queue.length&&C.known===0)deckStart();
+  renderDeck();
+}
+function renderDeck(){
+  var body=$('#deckbody');if(!body)return;
+  var pct=C.total?Math.round(C.known/C.total*100):0;
+  var prog='<div class="prog"><div class="bar"><i style="width:'+pct+'%"></i></div>'+C.known+' of '+C.total+' learned</div>';
+  if(!C.queue.length){
+    body.innerHTML=prog+'<div class="card done"><h2>Deck complete</h2><p>You learned all '+C.total+' cards with '+C.misses+' miss'+(C.misses===1?'':'es')+'.</p><button class="btn primary" id="again">Shuffle and go again</button></div>';
+    return;
+  }
+  var e=E[C.queue[0]-1],f=faces(e);
+  body.innerHTML=prog
+   +'<button class="flip'+(C.flipped?' on':'')+'" id="flip" aria-label="Flip card"><div class="flip-in"><div class="face">'+f.f+'</div><div class="face back">'+f.b+'</div></div></button>'
+   +'<div class="rate"><button class="btn miss" id="miss"'+(C.flipped?'':' disabled')+'>Missed it</button>'
+   +(C.flipped?'':'<button class="btn primary" id="flipbtn">Show answer</button>')
+   +'<button class="btn got" id="got"'+(C.flipped?'':' disabled')+'>Got it</button></div>'
+   +'<p class="keys"><kbd>Space</kbd> flip · <kbd>←</kbd> missed · <kbd>→</kbd> got it</p>';
+}
+function cardFlip(){C.flipped=!C.flipped;var f=$('#flip');if(f){f.classList.toggle('on',C.flipped);}
+  var m=$('#miss'),g=$('#got');if(m)m.disabled=!C.flipped;if(g)g.disabled=!C.flipped;
+  var fb=$('#flipbtn');if(fb&&C.flipped)fb.remove();}
+function cardRate(ok){
+  if(!C.flipped||!C.queue.length)return;
+  var z=C.queue.shift();
+  if(ok)C.known++;else{C.misses++;C.queue.push(z)}
+  C.flipped=false;renderDeck();
+}
+
+/* ---------- Quiz ---------- */
+var Q={qs:[],i:0,picked:null,score:0,missed:[],done:false};
+function neighborsOf(z,span){var o=[];for(var d=-span;d<=span;d++){var t=z+d;if(d&&t>=1&&t<=20)o.push(E[t-1])}return o}
+function mkCfg(z){
+  var e=E[z-1],c=neighborsOf(z,3).map(function(n){return {key:'z'+n.z,html:cfgHTML(n)}}),ds;
+  var odd=null;
+  if(z===19)odd=[['1s',2],['2s',2],['2p',6],['3s',2],['3p',6],['3d',1]];
+  if(z===20)odd=[['1s',2],['2s',2],['2p',6],['3s',2],['3p',6],['3d',2]];
+  ds=pick(c,odd?2:3);if(odd)ds.push({key:'odd',html:wrongHTML(odd)});
+  var opts=shuffle([{key:'z'+z,html:cfgHTML(e)}].concat(ds));
+  return {prompt:'What is the full electron configuration of '+e.name+'?',opts:opts,correct:'z'+z,cfgOpts:true,
+    why:e.name+' has '+z+' electrons. Fill 1s, 2s, 2p, 3s, 3p, 4s in order until all '+z+' are placed: '+cfgText(e)+'.'+(z>=19?' The 4s subshell fills before 3d.':'')};
+}
+function mkEl(z){
+  var e=E[z-1],o=shuffle([e].concat(pick(neighborsOf(z,4),3)));
+  return {prompt:'Which element has this electron configuration?',show:'<span class="cfg">'+cfgHTML(e)+'</span>',
+    opts:o.map(function(n){return {key:'z'+n.z,html:n.name}}),correct:'z'+z,
+    why:'The superscripts add up to '+z+', the atomic number of '+e.name+'.'};
+}
+function mkVal(z){
+  var e=E[z-1],nums=[1,2,3,4,5,6,7,8].filter(function(n){return n!==e.val}),o=shuffle([e.val].concat(pick(nums,3)));
+  return {prompt:'How many valence electrons does '+e.name+' have?',opts:o.map(function(n){return {key:'n'+n,html:String(n)}}),correct:'n'+e.val,
+    why:e.name+' has '+e.shells.join(', ')+' electrons per shell. The outer shell holds '+e.val+'.'};
+}
+function mkShell(z){
+  var e=E[z-1],txt=function(x){return x.shells.join(', ')},seen={},c=[];seen[txt(e)]=1;
+  neighborsOf(z,4).forEach(function(n){if(!seen[txt(n)]){seen[txt(n)]=1;c.push(n)}});
+  var o=shuffle([e].concat(pick(c,3)));
+  return {prompt:'Which shows the electrons in each shell of a '+e.name+' atom?',opts:o.map(function(n){return {key:'t'+txt(n),html:txt(n)}}),correct:'t'+txt(e),
+    why:'Shells fill 2, 8, 8 in order. With '+z+' electrons that gives '+txt(e)+'.'};
+}
+function mkUnp(z){
+  var e=E[z-1],L=e.last,b=SUB[L.i].cap/2;
+  return {prompt:'How many unpaired electrons does a ground-state '+e.name+' atom have?',opts:[0,1,2,3].map(function(n){return {key:'n'+n,html:String(n)}}),correct:'n'+e.unp,
+    why:'The last subshell, '+L.lab+', holds '+L.c+' electron'+(L.c>1?'s':'')+' across '+b+' box'+(b>1?'es':'')+'. Boxes fill singly first (Hund’s rule), so '+e.unp+' '+(e.unp===1?'is':'are')+' unpaired.'};
+}
+function mkSym(z){
+  var e=E[z-1],same=E.filter(function(n){return n!==e&&n.sym[0]===e.sym[0]}),rest=E.filter(function(n){return n!==e&&n.sym[0]!==e.sym[0]}),ds=pick(same,3);
+  if(ds.length<3)ds=ds.concat(pick(rest,3-ds.length));
+  var o=shuffle([e].concat(ds));
+  return {prompt:'What is the chemical symbol for '+e.name+'?',opts:o.map(function(n){return {key:'z'+n.z,html:n.sym}}),correct:'z'+z,
+    why:e.name+' is '+e.sym+', element number '+z+'.'};
+}
+var THEORY=[
+ {prompt:'How many electrons can a p subshell hold?',opts:['2','6','8','10'],correct:'6',why:'A p subshell has three orbitals, and each orbital holds two electrons.'},
+ {prompt:'Which rule says each orbital in a subshell gets one electron before any pair up?',opts:['Aufbau principle','Pauli exclusion principle','Hund’s rule','Octet rule'],correct:'Hund’s rule',why:'Hund’s rule keeps electrons unpaired for as long as possible, which is why nitrogen has three unpaired 2p electrons.'},
+ {prompt:'After 3p is full, which subshell fills next?',opts:['3d','4s','4p','4d'],correct:'4s',why:'The 4s subshell has lower energy than 3d, so potassium and calcium fill 4s first.'},
+ {prompt:'What is the maximum number of electrons in the second shell?',opts:['2','6','8','18'],correct:'8',why:'The second shell contains 2s (2 electrons) and 2p (6 electrons), giving 8.'}
+];
+function mkTheory(){var t=THEORY[Math.floor(Math.random()*THEORY.length)];
+  return {prompt:t.prompt,opts:shuffle(t.opts.map(function(o){return {key:o,html:o}})),correct:t.correct,why:t.why}}
+function quizStart(){
+  var pool=shuffle(poolZs().map(function(e){return e.z})),pi=0;
+  function nz(){var z=pool[pi%pool.length];pi++;return z}
+  var types=shuffle(['cfg','cfg','cfg','el','el','val','shell','unp','sym','theory']);
+  Q.qs=types.map(function(t){switch(t){case 'cfg':return mkCfg(nz());case 'el':return mkEl(nz());case 'val':return mkVal(nz());
+    case 'shell':return mkShell(nz());case 'unp':return mkUnp(nz());case 'sym':return mkSym(nz());default:return mkTheory()}});
+  Q.i=0;Q.picked=null;Q.score=0;Q.missed=[];Q.done=false;
+}
+function renderQuizTab(){
+  $('#view').innerHTML='<div class="quiz"><div class="toolbar">'+rangeSeg()+'</div><div id="qbody" class="quiz" style="margin:0"></div></div>';
+  if(!Q.qs.length)quizStart();
+  renderQuiz();
+}
+function plainOf(q,key){var o=q.opts.filter(function(x){return x.key===key})[0];return o?o:null}
+function renderQuiz(){
+  var b=$('#qbody');if(!b)return;
+  if(Q.done){
+    var best=+store.get('fte-best')||0;if(Q.score>best){best=Q.score;store.set('fte-best',String(best))}
+    var msg=Q.score>=9?'Excellent. You know these atoms.':Q.score>=7?'Good work. A few to revisit.':Q.score>=5?'Getting there. Build the ones you missed in Explore.':'Keep going. The fill order is the key.';
+    b.innerHTML='<div class="card" style="align-items:center;text-align:center;gap:12px"><span class="eyebrow">Result</span><div class="score">'+Q.score+'<span style="font-size:.4em;color:var(--ink-2)"> / '+Q.qs.length+'</span></div><p>'+msg+' Best score: '+best+'.</p>'
+      +(Q.missed.length?'<div class="missed" style="width:100%"><h3>To review</h3>'+Q.missed.map(function(m){return '<div><b>'+m.prompt+'</b><br>'+m.why+'</div>'}).join('')+'</div>':'')
+      +'<button class="btn primary" id="newquiz">New quiz</button></div>';
+    return;
+  }
+  var q=Q.qs[Q.i],ans=Q.picked!==null;
+  var h='<div class="qtop"><span>Question '+(Q.i+1)+' of '+Q.qs.length+'</span><span>Score '+Q.score+'</span></div>'
+   +'<div class="bar" style="width:100%"><i style="width:'+(Q.i/Q.qs.length*100)+'%"></i></div>'
+   +'<h2 class="qprompt">'+q.prompt+'</h2>'+(q.show?'<div class="qshow">'+q.show+'</div>':'')
+   +'<div class="opts">'+q.opts.map(function(o,i){
+      var cls='';if(ans){if(o.key===q.correct)cls=' ok';else if(o.key===Q.picked)cls=' no'}
+      return '<button class="opt'+cls+'" data-key="'+String(o.key).replace(/"/g,'&quot;')+'"'+(ans?' disabled':'')+'><span class="k">'+(i+1)+'</span><span class="t'+(q.cfgOpts?' cfg':'')+'">'+o.html+'</span></button>'}).join('')+'</div>';
+  if(ans){var ok=Q.picked===q.correct;
+    h+='<div class="why"><b class="'+(ok?'ok':'no')+'">'+(ok?'Correct. ':'Not quite. ')+'</b>'+q.why+'</div>'
+      +'<button class="btn primary" id="next" style="align-self:flex-start">'+(Q.i===Q.qs.length-1?'See result':'Next question')+'</button>';}
+  b.innerHTML=h;
+}
+function quizPick(key){
+  var q=Q.qs[Q.i];if(Q.picked!==null)return;
+  Q.picked=key;if(key===q.correct)Q.score++;else Q.missed.push(q);
+  renderQuiz();var n=$('#next');if(n)n.focus();
+}
+function quizNext(){if(Q.picked===null)return;if(Q.i===Q.qs.length-1)Q.done=true;else{Q.i++;Q.picked=null}renderQuiz()}
+
+/* ---------- events ---------- */
+document.addEventListener('click',function(ev){
+  var t=ev.target.closest('button,.flip');if(!t)return;
+  if(t.dataset.tab)return go(t.dataset.tab);
+  if(t.classList.contains('tile'))return select(+t.dataset.z);
+  if(t.classList.contains('chip')){S.filter=S.filter===t.dataset.cat?null:t.dataset.cat;
+    document.querySelectorAll('.tile').forEach(function(x){x.classList.toggle('dim',!!S.filter&&E[+x.dataset.z-1].cat!==S.filter)});
+    document.querySelectorAll('.chip').forEach(function(x){x.setAttribute('aria-pressed',String(S.filter===x.dataset.cat))});return}
+  if(t.classList.contains('step')){S.sel=+t.dataset.z;S.step=S.sel;S.tab='explore';renderTabs();renderExplore();window.scrollTo({top:0});return}
+  var e=E[S.sel-1];
+  if(t.id==='s0'){S.step=0;return updateStep()}
+  if(t.id==='sm'){S.step=Math.max(0,S.step-1);return updateStep()}
+  if(t.id==='sp'){S.step=Math.min(e.z,S.step+1);return updateStep()}
+  if(t.id==='sf'){S.step=e.z;return updateStep()}
+  if(t.dataset.range){S.range=t.dataset.range;if(S.tab==='cards'){deckStart();renderCardsTab()}else{quizStart();renderQuizTab()}return}
+  if(t.id==='flip'||t.id==='flipbtn')return cardFlip();
+  if(t.id==='miss')return cardRate(false);
+  if(t.id==='got')return cardRate(true);
+  if(t.id==='again'){deckStart();return renderDeck()}
+  if(t.classList.contains('opt'))return quizPick(t.dataset.key);
+  if(t.id==='next')return quizNext();
+  if(t.id==='newquiz'){quizStart();return renderQuiz()}
+});
+document.addEventListener('input',function(ev){if(ev.target.id==='sr'){S.step=+ev.target.value;updateStep()}});
+document.addEventListener('change',function(ev){if(ev.target.id==='mode'){C.mode=ev.target.value;C.flipped=false;renderDeck()}});
+document.addEventListener('keydown',function(ev){
+  var tag=(ev.target.tagName||'').toLowerCase();if(tag==='select'||tag==='input')return;
+  if(S.tab==='cards'){
+    if(ev.key===' '&&tag!=='button'){ev.preventDefault();cardFlip()}
+    else if(ev.key==='ArrowRight'){cardRate(true)}
+    else if(ev.key==='ArrowLeft'){cardRate(false)}
+  }else if(S.tab==='quiz'&&!Q.done){
+    var q=Q.qs[Q.i];
+    if(Q.picked===null&&/^[1-4]$/.test(ev.key)&&q.opts[+ev.key-1]){quizPick(q.opts[+ev.key-1].key)}
+    else if(Q.picked!==null&&(ev.key==='ArrowRight')){quizNext()}
+  }else if(S.tab==='explore'){
+    var e=E[S.sel-1];
+    if(ev.key==='ArrowRight'&&tag!=='button'){S.step=Math.min(e.z,S.step+1);updateStep()}
+    else if(ev.key==='ArrowLeft'&&tag!=='button'){S.step=Math.max(0,S.step-1);updateStep()}
+  }
+});
+
+renderTabs();render();
+})();
+</script>
+
+</body></html>
