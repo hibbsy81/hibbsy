@@ -33,6 +33,13 @@ button,select,input{font:inherit;color:inherit}
 .hdr{background-color:var(--hdr);color:var(--hdr-ink);margin-inline:calc(-1*max(16px,env(safe-area-inset-left,0px))) ;padding:calc(20px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 18px max(16px,env(safe-area-inset-left,0px));
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='520' height='140' viewBox='0 0 520 140'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='.13' stroke-width='3'%3E%3Ccircle cx='430' cy='70' r='52'/%3E%3Cline x1='430' y1='-10' x2='430' y2='150'/%3E%3Crect x='486' y='30' width='60' height='80'/%3E%3C/g%3E%3C/svg%3E"),linear-gradient(100deg,var(--hdr) 30%,var(--hdr2));background-repeat:no-repeat,no-repeat;background-position:right top,0 0}
 .hdr .wrap{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.hdr{position:relative}
+.hdr-r{margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.acct-btn{background:#fff;color:#1e3a8a;border:2px solid #fff;border-radius:999px;padding:8px 14px;min-height:40px;font:inherit;font-weight:600;cursor:pointer;text-shadow:none;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.acct-btn:focus-visible{outline:3px solid #f5c400;outline-offset:2px}
+.acct-pop{position:absolute;top:100%;right:max(16px,env(safe-area-inset-right,0px));margin-top:8px;width:min(22rem,calc(100vw - 32px));max-height:75vh;overflow:auto;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:14px;box-shadow:0 8px 24px rgba(0,0,0,.3);z-index:60;text-shadow:none;text-align:left}
+.acct-pop[hidden]{display:none}
+.acct-pop h3{margin:0 0 6px}
 .hdr h1{font-size:clamp(2.2rem,7vw,3.4rem);font-style:italic;font-weight:700}
 .hdr p{opacity:.95;max-width:34ch;text-shadow:0 1px 2px rgba(0,0,0,.35)}.hdr h1{text-shadow:0 2px 3px rgba(0,0,0,.3)}
 nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);border-bottom:2px solid var(--line);margin-inline:calc(-1*max(16px,env(safe-area-inset-left,0px)));padding-inline:max(16px,env(safe-area-inset-left,0px))}
@@ -213,7 +220,7 @@ input[type=checkbox]{accent-color:var(--bib)}
 :root[data-theme="dark"] #clock{color:#fff}
 </style>
 
-<header class="hdr"><div class="wrap"><div><h1>Pitch Plan</h1><p>Routines, training, food and tips, built around your week.</p></div><div class="small" style="color:inherit;opacity:.8" id="clock"></div></div></header>
+<header class="hdr"><div class="wrap"><div><h1>Pitch Plan</h1><p>Routines, training, food and tips, built around your week.</p></div><div class="hdr-r"><button type="button" class="acct-btn" id="acct-btn" aria-expanded="false" aria-controls="acct-pop" data-a="acct-toggle">Log in / Create account</button><div class="small" style="color:inherit;opacity:.8" id="clock"></div><div id="acct-pop" class="acct-pop" hidden></div></div></div></header>
 <nav aria-label="Sections"><div class="wrap" id="tabs"></div></nav>
 <div class="wrap"><main id="app" aria-live="polite"></main>
 <footer>Pitch Plan is a guide, not medical advice. If something hurts for more than a day, you feel dizzy or sick, or you take a knock to the head, stop and tell a parent, carer or coach. Check any food plan with a parent or carer, and tell them about allergies. Weather is picked by hand here, so choose what it is like outside.</footer></div>
@@ -927,35 +934,50 @@ function viewTips(){
 }
 window.__footyCloud=window.__footyCloud||{state:'off',msg:'',email:'',conflict:null,last:0,user:null,busy:false,confirmDelete:false};
 function cloudTime(t){return t?new Date(t).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'never'}
-function cloudCard(){
-  const c=window.__footyCloud;let b='<section class="card"><h3>Account and sync</h3>';
+function acctHTML(){
+  const c=window.__footyCloud;let b='<h3>Account and sync</h3>';
   const msg=c.msg?'<div class="note" role="status" style="margin:10px 0">'+esc(c.msg)+'</div>':'';
   const priv='<p class="small" style="margin-top:10px">If you sign in, your plan is stored in your own account with Google Firebase, so you can open it on other devices. Only you can read it. Ask a parent or carer before you make an account.</p>';
-  if(c.state==='off')return b+'<p class="sub">Sign-in is not switched on in this copy. It needs the Firebase setup, and it only works from the website address, not from a file on your computer.</p></section>';
-  if(c.state==='loading')return b+'<p class="sub">Connecting…</p></section>';
-  if(c.state==='error')return b+'<p class="sub">'+esc(c.msg||'Could not connect. You can still use Pitch Plan. Your plan is saved on this device.')+'</p></section>';
+  if(c.state==='off')return b+'<p class="sub">Sign-in is not switched on in this copy. It needs the Firebase setup, and it only works from the website address, not from a file on your computer.</p>';
+  if(c.state==='loading')return b+'<p class="sub">Connecting…</p>';
+  if(c.state==='error')return b+'<p class="sub">'+esc(c.msg||'Could not connect. You can still use Pitch Plan. Your plan is saved on this device.')+'</p>';
   if(c.state==='out'){
     return b+'<p class="sub">Sign in to open your plan on your laptop, iPad and phone.</p>'+msg+
      '<div class="form" style="margin-top:10px"><div class="field"><label for="cl-email">Email</label><input id="cl-email" type="email" autocomplete="email" inputmode="email" value="'+esc(c.email||'')+'"></div>'+
      '<div class="field"><label for="cl-pass">Password</label><input id="cl-pass" type="password" autocomplete="current-password" placeholder="At least 8 characters to create one"></div></div>'+
      '<div class="checks"><label><input id="cl-ok" type="checkbox"> A parent or carer knows I am making an account</label></div>'+
-     '<div class="row" style="margin-top:10px"><button class="btn" data-cloud="signin"'+(c.busy?' disabled':'')+'>Sign in</button><button class="btn alt" data-cloud="signup"'+(c.busy?' disabled':'')+'>Create account</button></div>'+
-     '<div class="row" style="margin-top:8px"><button class="btn alt" data-cloud="google"'+(c.busy?' disabled':'')+'>Continue with Google</button><button class="btn alt" data-cloud="reset">Forgot password</button></div>'+priv+'</section>';
+     '<div class="row" style="margin-top:10px"><button class="btn" data-cloud="signin"'+(c.busy?' disabled':'')+'>Sign in</button><button class="btn alt" data-cloud="signup"'+(c.busy?' disabled':'')+'>Create account</button><button class="btn alt" data-cloud="reset">Forgot password</button></div>'+priv;
   }
   let h=b+'<p class="sub">Signed in as <b>'+esc(c.user&&c.user.email||'')+'</b></p>'+msg;
   if(c.conflict){
     const k=c.conflict;
-    h+='<div class="note" style="margin:10px 0"><b>Which copy do you want to keep?</b><br>'+(k.remote?'Your account has a copy from <b>'+cloudTime(k.cloudTime)+'</b>. ':'Your account is empty. ')+'This device has a copy from <b>'+cloudTime(k.localTime)+'</b>. The one you do not pick is replaced. A backup of this device is kept first.</div>'+
+    h+='<div class="note" style="margin:10px 0"><b>Which copy do you want to keep?</b><br>'+(k.remote?'Your account has a copy from <b>'+cloudTime(k.cloudTime)+'</b>. ':'Your account is empty. ')+'This device has a copy from <b>'+cloudTime(k.localTime)+'</b>. The one you do not pick is replaced.</div>'+
      '<div class="row"><button class="btn" data-cloud="use-cloud">'+(k.remote?'Use my account copy':'Start fresh here')+'</button><button class="btn alt" data-cloud="use-device">Use this device’s copy</button></div>';
   }else h+='<p class="small">Last synced: '+cloudTime(c.last)+'. Changes sync by themselves when you are online.</p>';
   h+='<div class="row" style="margin-top:10px"><button class="btn alt" data-cloud="sync"'+(c.conflict?' disabled':'')+'>Sync now</button><button class="btn alt" data-cloud="signout">Sign out</button></div>'+
-   '<div class="row" style="margin-top:10px">'+(c.confirmDelete?'<span class="small">This deletes your account and the copy in the cloud. Your data stays on this device.</span><button class="btn warn" data-cloud="delete">Yes, delete my account</button><button class="btn alt" data-cloud="cancel-delete">Cancel</button>':'<button class="btn alt" data-cloud="delete">Delete my account and cloud data</button>')+'</div>'+priv+'</section>';
+   '<div class="row" style="margin-top:10px">'+(c.confirmDelete?'<span class="small">This deletes your account and the copy in the cloud. Your data stays on this device.</span><button class="btn warn" data-cloud="delete">Yes, delete my account</button><button class="btn alt" data-cloud="cancel-delete">Cancel</button>':'<button class="btn alt" data-cloud="delete">Delete my account and cloud data</button>')+'</div>'+priv;
   return h;
+}
+let acctLast='';
+function renderAcct(){
+  const c=window.__footyCloud,btn=$('#acct-btn'),pop=$('#acct-pop');if(!btn||!pop)return;
+  btn.textContent=c.state==='in'&&c.user?'Account':'Log in / Create account';
+  btn.setAttribute('aria-expanded',ui.acct?'true':'false');
+  pop.hidden=!ui.acct;
+  if(!ui.acct)return;
+  const html=acctHTML();if(html===acctLast)return;
+  const g=id=>document.getElementById(id),em=g('cl-email'),pw=g('cl-pass'),ok=g('cl-ok'),fid=document.activeElement&&document.activeElement.id;
+  const keep={em:em&&em.value,pw:pw&&pw.value,ok:ok&&ok.checked};
+  pop.innerHTML=html;acctLast=html;
+  if(keep.em!=null&&g('cl-email'))g('cl-email').value=keep.em;
+  if(keep.pw!=null&&g('cl-pass'))g('cl-pass').value=keep.pw;
+  if(keep.ok&&g('cl-ok'))g('cl-ok').checked=true;
+  if(fid&&g(fid)&&/^cl-/.test(fid))g(fid).focus();
 }
 function viewMe(){
   const P=S.profile;
   const opt=(o,v)=>Object.keys(o).map(x=>'<option value="'+x+'"'+(x===v?' selected':'')+'>'+o[x]+'</option>').join('');
-  let h='<section class="card"><h2>Me</h2><p class="sub">Everything is saved on this device only.</p><div class="form" style="margin-top:12px">'+
+  let h='<section class="card"><h2>Me</h2><p class="sub">Your plan is saved on this device. Use Log in at the top right to sync it between devices.</p><div class="form" style="margin-top:12px">'+
    '<div class="field"><label for="f-name">Name (optional)</label><input id="f-name" type="text" data-f="name" value="'+esc(P.name)+'" maxlength="30"></div>'+
    '<div class="field"><label for="f-age">Age group</label><select id="f-age" data-f="age">'+opt(AGEN,P.age)+'</select></div>'+
    '<div class="field"><label for="f-pos">Position</label><select id="f-pos" data-f="pos">'+opt(POSN,P.pos)+'</select></div>'+
@@ -968,12 +990,6 @@ function viewMe(){
   h+='<section class="card"><h3>Team training</h3><p class="sub">Tell Pitch Plan when you train or play with your team and it plans your morning, meals and evening around it. You can also set single days in the Calendar.</p><div class="form" style="margin-top:12px"><div class="field"><label for="f-travel">Travel time (minutes each way)</label><input id="f-travel" type="number" min="0" max="120" inputmode="numeric" data-f="travel" value="'+(+P.travel||0)+'"></div><div class="field"><label for="f-early">Arrive early (minutes)</label><select id="f-early" data-f="early">'+[0,5,10,15,20,30].map(n=>'<option value="'+n+'"'+(+P.early===n?' selected':'')+'>'+n+'</option>').join('')+'</select></div></div>'+(Object.prototype.hasOwnProperty.call(S.team.dates,today)?'<div class="note" style="margin-bottom:10px"><b>Today has its own team time</b> ('+(S.team.dates[today]?S.team.dates[today].start+' to '+S.team.dates[today].end:'no session')+'), so changing the weekly times will not change today. <button class="chip" data-a="team-clear" data-k="'+today+'">Use my weekly pattern for today</button></div>':'')+'<div class="lab small">Weekly team days</div>'+
    [1,2,3,4,5,6,0].map(d=>{const tw=S.team.week[d];return '<div class="row" style="padding:8px 0;border-top:1px solid var(--line)"><label style="display:flex;gap:8px;align-items:center;min-width:8.5rem;cursor:pointer"><input type="checkbox" style="width:20px;height:20px;accent-color:var(--pitch)" data-tw="'+d+'"'+(tw?' checked':'')+'> '+DAYN[d]+'</label>'+(tw?'<label class="small" for="tws-'+d+'">From</label><input id="tws-'+d+'" type="time" data-twf="start" data-d="'+d+'" value="'+tw.start+'" style="background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:6px;min-height:38px"><label class="small" for="twe-'+d+'">to</label><input id="twe-'+d+'" type="time" data-twf="end" data-d="'+d+'" value="'+tw.end+'" style="background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:6px;min-height:38px">':'<span class="small">No team session</span>')+'</div>'}).join('')+'</section>';
   h+='<section class="card"><h3>Weekly pattern</h3><p class="sub">The type of day for each weekday. You can still change single days in the calendar.</p><div class="form" style="margin-top:10px">'+[1,2,3,4,5,6,0].map(d=>'<div class="field"><label for="w-'+d+'">'+DAYN[d]+'</label><select id="w-'+d+'" data-week="'+d+'">'+opt(TYPES,S.week[d])+'</select></div>').join('')+'</div></section>';
-  h+='<section class="card"><h3>Back up and restore</h3><p class="sub">Save your settings to move them to another device or keep them safe.</p>'+
-   '<div class="row" style="margin:10px 0"><button class="btn" data-a="bk-copy">Copy backup</button><button class="btn alt" data-a="bk-dl">Download file</button><label class="btn alt" for="bk-file" style="cursor:pointer;display:inline-flex;align-items:center">Choose backup file</label><input id="bk-file" type="file" accept=".json,application/json,text/plain" style="position:absolute;left:-9999px" data-bkfile="1"></div>'+
-   (ui.msg?'<div class="note" role="status">'+esc(ui.msg)+'</div>':'')+
-   '<div class="field" style="margin-top:10px"><label for="bk-out">Your backup text</label><textarea id="bk-out" readonly rows="3" style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:8px;font:12px/1.4 monospace;color:var(--ink)">'+esc(JSON.stringify(S))+'</textarea></div>'+
-   '<div class="field"><label for="bk-in">Paste a backup here to restore it</label><textarea id="bk-in" rows="3" style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:8px;font:12px/1.4 monospace;color:var(--ink)"></textarea></div><button class="btn warn" data-a="bk-restore">Restore from pasted text</button><p class="small" style="margin-top:8px">Restoring replaces what is saved on this device. If Download file does nothing in your browser, use Copy backup instead.</p></section>';
-  h+=cloudCard();
   const standalone=(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone;
   h+='<section class="card"><h3>Install as an app</h3>'+(standalone?'<p class="sub">You are using the installed app.</p>':'<p class="sub">Add Pitch Plan to your home screen so it opens like a normal app and works without wifi.</p>'+(deferredPrompt?'<div class="row" style="margin-top:10px"><button class="btn" data-a="pwa-install">Install the app</button></div>':'')+'<ul class="kit"><li><b>iPhone or iPad:</b> open this page in Safari, tap the Share button, then Add to Home Screen.</li><li><b>Android:</b> in Chrome, tap the menu, then Install app or Add to Home screen.</li><li><b>Laptop:</b> in Chrome or Edge, click the install icon at the right of the address bar.</li></ul><p class="small" style="margin-top:8px">This only works when the page is opened from its website address, not from a file on your computer.</p>')+'</section>';
   h+='<section class="card"><h3>Reset</h3><p class="sub">Clears your settings, calendar changes, ticks and records on this device. If you are signed in, the copy in your account is cleared too.</p><button class="btn warn" data-a="reset" style="margin-top:8px">'+(ui.confirm?'Tap again to wipe everything':'Reset everything')+'</button></section>';
@@ -1378,6 +1394,7 @@ function render(keepScroll){
   $('#app').innerHTML=VIEWS[ui.tab]();
   if(keepScroll)window.scrollTo(0,y);
   const c=$('#clock');if(c)c.textContent=longDate(today);
+  renderAcct();
 }
 function go(tab,keep){ui.tab=tab;ui.msg='';ui.mMsg='';ui.gMsg='';ui.sMsg='';ui.reveal=null;ui.editRow=null;try{history.replaceState(null,'','#'+tab)}catch(e){};render(keep);if(!keep)window.scrollTo(0,0)}
 
@@ -1429,16 +1446,13 @@ function drawRun(){
    (run.steps?'<ol style="margin:10px 0 0;padding-left:20px">'+d.s.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ol>'+(d.tip?'<p style="margin:6px 0 0;opacity:.9"><b>Tip:</b> '+esc(d.tip)+'</p>':''):'');
 }
 /* ---------- events ---------- */
-function restore(txt){
-  try{const o=JSON.parse(txt);if(!o||typeof o!=='object'||!o.profile||!o.week)throw 0;
-    merge(o);
-    save();ui.msg='Backup restored.'}catch(e){ui.msg='That does not look like a Pitch Plan backup. Nothing was changed.'}
-  render(true);
-}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&ui.acct){ui.acct=false;renderAcct();const b=$('#acct-btn');if(b)b.focus()}});
 
 document.addEventListener('click',e=>{
+  if(ui.acct&&!e.target.closest('#acct-pop')&&!e.target.closest('#acct-btn')){ui.acct=false;renderAcct()}
   const b=e.target.closest('[data-a]');if(!b||b.tagName==='INPUT')return;
   const a=b.dataset.a,v=b.dataset.v,k=b.dataset.k;
+  if(a==='acct-toggle'){ui.acct=!ui.acct;acctLast='';renderAcct();if(ui.acct){const f=$('#cl-email');if(f)f.focus()}return}
   if(a!=='reset')ui.confirm=false;
   switch(a){
    case 'tab':return go(v);
@@ -1451,11 +1465,6 @@ document.addEventListener('click',e=>{
    case 'day':ui.sel=k;break;
    case 'month':{let [y,m]=ui.month;m+=+v;if(m<0){m=11;y--}if(m>11){m=0;y++}ui.month=[y,m];break}
    case 'shuffle':S.shuffle[k]=(S.shuffle[k]||0)+1;break;
-   case 'bk-copy':{const t=JSON.stringify(S);const done=()=>{ui.msg='Backup copied. Paste it somewhere safe, like a note to yourself.';render(true)};
-      const fb=()=>{const ta=$('#bk-out');if(ta){ta.focus();ta.select()}ui.msg='Select the text in the box and copy it.';render(true);const t2=$('#bk-out');if(t2){t2.focus();t2.select()}};
-      try{navigator.clipboard.writeText(t).then(done,fb)}catch(e){fb()}return}
-   case 'bk-dl':{try{const bl=new Blob([JSON.stringify(S)],{type:'application/json'});const u=URL.createObjectURL(bl);const l=document.createElement('a');l.href=u;l.download='pitch-plan-backup.json';document.body.appendChild(l);l.click();l.remove();ui.msg='Backup file download started. If nothing downloaded, use Copy backup instead.'}catch(x){ui.msg='Download did not work here. Use Copy backup instead.'}render(true);return}
-   case 'bk-restore':{const v=($('#bk-in')||{}).value||'';return restore(v)}
    case 'team-clear':delete S.team.dates[k];break;
    case 'run-start':{const list=b.dataset.src==='home'?buildHome().all:buildSession(k).all;if(list&&list.length){const title=b.dataset.src==='home'?'Home session':'Session';startRun(list,title)}return}
    case 'run-pause':if(run&&!run.done){if(run.running){run.left=Math.max(0,run.endAt-Date.now());run.running=false}else{run.endAt=Date.now()+run.left;run.running=true}drawRun()}return
@@ -1513,7 +1522,6 @@ document.addEventListener('click',e=>{
 });
 document.addEventListener('change',e=>{
   const t=e.target;
-  if(t.dataset.bkfile){const f=t.files&&t.files[0];if(!f)return;const r=new FileReader();r.onload=()=>restore(String(r.result));r.onerror=()=>{ui.msg='Could not read that file.';render(true)};r.readAsText(f);return}
   if(t.id==='dy-date'){if(t.value&&t.value<=today){ui.dDate=t.value;ui.draft=null;ui.msg='';render(true)}return}
   if(t.dataset.focus){S.focus[t.dataset.focus]=t.value;save();return}
   if(t.dataset.swapmeal!==undefined){if(t.value==='')return;const key=mealsKey();(S.picks[key]=S.picks[key]||{})[t.value]=t.dataset.swapmeal;const sl=PLAN[ui.mType||typeOf(today)][+t.value];ui.msg='Swapped in '+t.dataset.swapmeal+' for '+(sl?sl[1].toLowerCase():'that meal')+'.';save();render(true);window.scrollTo(0,0);return}
@@ -1542,7 +1550,7 @@ window.addEventListener('hashchange',()=>{fromHash();render()});
 window.__footy={
   get:function(){return S},
   onSave:null,
-  render:function(){if(ui.tab==='me')render(true)},
+  render:function(){renderAcct()},
   hasData:function(){const P=S.profile||{};const n=k=>Object.keys(S[k]||{}).length;return !!(P.setup||n('diary')+n('sleep')+n('ticks')+n('overrides')+n('weather')+n('picks')+n('daily')+n('chal')+(S.matches||[]).length+(S.goals||[]).length+(S.gifts||[]).length>0||Object.keys(S.rec||{}).some(k=>S.rec[k]>0)||Object.keys(S.team.week||{}).length||Object.keys(S.team.dates||{}).length)},
   apply:function(o,t){merge(o);S._t=t||0;try{localStorage.setItem('pitchplan_v1',JSON.stringify(S))}catch(e){}ui.draft=null;ui.sDraft=null;ui.mDraft=null;ui.gDraft=null;render(true)},
   reset:function(){S=JSON.parse(JSON.stringify(DEF));S._t=0;try{localStorage.setItem('pitchplan_v1',JSON.stringify(S))}catch(e){}render(true)}
