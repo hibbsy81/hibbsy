@@ -1,6 +1,6 @@
 /* Pitch Plan service worker: lets the app open offline.
    It only handles Pitch Plan's own files, so other pages in the same folder are not affected. */
-const V = 'footy-v3';
+const V = 'footy-v4';
 const CORE = ['./footy.html', './footy-manifest.webmanifest', './footy-icon-192.png', './footy-icon-512.png', './footy-apple-180.png'];
 const FONT_HOSTS = ['fonts.googleapis.com', 'fonts.gstatic.com'];
 
@@ -36,8 +36,17 @@ self.addEventListener('fetch', e => {
     e.respondWith(staleWhileRevalidate(req, 'footy-fonts'));
     return;
   }
+  if (url.hostname === 'www.gstatic.com' && url.pathname.indexOf('/firebasejs/') === 0) {
+    e.respondWith(staleWhileRevalidate(req, 'footy-fonts'));
+    return;
+  }
   if (url.origin !== self.location.origin) return;
   const name = url.pathname.split('/').pop();
   const ours = name === 'footy.html' || name === 'footy-manifest.webmanifest' || name.indexOf('footy-icon-') === 0 || name === 'footy-apple-180.png';
+  if (name === 'footy-firebase-config.js') {
+    e.respondWith(fetch(req).then(res => { if (res.ok) caches.open(V).then(c => c.put(req, res.clone())); return res; }).catch(() => caches.match(req)));
+    return;
+  }
+  if (name === 'footy-cloud.js') { e.respondWith(staleWhileRevalidate(req, V)); return; }
   if (ours) e.respondWith(staleWhileRevalidate(req, V));
 });
