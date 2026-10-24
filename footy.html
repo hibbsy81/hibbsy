@@ -40,6 +40,9 @@ button,select,input{font:inherit;color:inherit}
 .acct-pop{position:absolute;top:100%;right:max(16px,env(safe-area-inset-right,0px));margin-top:8px;width:min(22rem,calc(100vw - 32px));max-height:75vh;overflow:auto;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:14px;box-shadow:0 8px 24px rgba(0,0,0,.3);z-index:60;text-shadow:none;text-align:left}
 .acct-pop[hidden]{display:none}
 .acct-pop h3{margin:0 0 6px}
+.acct-pop,.acct-pop *{text-shadow:none!important}
+.acct-pop .btn{border-radius:999px;padding-inline:18px}
+.acct-pop input[type=email],.acct-pop input[type=password]{border-radius:999px;padding-inline:16px}
 .hdr h1{font-size:clamp(2.2rem,7vw,3.4rem);font-style:italic;font-weight:700}
 .hdr p{opacity:.95;max-width:34ch;text-shadow:0 1px 2px rgba(0,0,0,.35)}.hdr h1{text-shadow:0 2px 3px rgba(0,0,0,.3)}
 nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);border-bottom:2px solid var(--line);margin-inline:calc(-1*max(16px,env(safe-area-inset-left,0px)));padding-inline:max(16px,env(safe-area-inset-left,0px))}
@@ -937,12 +940,12 @@ function cloudTime(t){return t?new Date(t).toLocaleString('en-GB',{day:'numeric'
 function acctHTML(){
   const c=window.__footyCloud;let b='<h3>Account and sync</h3>';
   const msg=c.msg?'<div class="note" role="status" style="margin:10px 0">'+esc(c.msg)+'</div>':'';
-  const priv='<p class="small" style="margin-top:10px">If you sign in, your plan is stored in your own account with Google Firebase, so you can open it on other devices. Only you can read it. Ask a parent or carer before you make an account.</p>';
-  if(c.state==='off')return b+'<p class="sub">Sign-in is not switched on in this copy. It needs the Firebase setup, and it only works from the website address, not from a file on your computer.</p>';
+  const priv='';
+  if(c.state==='off')return b+'<p class="sub">Sign-in is not switched on in this copy.</p>';
   if(c.state==='loading')return b+'<p class="sub">Connecting…</p>';
   if(c.state==='error')return b+'<p class="sub">'+esc(c.msg||'Could not connect. You can still use Pitch Plan. Your plan is saved on this device.')+'</p>';
   if(c.state==='out'){
-    return b+'<p class="sub">Sign in to open your plan on your laptop, iPad and phone.</p>'+msg+
+    return b+''+msg+
      '<div class="form" style="margin-top:10px"><div class="field"><label for="cl-email">Email</label><input id="cl-email" type="email" autocomplete="email" inputmode="email" value="'+esc(c.email||'')+'"></div>'+
      '<div class="field"><label for="cl-pass">Password</label><input id="cl-pass" type="password" autocomplete="current-password" placeholder="At least 8 characters to create one"></div></div>'+
      '<div class="checks"><label><input id="cl-ok" type="checkbox"> A parent or carer knows I am making an account</label></div>'+
@@ -953,9 +956,9 @@ function acctHTML(){
     const k=c.conflict;
     h+='<div class="note" style="margin:10px 0"><b>Which copy do you want to keep?</b><br>'+(k.remote?'Your account has a copy from <b>'+cloudTime(k.cloudTime)+'</b>. ':'Your account is empty. ')+'This device has a copy from <b>'+cloudTime(k.localTime)+'</b>. The one you do not pick is replaced.</div>'+
      '<div class="row"><button class="btn" data-cloud="use-cloud">'+(k.remote?'Use my account copy':'Start fresh here')+'</button><button class="btn alt" data-cloud="use-device">Use this device’s copy</button></div>';
-  }else h+='<p class="small">Last synced: '+cloudTime(c.last)+'. Changes sync by themselves when you are online.</p>';
+  }
   h+='<div class="row" style="margin-top:10px"><button class="btn alt" data-cloud="sync"'+(c.conflict?' disabled':'')+'>Sync now</button><button class="btn alt" data-cloud="signout">Sign out</button></div>'+
-   '<div class="row" style="margin-top:10px">'+(c.confirmDelete?'<span class="small">This deletes your account and the copy in the cloud. Your data stays on this device.</span><button class="btn warn" data-cloud="delete">Yes, delete my account</button><button class="btn alt" data-cloud="cancel-delete">Cancel</button>':'<button class="btn alt" data-cloud="delete">Delete my account and cloud data</button>')+'</div>'+priv;
+   '<div class="row" style="margin-top:10px">'+(c.confirmDelete?'<button class="btn warn" data-cloud="delete">Yes, delete my account</button><button class="btn alt" data-cloud="cancel-delete">Cancel</button>':'<button class="btn alt" data-cloud="delete">Delete my account and cloud data</button>')+'</div>'+priv;
   return h;
 }
 let acctLast='';
