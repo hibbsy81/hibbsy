@@ -949,7 +949,7 @@ function acctHTML(){
      '<div class="form" style="margin-top:10px"><div class="field"><label for="cl-email">Email</label><input id="cl-email" type="email" autocomplete="email" inputmode="email" value="'+esc(c.email||'')+'"></div>'+
      '<div class="field"><label for="cl-pass">Password</label><input id="cl-pass" type="password" autocomplete="current-password" placeholder="At least 8 characters to create one"></div></div>'+
      '<div class="checks"><label><input id="cl-ok" type="checkbox"> A parent or carer knows I am making an account</label></div>'+
-     '<div class="row" style="margin-top:10px"><button class="btn" data-cloud="signin"'+(c.busy?' disabled':'')+'>Sign in</button><button class="btn alt" data-cloud="signup"'+(c.busy?' disabled':'')+'>Create account</button><button class="btn alt" data-cloud="reset">Forgot password</button></div>'+priv;
+     '<div class="row" style="margin-top:10px"><button class="btn" data-cloud="signin"'+(c.busy?' disabled':'')+'>Sign in</button><button class="btn alt" data-cloud="signup"'+(c.busy?' disabled':'')+'>Create</button><button class="btn alt" data-cloud="reset">Forgot</button></div>'+priv;
   }
   let h=b+'<p class="sub">Signed in as <b>'+esc(c.user&&c.user.email||'')+'</b></p>'+msg;
   if(c.conflict){
