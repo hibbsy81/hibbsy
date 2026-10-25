@@ -236,6 +236,21 @@
     input[type="datetime-local"]::-webkit-date-and-time-value{ text-align:left; min-height:1.3em; }
   }
 
+  .dz-cards-wrap{ display:none; }
+  @media screen and (hover:hover) and (pointer:fine) and (min-width:821px){
+    .dz-plain-hint{ display:none; }
+    .dz-cards-wrap{ display:block; padding-top:4px; }
+    .dz-cards-title{ font-size:18px; font-weight:700; letter-spacing:-.01em; margin-bottom:4px; }
+    .dz-cards-sub{ font-size:13px; color:var(--muted); margin-bottom:16px; max-width:60ch; }
+    .dz-cards{ display:grid; grid-template-columns:repeat(auto-fill, minmax(215px, 1fr)); gap:12px; }
+    .dz-card{ height:auto; width:100%; text-align:left; padding:14px 16px; border-radius:14px;
+      background:var(--panel); border:1px solid var(--border);
+      box-shadow:0 8px 24px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.05); }
+    .dz-card:hover:not(:disabled){ background:rgba(63,169,245,.10); border-color:var(--accent); transform:translateY(-1px); }
+    .dz-card-name{ display:block; font-size:16px; font-weight:650; color:var(--text); margin-bottom:6px; }
+    .dz-card-pos{ display:block; font-size:12px; color:var(--muted); font-family:var(--mono, ui-monospace, Menlo, monospace); }
+  }
+
   /* ---------------- Tablets (iPad and similar touch screens) ----------------
      Location and time boxes run the full width, with the map full width below them and the
      winds under the map. Only applies to touch screens, so a laptop window keeps the side-by-side layout. */
@@ -408,7 +423,16 @@
 
 <div class="layout">
   <div id="map"></div>
-  <div id="resultsPane"><div class="approx-note">Enter a location and time above, then tap "Get Winds".</div></div>
+  <div id="resultsPane">
+    <div class="dz-welcome">
+      <div class="approx-note dz-plain-hint">Enter a location and time above, then tap "Get Winds".</div>
+      <div class="dz-cards-wrap" id="dzCardsWrap">
+        <div class="dz-cards-title">Choose a drop zone</div>
+        <div class="dz-cards-sub">One click loads its winds for the time set above. Or enter any location above and press Get Winds.</div>
+        <div class="dz-cards" id="dzCards"></div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <footer>
@@ -1741,6 +1765,9 @@ function refreshFromCache(){
 });
 
 /* ---------------- Preset DZ selector ---------------- */
+function escapeHtml(str){
+  return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
 function presetToLatLon(dz){
   if(dz.mgrs) return parseMGRS(dz.mgrs);
   if(dz.ddm) return { lat: parseDDM(dz.ddm[0], true), lon: parseDDM(dz.ddm[1], false) };
@@ -1749,12 +1776,26 @@ function presetToLatLon(dz){
 }
 (function wirePresetDZs(){
   const sel = document.getElementById('dzPreset');
-  if(!PRESET_DZS.length){ document.getElementById('dzPresetField').style.display = 'none'; return; }
+  if(!PRESET_DZS.length){ document.getElementById('dzPresetField').style.display = 'none'; document.getElementById('dzCardsWrap').style.display = 'none'; return; }
   PRESET_DZS.forEach((dz, i)=>{
     const o = document.createElement('option');
     o.value = String(i);
     o.textContent = dz.name;
     sel.appendChild(o);
+  });
+  const cardsBox = document.getElementById('dzCards');
+  PRESET_DZS.forEach((dz, i)=>{
+    let pos = '';
+    try{ const l = presetToLatLon(dz); pos = `${formatDDM(l.lat, true)}  ${formatDDM(l.lon, false)}`; }catch(e){}
+    const card = document.createElement('button');
+    card.type = 'button';
+    card.className = 'dz-card';
+    card.innerHTML = `<span class="dz-card-name">${escapeHtml(dz.name)}</span><span class="dz-card-pos">${escapeHtml(pos)}</span>`;
+    card.addEventListener('click', ()=>{
+      sel.value = String(i);
+      sel.dispatchEvent(new Event('change'));
+    });
+    cardsBox.appendChild(card);
   });
   sel.addEventListener('change', ()=>{
     if(sel.value === '') return;
