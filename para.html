@@ -228,6 +228,14 @@
     .chip.strong{ background:rgba(245,106,79,.18); color:#ff8c75; }
   }
 
+  @media (pointer:coarse){
+    input[type="datetime-local"]{
+      -webkit-appearance:none; appearance:none; display:block;
+      min-width:0; max-width:100%; min-height:38px; text-align:left;
+    }
+    input[type="datetime-local"]::-webkit-date-and-time-value{ text-align:left; min-height:1.3em; }
+  }
+
   /* ---------------- Tablets (iPad and similar touch screens) ----------------
      Location and time boxes run the full width, with the map full width below them and the
      winds under the map. Only applies to touch screens, so a laptop window keeps the side-by-side layout. */
@@ -237,11 +245,27 @@
     .ctl-group .row > .field{ flex:1 1 150px; min-width:0; }
     .ctl-group .row > .fmt-group{ flex:3 1 240px; }
     .ctl-group .row > .field-btn{ flex:0 0 auto; }
+    /* Lat/Long (DDM): latitude and longitude sit on the same line as Drop zone and Format */
+    .ctl-group .row > .field:nth-child(2){ flex:0 1 165px; }
+    .ctl-group .row > #ddmFields, .ctl-group .row > #ddmFields2{ flex:1 1 118px; }
     #dzPreset, #locFormat, #timeBasis, #datetime, #mgrsInput, #decInput, .fmt-group input{ width:100%; }
     .layout{ flex-direction:column; align-items:stretch; }
-    #map{ flex:none; width:100%; height:48vh; min-height:340px; }
+    #map{ flex:none; width:100%; height:24vh; min-height:220px; }
+    /* Date & time and Basis each get their own column so they can never overlap */
+    .ctl-groups > :nth-child(2) .row{ display:grid; grid-template-columns:minmax(0,3fr) minmax(0,2fr); gap:10px; align-items:end; }
+    .ctl-groups > :nth-child(2) .row > .field{ flex:none; min-width:0; }
     #resultsPane{ flex:none; width:100%; max-height:none; min-height:0; overflow:visible; padding-right:0; }
   }
+
+  .tip-backdrop{ position:fixed; inset:0; z-index:5000; display:flex; align-items:center; justify-content:center;
+    padding:20px; background:rgba(4,8,16,.72); -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); }
+  .tip-card{ width:100%; max-width:420px; background:#12203a; border:1px solid var(--border); border-radius:16px;
+    padding:20px 20px 16px; box-shadow:0 20px 60px rgba(0,0,0,.5); }
+  .tip-card h2{ margin:0 0 10px; font-size:18px; }
+  .tip-card ol{ margin:0 0 16px; padding-left:20px; line-height:1.55; color:var(--text); }
+  .tip-card li{ margin-bottom:6px; }
+  .tip-actions{ display:flex; gap:10px; flex-wrap:wrap; }
+  .tip-actions button{ flex:1 1 140px; }
 
   /* ---------------- Installed web app: keep the title clear of the status bar ---------------- */
   .standalone header{ background:#0b1526; padding-top:calc(env(safe-area-inset-top, 0px) + 28px); }
@@ -390,6 +414,21 @@
 <footer>
   Data: <a href="https://open-meteo.com" target="_blank">Open-Meteo</a>.
 </footer>
+
+<div id="installTip" class="tip-backdrop" hidden>
+  <div class="tip-card" role="dialog" aria-modal="true" aria-labelledby="tipTitle">
+    <h2 id="tipTitle">Add to Home Screen</h2>
+    <ol>
+      <li>Tap the <b>Share</b> button in Safari's toolbar (a square with an arrow pointing up).</li>
+      <li>Scroll down and tap <b>Add to Home Screen</b>.</li>
+      <li>Tap <b>Add</b> in the top corner.</li>
+    </ol>
+    <div class="tip-actions">
+      <button id="tipShare" hidden>Open share menu</button>
+      <button id="tipClose" class="primary">Got it</button>
+    </div>
+  </div>
+</div>
 
 <script>
 /* ---------------- World Magnetic Model 2025 (magnetic declination) ----------------
@@ -707,6 +746,24 @@ const PRESET_DZS = [
 let applyingPreset = false;   // true while a preset is filling in the location boxes
 
 /* ---------------- Web app: install button and offline support ---------------- */
+function openInstallTip(){
+  const tip = document.getElementById('installTip');
+  document.getElementById('tipShare').hidden = !navigator.share;
+  tip.hidden = false;
+}
+(function installTipControls(){
+  const tip = document.getElementById('installTip');
+  const close = () => { tip.hidden = true; };
+  document.getElementById('tipClose').addEventListener('click', close);
+  tip.addEventListener('click', (e)=>{ if(e.target === tip) close(); });
+  document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape' && !tip.hidden) close(); });
+  // iPhone and iPad can't install from a button, but the share menu (which has the
+  // "Add to Home Screen" row) can be opened from here
+  document.getElementById('tipShare').addEventListener('click', async ()=>{
+    try{ await navigator.share({ title: document.title, url: location.href.split('#')[0] }); close(); }catch(e){}
+  });
+})();
+
 (function webApp(){
   const btn = document.getElementById('installBtn');
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
@@ -724,9 +781,7 @@ let applyingPreset = false;   // true while a preset is filling in the location 
         try{ await deferred.userChoice; }catch(e){}
         deferred = null; btn.hidden = true;
       } else {
-        const st = document.getElementById('status');
-        st.className = '';
-        st.textContent = 'To install: tap the Share button in Safari, then "Add to Home Screen".';
+        openInstallTip();
       }
     });
     // iPhones and iPads never fire the install event, so show the instructions button instead
