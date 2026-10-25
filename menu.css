@@ -206,6 +206,13 @@
 	background: var(--m-accent);
 }
 
+/* links that leave the site get a small arrow */
+.menu-list a[href^="http"]::after {
+	content: "\2197";
+	font-size: 14px;
+	opacity: 0.45;
+}
+
 @media (prefers-reduced-motion: reduce) {
 	.menu {
 		animation: none;

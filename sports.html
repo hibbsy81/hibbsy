@@ -55,7 +55,6 @@ h1{font-size:24px;margin:0;letter-spacing:-.02em;text-align:center;line-height:1
 <header><h1>Fixtures &amp; TV Guide</h1></header>
 <div class="chips" id="chips"></div>
 <div id="list"></div>
-<p class="foot">Club logos: <a href="https://football-logos.cc/">football-logos.cc</a></p>
 </main>
 <script>
 const T={mc:{n:"Man City",m:"MC",c:"#6CABDD"},aw:{n:"Arsenal WSL",m:"AW",c:"#EF0107"},mu:{n:"Man Utd WSL",m:"MU",c:"#DA291C"},cw:{n:"Chelsea WSL",m:"CW",c:"#1B5FD1"},li:{n:"Lionesses",m:"L",c:"#8A3FB0"},en:{n:"England Men",m:"EN",c:"#2B4DB8"}};
@@ -72,12 +71,13 @@ const tz="Europe/London";
 const fd=o=>new Intl.DateTimeFormat("en-GB",Object.assign({timeZone:tz},o));
 const dayK=d=>fd({year:"numeric",month:"2-digit",day:"2-digit"}).format(d).split("/").reverse().join("-");
 function crest(k,s){return '<span class="crest" style="--c:'+T[k].c+';--s:'+s+'px"><span>'+T[k].m+'</span><img src="logos/teams/'+k+'.png" alt="" onload="this.parentNode.classList.add(\'has\')" onerror="this.remove()"></span>';}
+const dd=(d,now)=>(new Date(dayK(d))-new Date(dayK(now)))/864e5;
 function rel(d,now){
   const ms=d-now;
   if(ms<=0) return '<span class="live">● Live / in progress</span>';
-  const dd=(new Date(dayK(d))-new Date(dayK(now)))/864e5;
-  if(dd===0){const h=Math.floor(ms/36e5),m=Math.floor(ms%36e5/6e4);return "Today · in "+(h?h+"h ":"")+m+"m";}
-  return dd===1?"Tomorrow":"In "+dd+" days";
+  const n=dd(d,now);
+  if(n===0){const h=Math.floor(ms/36e5),m=Math.floor(ms%36e5/6e4);return "In "+(h?h+"h ":"")+m+"m";}
+  return n===1?"In 1 day":"In "+n+" days";
 }
 function badge(c){
   const k=brand(c),b=BR[k]||["#2a3446","#fff"];
@@ -93,7 +93,7 @@ function render(){
   el.innerHTML=items.map(f=>{
     const mk=fd({month:"long",year:"numeric"}).format(f.d);
     const head=mk!==last?'<div class="month">'+mk+'</div>':"";last=mk;
-    const date=fd({weekday:"short",day:"numeric",month:"short"}).format(f.d);
+    const n=dd(f.d,now),date=n===0?"Today":n===1?"Tomorrow":fd({weekday:"short",day:"numeric",month:"short"}).format(f.d);
     const time=f.tbc?"Time TBC":fd({hour:"2-digit",minute:"2-digit",hour12:false}).format(f.d);
     const chans=f.ch.length?f.ch.map(badge).join(""):'<span class="b none">'+(f.note||"No UK broadcast")+'</span>';
     const note=f.ch.length&&f.note?'<div class="meta">'+f.note+'</div>':"";
