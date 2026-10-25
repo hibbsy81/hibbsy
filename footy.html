@@ -220,6 +220,32 @@ ol.drills{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:12px}
 .stickers{display:grid;gap:8px;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));margin-top:8px}
 .stk{display:grid;justify-items:center;gap:2px;text-align:center;font-size:.8rem;color:var(--muted);opacity:.75}
 .stk.on{opacity:1;color:var(--ink);font-weight:600}
+
+/* quizzes, mind, strength */
+.qprog{height:6px;background:var(--surface2);border-radius:999px;overflow:hidden;margin:6px 0 4px}
+.qprog span{display:block;height:100%;background:var(--bib-fill);border-radius:999px;transition:width .3s}
+.qopts{display:grid;gap:10px}
+.qopt{text-align:left;background:var(--surface);border:1.5px solid var(--line);border-radius:var(--r-s);padding:12px 16px;cursor:pointer;font-weight:500;min-height:48px;transition:border-color .15s}
+.qopt:hover:not(:disabled){border-color:var(--pitch)}
+.qopt:disabled{cursor:default;color:var(--ink)}
+.qopt.ok{border-color:var(--bib-fill);background:var(--bib-soft);font-weight:600}
+.qopt.ok::before{content:"✓ "}
+.qopt.bad{border-color:var(--muted);text-decoration:line-through;opacity:.75}
+.br-wrap{display:grid;place-items:center;height:190px;margin:10px 0 4px}
+.br-c{width:110px;height:110px;border-radius:50%;background:var(--bib-fill);color:var(--on-yel);display:grid;place-items:center;font-family:var(--font-d);font-weight:700;font-size:2.4rem;transform:scale(1)}
+.br-c.grow{transform:scale(1.55);transition:transform 4s ease-in-out}
+.br-c.big{transform:scale(1.55)}
+.br-c.shrink{transform:scale(1);transition:transform 4s ease-in-out}
+.br-txt{text-align:center;font-family:var(--font-d);font-weight:700;font-size:1.6rem}
+#br-rounds{text-align:center}
+@media (prefers-reduced-motion:reduce){.br-c.grow,.br-c.shrink{transition:none}}
+.swaps{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));margin-top:10px}
+.swap{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--bg)}
+.sdot{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:50%;border:1.5px solid var(--line);font-weight:700;color:var(--muted)}
+.sdot.on{background:var(--bib-fill);border-color:var(--bib-fill);color:var(--on-yel)}
+.exs li{grid-template-columns:2.6rem 1fr}
+.tickb{width:30px;height:30px;border-radius:50%;border:2px solid var(--pitch);background:transparent;color:var(--on-yel);font-weight:700;cursor:pointer;display:grid;place-items:center;padding:0}
+.tickb[aria-pressed="true"]{background:var(--bib-fill);border-color:var(--bib-fill)}
 @media (max-width:480px){.cell{min-height:54px}.tip{grid-template-columns:1fr;gap:2px}.card{padding:16px}}
 </style>
 
@@ -254,9 +280,9 @@ const longDate=k=>{const d=parseKey(k);return DAYS[d.getDay()]+' '+d.getDate()+'
 
 /* ---------- state ---------- */
 const DEF={profile:{name:'',age:'a2',pos:'mid',wake:'07:00',leave:'08:15',bed:'21:30',who:'f',dur:45,travel:20,early:15,diet:[],setup:false},
-  week:{0:'recover',1:'rest',2:'train',3:'solo',4:'train',5:'rest',6:'match'},overrides:{},weather:{},ticks:{},shuffle:{},rec:{jug:0,left:0,right:0},chal:{},picks:{},team:{week:{},dates:{}},teamRow:{},feel:{},diary:{},focus:{},recHist:{},matches:[],mTicks:{},goals:[],sleep:{},badges:{},mday:{ko:'10:00',len:60},daily:{},gifts:[],giftRoll:{},shop:{ticks:{},extra:[]},_t:0};
+  week:{0:'recover',1:'rest',2:'train',3:'solo',4:'train',5:'rest',6:'match'},overrides:{},weather:{},ticks:{},shuffle:{},rec:{jug:0,left:0,right:0},chal:{},picks:{},team:{week:{},dates:{}},teamRow:{},feel:{},diary:{},focus:{},recHist:{},matches:[],mTicks:{},goals:[],sleep:{},badges:{},mday:{ko:'10:00',len:60},daily:{},gifts:[],giftRoll:{},shop:{ticks:{},extra:[]},quiz:{done:0,perfect:0,best:{}},mind:{breaths:0,days:{},strengths:['','',''],good:{}},str:{days:{},t:{}},_t:0};
 let S=JSON.parse(JSON.stringify(DEF));
-function merge(o){S=Object.assign({},JSON.parse(JSON.stringify(DEF)),o);S.teamRow=S.teamRow||{};S.profile=Object.assign({},DEF.profile,o.profile||{});S.week=Object.assign({},DEF.week,o.week||{});S.rec=Object.assign({},DEF.rec,o.rec||{});S.mday=Object.assign({},DEF.mday,o.mday||{});S.badges=S.badges||{};S.daily=S.daily||{};S.gifts=S.gifts||[];S.giftRoll=S.giftRoll||{};S.shop=Object.assign({},DEF.shop,o.shop||{});S.shop.ticks=S.shop.ticks||{};S.shop.extra=S.shop.extra||[];S.team=Object.assign({},DEF.team,o.team||{});S.team.week=S.team.week||{};S.team.dates=S.team.dates||{}}
+function merge(o){S=Object.assign({},JSON.parse(JSON.stringify(DEF)),o);S.teamRow=S.teamRow||{};S.profile=Object.assign({},DEF.profile,o.profile||{});S.week=Object.assign({},DEF.week,o.week||{});S.rec=Object.assign({},DEF.rec,o.rec||{});S.mday=Object.assign({},DEF.mday,o.mday||{});S.badges=S.badges||{};S.daily=S.daily||{};S.gifts=S.gifts||[];S.giftRoll=S.giftRoll||{};S.shop=Object.assign({},DEF.shop,o.shop||{});S.shop.ticks=S.shop.ticks||{};S.shop.extra=S.shop.extra||[];S.team=Object.assign({},DEF.team,o.team||{});S.team.week=S.team.week||{};S.team.dates=S.team.dates||{};S.quiz=Object.assign({},DEF.quiz,o.quiz||{});S.quiz.best=S.quiz.best||{};S.mind=Object.assign({},JSON.parse(JSON.stringify(DEF.mind)),o.mind||{});S.mind.days=S.mind.days||{};S.mind.good=S.mind.good||{};S.mind.strengths=S.mind.strengths||['','',''];S.str=Object.assign({},DEF.str,o.str||{});S.str.days=S.str.days||{};S.str.t=S.str.t||{}}
 function load(){try{const v=localStorage.getItem('pitchplan_v1');if(v)merge(JSON.parse(v))}catch(e){}}
 function save(){S._t=Date.now();try{localStorage.setItem('pitchplan_v1',JSON.stringify(S))}catch(e){}if(window.__footy&&window.__footy.onSave)window.__footy.onSave();try{renderAcct()}catch(e){}}
 load();
@@ -1275,7 +1301,7 @@ function viewGifts(){
   return h+'</section>';
 }
 const BN=[['today','Today','<path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/>'],['calendar','Calendar','<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>'],['meals','Meals','<path d="M7 3v8M4 3v5a3 3 0 0 0 6 0V3M7 11v10M17 3c-2 2-3 5-3 8h3v10"/>'],['diary','Diary','<path d="M5 3h12a2 2 0 0 1 2 2v16H7a2 2 0 0 1-2-2z"/><path d="M9 8h6M9 12h6"/>'],['more','More','<circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/>']];
-const MORE=[['routines','Routines','Morning and night steps'],['match','Match day','Checklist and match log'],['goals','Goals','Set targets and track them'],['badges','Badges','Streaks and achievements'],['sleep','Sleep','Sleep and mood log'],['home','At home','Small-space sessions'],['tips','Tips','Tips, records and challenges'],['me','Me','Your settings and backup']];
+const MORE=[['routines','Routines','Morning and night steps'],['match','Match day','Checklist and match log'],['goals','Goals','Set targets and track them'],['quiz','Quizzes','Test your football brain'],['mind','Mind','Calm, confidence and support'],['strength','Strength','Safe bodyweight sessions'],['badges','Badges','Streaks and achievements'],['sleep','Sleep','Sleep and mood log'],['home','At home','Small-space sessions'],['tips','Tips','Tips, records and challenges'],['me','Me','Your settings']];
 function viewMore(){return '<section class="card"><h2>More</h2><p class="sub">Everything else in Pitch Plan.</p><div class="more-grid">'+MORE.map(m=>'<button data-a="tab" data-v="'+m[0]+'"><b>'+m[1]+'</b><span>'+m[2]+'</span></button>').join('')+'</div></section>'}
 /* drill pictures */
 const SVGH={
@@ -1368,7 +1394,15 @@ function badgeData(){
    ['k1','Gift opener','Open your first surprise gift',S.gifts.some(g=>g.opened)],
    ['k5','Sticker collector','Collect 5 different stickers',new Set(S.gifts.filter(g=>g.opened&&g.r.kind==='sticker').map(g=>g.r.name)).size>=5],
    ['kg','Golden find','Find a golden sticker',S.gifts.some(g=>g.opened&&g.r.rare)],
-   ['mr','Morning routine pro','Tick 3 morning steps, 3 days in a row',sd.morn.best>=3]
+   ['mr','Morning routine pro','Tick 3 morning steps, 3 days in a row',sd.morn.best>=3],
+   ['q1','Quiz starter','Finish a football quiz',S.quiz.done>=1],
+   ['q2','Full marks','Get 5 out of 5 in a quiz',S.quiz.perfect>=1],
+   ['q3','Quiz regular','Finish 10 quizzes',S.quiz.done>=10],
+   ['t1','Strength starter','Log your first strength session',Object.keys(S.str.days).length>=1],
+   ['t2','Getting stronger','Log 5 strength sessions',Object.keys(S.str.days).length>=5],
+   ['t3','Strong season','Log 15 strength sessions',Object.keys(S.str.days).length>=15],
+   ['n1','Calm player','Finish a breathing session',S.mind.breaths>=1],
+   ['n3','Good things','Write down good things on 3 days',Object.keys(S.mind.good).length>=3]
   ];
   return {B,sd};
 }
@@ -1388,8 +1422,172 @@ function viewBadges(){
   return h;
 }
 
-const VIEWS={badges:viewBadges,more:viewMore,today:viewToday,routines:viewRoutines,calendar:viewCalendar,diary:viewDiary,match:viewMatch,goals:viewGoals,sleep:viewSleep,home:viewHome,meals:viewMeals,tips:viewTips,me:viewMe};
-const TABN={today:'Today',routines:'Routines',calendar:'Calendar',diary:'Diary',match:'Match day',goals:'Goals',sleep:'Sleep',home:'At home',meals:'Meals',tips:'Tips',me:'Me'};
+/* ---------- quizzes, mind and strength ---------- */
+const QCAT={rules:'The rules',tactics:'Positions and tactics',body:'Body and food',world:'Football world',mix:'Mixed'};
+const QZ={
+ rules:[
+  ['How many players does each team have on the pitch in a normal match, including the goalkeeper?',['11','9','10','12'],0,'Eleven a side, including the goalkeeper. Younger age groups often play smaller-sided games.'],
+  ['Where can a goalkeeper pick the ball up with their hands?',['Inside their own penalty area','Anywhere in their own half','Anywhere on the pitch','Only inside the six-yard box'],0,'A keeper can handle the ball inside their own penalty area, but not from a deliberate pass back from a team-mate’s foot.'],
+  ['What does a yellow card mean?',['A caution: a warning from the referee','You are sent off','A free kick to the other team','You must swap with a substitute'],0,'A yellow card is a caution. Two yellows in one match means a red card.'],
+  ['What happens if a player gets two yellow cards in one match?',['They are sent off','Nothing, the game carries on','They miss the second half only','The coach is told off'],0,'A second yellow card becomes a red card, and the player must leave the pitch.'],
+  ['Can a player be offside straight from a throw-in?',['No','Yes, always','Only in the first half','Only in the penalty area'],0,'You cannot be offside from a throw-in, a goal kick or a corner.'],
+  ['What restarts the game when the ball crosses the touchline (the side line)?',['A throw-in','A goal kick','A corner kick','A free kick'],0,'A throw-in goes to the team that did not touch the ball last.'],
+  ['How far is the penalty spot from the goal line?',['About 11 metres (12 yards)','About 5 metres','About 20 metres','About 30 metres'],0,'The penalty spot is 12 yards, or about 11 metres, from the goal line.'],
+  ['Can you score straight from a corner kick?',['Yes','No, someone else must touch it first','Only if the keeper touches it','Only in the second half'],0,'A goal can be scored directly from a corner kick. Curl it in and aim for the far post.'],
+  ['How long is each half in a full adult match?',['45 minutes','30 minutes','40 minutes','60 minutes'],0,'Adult matches are two halves of 45 minutes, plus added time. Younger age groups play shorter games.'],
+  ['What happens if a defender deliberately handles the ball?',['It is a foul and the other team gets a free kick','Play carries on','The game restarts with a throw-in','The ball is dropped'],0,'Deliberate handball is a foul. Inside the penalty area it is a penalty.']
+ ],
+ tactics:[
+  ['What does a centre-back mainly do?',['Defend the middle, win headers and block shots','Take all the corners','Play out wide to cross the ball','Stay up front to score'],0,'Centre-backs protect the middle of the goal, win the ball in the air and block shots.'],
+  ['A formation shown as 4-4-2 means...',['4 defenders, 4 midfielders, 2 strikers','4 strikers and 2 defenders','4 subs, 4 keepers, 2 coaches','4 passes, 4 shots, 2 goals'],0,'The numbers go from defence to attack. The goalkeeper is not counted.'],
+  ['What is pressing?',['Closing down the other team quickly to win the ball back','Kicking the ball as hard as you can','Standing still to save energy','Passing back to the keeper'],0,'Pressing means working together to close space and win the ball back high up the pitch.'],
+  ['What is a through ball?',['A pass into the space behind defenders for a team-mate to run on to','A shot that goes through the keeper’s legs','A ball kicked out of play','A pass straight to the nearest opponent'],0,'A good through ball needs a good run as well as a good pass.'],
+  ['Why should you scan (look around) before you get the ball?',['So you know where the space and your team-mates are','To check the time','To look at the crowd','It makes you run faster'],0,'Players who scan make quicker, better choices with the ball.'],
+  ['What does jockeying mean when you defend?',['Staying goal-side and slowing the attacker down without diving in','Jumping on the attacker’s back','Running away from the ball','Kicking the ball out of play'],0,'Jockey: stay on your toes, keep your body side-on and wait for the attacker to make a mistake.'],
+  ['What is an overlap?',['A player runs around the outside of a team-mate to get the ball','Two players kicking the ball at once','When the match goes over time','When the ball hits both posts'],0,'Overlaps create extra width and give the player on the ball another option.'],
+  ['Why does a team play with width?',['To stretch the other team and create gaps','To stay near the touchline for fun','To waste time','To avoid tackling'],0,'Spreading out makes the defenders move apart so there is more space in the middle.'],
+  ['What is a sweeper keeper?',['A keeper who comes out of the box to clear danger','A keeper who only stays on the line','A keeper who takes penalties','A keeper who plays up front'],0,'Sweeper keepers read the game and clear balls played in behind the defence.'],
+  ['What is a one-two (or give and go)?',['Pass to a team-mate, run past the defender and get it straight back','Two shots in a row','Two corners in a row','Kicking with each foot once'],0,'It is one of the quickest ways to beat a defender.']
+ ],
+ body:[
+  ['What is the best drink for most training sessions?',['Water','Energy drink','Fizzy drink','Strong coffee'],0,'Water is best. Sip a little often rather than gulping a lot at once.'],
+  ['Why do you warm up before training?',['To raise your heart rate and get your muscles ready','To use up the time','To get tired before you start','Only to keep warm'],0,'A good warm-up helps you perform and helps lower your injury risk.'],
+  ['What is the main job of carbohydrates (like pasta, rice and bread)?',['Giving your muscles energy','Making your bones longer','Helping you sleep','Cleaning your teeth'],0,'Carbs are your main fuel for football.'],
+  ['What is protein mostly used for?',['Repairing and building muscles','Making you jump higher straight away','Giving you quick sugar energy','Making you taller overnight'],0,'Eggs, fish, chicken, beans, milk and yoghurt all have protein.'],
+  ['About how much sleep do most 12 to 14 year olds need?',['8 to 10 hours','4 to 5 hours','6 hours','12 to 14 hours'],0,'Sleep is when your body repairs itself and your brain stores what you practised.'],
+  ['When is the best time for a long, held stretch?',['After training, when your muscles are warm','Before a sprint, when you are cold','Only the day after','Never'],0,'Save long held stretches for after you have trained. Before, use dynamic moves such as leg swings.'],
+  ['Which is a sign you need to drink more water?',['Dark yellow wee and a headache','Pale, clear wee','Feeling full of energy','Warm hands'],0,'Pale yellow wee usually means you are drinking enough.'],
+  ['Why do a cool-down after training?',['To let your heart rate come down gradually','To get your boots dirty','To burn more energy','There is no reason'],0,'A short walk or jog and some gentle stretching helps you recover.'],
+  ['Which is a good snack soon after training?',['Milk or yoghurt with a banana','Only sweets','Nothing at all','A big bag of crisps only'],0,'After training your body likes carbohydrate plus protein, such as a sandwich, milk and fruit.'],
+  ['What should you do if you take a knock to the head in a match?',['Stop and tell an adult, then get checked','Keep playing, it is fine','Wait until the end of the match','Splash it with cold water and carry on'],0,'If in doubt, sit it out. Head injuries always need an adult and a proper check.']
+ ],
+ world:[
+  ['Who did England beat in the final of the Women’s Euros in 2022?',['Germany','Spain','France','Sweden'],0,'The Lionesses beat Germany 2-1 at Wembley after extra time.'],
+  ['Who captained England at the 2022 Women’s Euros?',['Leah Williamson','Jill Scott','Ellen White','Lucy Bronze'],0,'Leah Williamson lifted the trophy for England.'],
+  ['Which country hosted the first Women’s World Cup in 1991?',['China','Brazil','England','Italy'],0,'The USA won that first tournament.'],
+  ['Which country wrote down the first rules of modern football in 1863?',['England','Brazil','Germany','Argentina'],0,'The Football Association was formed in London in 1863.'],
+  ['In which city is Wembley Stadium?',['London','Manchester','Cardiff','Liverpool'],0,'Wembley is the home of the England teams in London.'],
+  ['How often is the World Cup held?',['Every 4 years','Every year','Every 2 years','Every 10 years'],0,'The men’s and women’s World Cups are each held every four years.'],
+  ['What is a hat-trick?',['Three goals by one player in a match','Three corners in a row','Three yellow cards','Winning three matches'],0,'It is three goals by the same player in one game.'],
+  ['What is a clean sheet?',['A match where a team does not concede a goal','A pitch with no markings','A new kit','A goal scored in the first minute'],0,'Keepers and defenders love a clean sheet.'],
+  ['How wide is a full-size goal?',['About 7.3 metres (8 yards)','About 3 metres','About 12 metres','About 1.5 metres'],0,'A full-size goal is 8 yards wide and 8 feet high. Youth games use smaller goals.'],
+  ['What is the centre circle for?',['Opponents must stay outside it at kick-off','Where only the keeper can stand','Where penalties are taken','It has no use'],0,'At kick-off the other team must stay outside the circle until the ball is kicked.']
+ ]
+};
+QZ.mix=[].concat(QZ.rules,QZ.tactics,QZ.body,QZ.world);
+function qzShuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));const t=a[i];a[i]=a[j];a[j]=t}return a}
+function qzStart(cat){
+  const qs=qzShuffle(QZ[cat]).slice(0,5).map(q=>{const opts=qzShuffle(q[1].map((t,i)=>({t:t,ok:i===q[2]})));return {q:q[0],opts:opts,why:q[3]}});
+  ui.qz={cat:cat,qs:qs,i:0,sel:null,score:0,fin:false};
+}
+function viewQuiz(){
+  const Q=S.quiz,z=ui.qz;
+  if(!z){
+    let h='<section class="card"><h2>Football quizzes</h2><p class="sub">Five questions each time, picked at random. Answers come with a quick explanation, so you learn as you play.</p><div class="more-grid">'+
+     Object.keys(QCAT).map(c=>{const b=Q.best[c];return '<button data-a="qz-start" data-v="'+c+'"><b>'+QCAT[c]+'</b><span>'+(b!=null?'Best score: '+b+' out of 5':'Not played yet')+'</span></button>'}).join('')+'</div></section>';
+    h+='<section class="card"><h3>Your quiz record</h3><div class="cols2" style="margin-top:10px"><div><div class="small">Quizzes finished</div><div class="min" style="font-size:2.2rem">'+Q.done+'</div></div><div><div class="small">Full marks</div><div class="min" style="font-size:2.2rem">'+Q.perfect+'</div></div></div></section>';
+    return h;
+  }
+  if(z.fin){
+    const m=z.score===5?'Full marks. Brilliant!':z.score>=4?'Great score.':z.score>=3?'Good effort. Have another go to beat it.':'Keep going. Every quiz teaches you something new.';
+    return '<section class="card"><h2>'+QCAT[z.cat]+'</h2><p class="sub">Quiz finished</p><div class="min" style="font-size:3.4rem;margin:8px 0">'+z.score+'<span class="small"> out of 5</span></div><p>'+m+'</p><div class="row" style="margin-top:14px"><button class="btn" data-a="qz-start" data-v="'+z.cat+'">Play again</button><button class="btn alt" data-a="qz-quit">Choose another quiz</button></div></section>';
+  }
+  const q=z.qs[z.i],ans=z.sel!=null;
+  let h='<section class="card"><div class="sec-head"><h2>'+QCAT[z.cat]+'</h2><span class="small">Question '+(z.i+1)+' of 5</span></div><div class="qprog" aria-hidden="true"><span style="width:'+(z.i*20+(ans?20:0))+'%"></span></div><p class="chal-text">'+esc(q.q)+'</p><div class="qopts" role="group" aria-label="Answers">'+
+   q.opts.map((o,i)=>{let c='qopt';if(ans){if(o.ok)c+=' ok';else if(i===z.sel)c+=' bad'}return '<button class="'+c+'" data-a="qz-ans" data-v="'+i+'"'+(ans?' disabled':'')+'>'+esc(o.t)+'</button>'}).join('')+'</div>';
+  if(ans){const ok=q.opts[z.sel].ok;h+='<div class="note" role="status" style="margin-top:12px"><b>'+(ok?'Correct.':'Not this time.')+'</b> '+esc(q.why)+'</div><div class="row" style="margin-top:12px"><button class="btn" data-a="qz-next">'+(z.i===4?'See my score':'Next question')+'</button></div>'}
+  else h+='<div class="row" style="margin-top:12px"><button class="btn alt" data-a="qz-quit">Stop quiz</button></div>';
+  return h+'</section>';
+}
+
+/* mind */
+const BR=[['Breathe in',4],['Hold',4],['Breathe out',4],['Hold',4]];
+let brTick=null;
+function brStop(quiet){clearInterval(brTick);brTick=null;if(ui.br&&ui.br.on){ui.br.on=false;if(!quiet)render(true)}}
+function brPaint(){
+  const b=ui.br;if(!b)return;const t=$('#br-txt'),n=$('#br-num'),c=$('#br-c'),r=$('#br-rounds');
+  if(t)t.textContent=BR[b.p][0];if(n)n.textContent=b.left;if(r)r.textContent='Round '+(b.round)+' of 6';
+  if(c){c.className='br-c'+(b.p===0?' grow':b.p===1?' big':b.p===2?' shrink':'')}
+}
+function brStart(){
+  brStop(true);ui.br={on:true,p:0,left:BR[0][1],round:1};render(true);
+  setTimeout(brPaint,30);
+  brTick=setInterval(()=>{
+    const b=ui.br;if(!b||!b.on){clearInterval(brTick);return}
+    b.left--;
+    if(b.left<=0){b.p++;if(b.p>3){b.p=0;b.round++}
+      if(b.round>6){clearInterval(brTick);brTick=null;b.on=false;b.done=true;S.mind.breaths++;S.mind.days[today]=true;save();render(true);return}
+      b.left=BR[b.p][1]}
+    brPaint();
+  },1000);
+}
+function viewMind(){
+  const M=S.mind,b=ui.br||{};
+  let h='<section class="card"><h2>Mind</h2><p class="sub">Football is played with your head as much as your feet. These short tools help you stay calm, bounce back and back yourself.</p></section>';
+  h+='<section class="card"><h3>Calm breathing</h3><p class="sub">Six slow rounds, about 1 and a half minutes. Good before a match, before bed or when you feel wound up.</p><div class="br-wrap"><div id="br-c" class="br-c" aria-hidden="true"><span id="br-num">'+(b.on?b.left:'')+'</span></div></div><p id="br-txt" class="br-txt" role="status">'+(b.on?BR[b.p][0]:b.done?'Nicely done. Notice how you feel.':'Ready when you are')+'</p><p class="small" id="br-rounds">'+(b.on?'Round '+b.round+' of 6':'')+'</p><div class="row" style="margin-top:10px"><button class="btn" data-a="mi-br">'+(b.on?'Stop':'Start breathing')+'</button></div>'+(M.breaths?'<p class="small" style="margin-top:8px">Breathing sessions finished: '+M.breaths+'</p>':'')+'</section>';
+  h+='<section class="card"><h3>Before a match</h3><p class="sub">Feeling nervous means you care. It is normal, and it can help you play sharper.</p><ul class="kit"><li>Breathe out slowly. A long breath out tells your body to settle.</li><li>Pick one job for the first five minutes, such as “win my first header” or “pass and move”.</li><li>Picture your best moment: a good pass, a good tackle, a smile after it.</li><li>Listen to a favourite song while you get ready.</li><li>Say a short phrase to yourself, such as “I belong here” or “next ball”.</li></ul></section>';
+  h+='<section class="card"><h3>Bounce back from a mistake</h3><p class="sub">Every player makes mistakes, including the pros. What matters is the next action.</p><ol class="kit"><li><b>Breathe.</b> One slow breath out.</li><li><b>Reset.</b> Say your word, such as “next”, and touch your shirt or your socks.</li><li><b>Next job.</b> Move to a space and get back to work.</li></ol></section>';
+  h+='<section class="card"><h3>Say it differently</h3><div class="swaps">'+[['I’m rubbish at this.','I’m still learning this.'],['I always mess up.','I can fix that. What can I try next?'],['Everyone is better than me.','I will compare myself with who I was last month.'],['I can’t do it.','I can’t do it yet.'],['I have to be perfect.','I can give my best effort.']].map(x=>'<div class="swap"><span class="small">Instead of</span><div>“'+x[0]+'”</div><span class="small">Try</span><div><b>“'+x[1]+'”</b></div></div>').join('')+'</div></section>';
+  h+='<section class="card"><h3>My strengths</h3><p class="sub">Write three things you are good at, on or off the pitch. Read them before a match.</p><div class="form" style="margin-top:10px">'+[0,1,2].map(i=>'<div class="field"><label for="mi-s'+i+'">Strength '+(i+1)+'</label><input id="mi-s'+i+'" type="text" maxlength="60" value="'+esc(M.strengths[i]||'')+'"></div>').join('')+'</div><div class="row"><button class="btn" data-a="mi-str">Save my strengths</button></div>'+(ui.miMsg==='s'?'<div class="note" role="status" style="margin-top:10px">Saved.</div>':'')+'</section>';
+  const g=M.good[today]||[];
+  h+='<section class="card"><h3>Three good things</h3><p class="sub">Writing down good moments each day helps you notice them. Big or small counts.</p><div class="form" style="margin-top:10px">'+[0,1,2].map(i=>'<div class="field"><label for="mi-g'+i+'">Good thing '+(i+1)+'</label><input id="mi-g'+i+'" type="text" maxlength="80" value="'+esc(g[i]||'')+'"></div>').join('')+'</div><div class="row"><button class="btn" data-a="mi-good">Save today</button></div>'+(ui.miMsg==='g'?'<div class="note" role="status" style="margin-top:10px">Saved. Nice work.</div>':'');
+  const past=Object.keys(M.good).filter(k=>k!==today&&M.good[k].length).sort().reverse().slice(0,5);
+  if(past.length)h+='<ul class="tl" style="margin-top:12px">'+past.map(k=>'<li style="grid-template-columns:5rem 1fr"><span class="tm" style="font-size:1.05rem">'+longDate(k)+'</span><span>'+M.good[k].map(esc).join(', ')+'</span></li>').join('')+'</ul>';
+  h+='</section>';
+  h+='<section class="card"><h3>If things feel heavy</h3><p>Everyone has hard days. If you feel worried, down or under pressure for more than a few days, tell someone you trust: a parent or carer, a coach, a teacher or a friend. Talking really does help.</p><ul class="kit"><li><b>Childline:</b> free and private for under 19s in the UK. Call 0800 1111.</li><li><b>Shout:</b> text SHOUT to 85258, any time, for free.</li><li><b>Emergency:</b> if you or someone else is in danger, call 999.</li></ul><p class="small" style="margin-top:8px">You can also log how you feel in <a href="#sleep" style="color:inherit"><b>Sleep and mood</b></a>.</p></section>';
+  return h;
+}
+
+/* strength */
+const EXD={
+ squat:{n:'Bodyweight squat',r:['2 × 8','3 × 10','3 × 12'],how:'Feet shoulder-width apart. Sit back and down as if sitting on a chair, chest up, knees over toes. Stand tall.',easy:'Squat to a chair and stand up.',hard:'Add a pause for 2 seconds at the bottom.'},
+ lunge:{n:'Reverse lunge',r:['2 × 5 each leg','3 × 6 each leg','3 × 8 each leg'],how:'Step one foot back, lower your back knee towards the floor, then push through the front foot to stand.',easy:'Hold a wall or chair for balance.',hard:'Pause for 2 seconds at the bottom.'},
+ bridge:{n:'Glute bridge',r:['2 × 8','3 × 10','3 × 12'],how:'Lie on your back, knees bent. Push your heels down and lift your hips until your body is a straight line. Squeeze your bum, then lower slowly.',easy:'Lift just a little way.',hard:'Lift one foot off the floor (single-leg bridge).'},
+ calf:{n:'Calf raise',r:['2 × 10','3 × 12','3 × 15'],how:'Stand tall, rise up onto your toes, pause, and lower slowly.',easy:'Hold a wall for balance.',hard:'Do it on one leg.'},
+ land:{n:'Jump and soft landing',r:['2 × 4','3 × 5','3 × 6'],how:'Jump up, land on both feet with your knees bent and soft, knees pointing the same way as your toes. Hold still for 2 seconds.',easy:'Do a small hop.',hard:'Land on one foot and hold.'},
+ plank:{n:'Plank',r:['2 × 15 seconds','3 × 20 seconds','3 × 30 seconds'],how:'Forearms on the floor, body in a straight line from head to heels. Squeeze your tummy and breathe.',easy:'Do it with your knees down.',hard:'Lift one foot for a moment.'},
+ side:{n:'Side plank',r:['2 × 10 seconds each side','3 × 15 seconds each side','3 × 20 seconds each side'],how:'Lie on your side, forearm under your shoulder. Lift your hips so your body is straight.',easy:'Keep your knees bent and on the floor.',hard:'Lift your top leg.'},
+ dead:{n:'Dead bug',r:['2 × 5 each side','3 × 6 each side','3 × 8 each side'],how:'On your back, arms up and knees bent over hips. Lower the opposite arm and leg slowly, keeping your back flat to the floor. Switch sides.',easy:'Move just your legs.',hard:'Move more slowly.'},
+ bird:{n:'Bird dog',r:['2 × 5 each side','3 × 6 each side','3 × 8 each side'],how:'On hands and knees, reach one arm and the opposite leg out long. Hold for 2 seconds. Keep your hips level.',easy:'Lift only your legs.',hard:'Hold for 5 seconds.'},
+ balance:{n:'Single-leg balance',r:['2 × 20 seconds each leg','3 × 30 seconds each leg','3 × 30 seconds each leg'],how:'Stand on one leg with a soft knee. Keep your hips level and your eyes on a spot ahead.',easy:'Hold a wall with one finger.',hard:'Close your eyes, or pass a ball from hand to hand.'},
+ incline:{n:'Incline push-up',r:['2 × 6','3 × 8','3 × 10'],how:'Hands on a sturdy bench, sofa edge or wall, body in one straight line. Lower your chest to the surface, then push away.',easy:'Use a wall.',hard:'Use a lower surface, or the floor.'},
+ inch:{n:'Inchworm walk-out',r:['2 × 4','3 × 5','3 × 6'],how:'Stand tall, bend and place hands on the floor, walk your hands out to a plank, then walk your feet in and stand up.',easy:'Walk out only halfway.',hard:'Add a slow push-up at the end.'},
+ bear:{n:'Bear crawl',r:['2 × 10 seconds','3 × 15 seconds','3 × 20 seconds'],how:'On hands and toes with knees just off the floor, crawl forward slowly, opposite hand and foot together.',easy:'Crawl on your knees.',hard:'Crawl backwards too.'},
+ super:{n:'Superman',r:['2 × 6','3 × 8','3 × 10'],how:'Lie on your front, arms out long. Lift your arms, chest and legs a little, hold for 2 seconds, and lower.',easy:'Lift only your arms.',hard:'Hold for 4 seconds.'},
+ skater:{n:'Skater step',r:['2 × 6 each side','3 × 8 each side','3 × 10 each side'],how:'Step out wide to one side, land on one leg, then bound back to the other side. Keep your knee soft and over your toes.',easy:'Step instead of bound.',hard:'Hold the landing for 2 seconds.'}
+};
+const STS=[['legs','Legs and landing',['squat','lunge','bridge','calf','land']],['core','Core and balance',['plank','side','dead','bird','balance']],['upper','Upper body',['incline','inch','bear','super','plank']],['full','Full body mix',['squat','bridge','incline','plank','skater']]];
+const STL=['Starter','Steady','Strong'];
+function strWeek(){const d=parseKey(today),mon=addDays(d,-((d.getDay()+6)%7));let n=0;for(let i=0;i<7;i++){if(S.str.days[dkey(addDays(mon,i))])n++}return n}
+function viewStrength(){
+  const Z=S.str,sid=ui.stS||'legs',lvl=ui.stL!=null?ui.stL:({a1:0,a2:1,a3:1}[S.profile.age]||0),ses=STS.filter(x=>x[0]===sid)[0]||STS[0],wk=strWeek(),done=!!Z.days[today];
+  let h='<section class="card"><h2>Strength</h2><p class="sub">Strong legs, hips and core help you sprint, jump, change direction and stay injury-free. Young players build strength safely with their own body weight.</p><div class="note" style="margin-top:10px"><b>Keep it safe.</b> Warm up first. Take your time over each move, and good technique comes before lots of reps. No heavy weights or max lifts at your age. Stop if anything hurts and tell an adult. If you want to use a gym, ask a qualified coach to supervise.</div></section>';
+  h+='<section class="card"><h3>This week</h3><p class="sub">Aim for 2 or 3 short sessions on different days, not back to back.</p><div class="row" style="margin-top:8px">'+[1,2,3].map(i=>'<span class="sdot'+(wk>=i?' on':'')+'" aria-hidden="true">'+(wk>=i?'✓':i)+'</span>').join('')+'<span class="small">'+wk+' of 3 done'+(wk>=3?'. Great week!':'')+'</span></div></section>';
+  h+='<section class="card"><h3>Pick a session</h3><div class="chips" role="group" aria-label="Session">'+STS.map(x=>'<button class="chip" data-a="st-ses" data-v="'+x[0]+'" aria-pressed="'+(x[0]===ses[0])+'">'+x[1]+'</button>').join('')+'</div><div class="lab small">Level</div><div class="chips" role="group" aria-label="Level">'+STL.map((x,i)=>'<button class="chip" data-a="st-lvl" data-v="'+i+'" aria-pressed="'+(i===lvl)+'">'+x+'</button>').join('')+'</div><p class="small">Starter is a good place to begin. Move up when every rep feels easy and tidy.</p></section>';
+  h+='<section class="card"><h3>'+ses[1]+'</h3><p class="sub">About 15 to 20 minutes. Rest 30 to 60 seconds between sets. Tick each move as you finish it.</p><ul class="tl exs">'+ses[2].map(id=>{const e=EXD[id],kk=today+'|'+ses[0]+'|'+id,on=!!Z.t[kk];return '<li><button class="tickb" data-a="st-tick" data-k="'+kk+'" aria-pressed="'+on+'" aria-label="Done: '+esc(e.n)+'">'+(on?'✓':'')+'</button><div><b>'+esc(e.n)+'</b> <span class="tag">'+e.r[lvl]+'</span><p class="small" style="margin-top:2px;color:var(--ink)">'+esc(e.how)+'</p><p class="small"><b>Easier:</b> '+esc(e.easy)+' <b>Harder:</b> '+esc(e.hard)+'</p></div></li>'}).join('')+'</ul><div class="row" style="margin-top:12px">'+(done?'<span class="small"><b>Session logged for today.</b></span><button class="btn alt" data-a="st-unlog">Undo</button>':'<button class="btn" data-a="st-log">Log this session</button>')+'</div></section>';
+  h+='<section class="card"><h3>Cool-down stretches</h3><p class="sub">Hold each for about 20 to 30 seconds, gently, while your muscles are warm. Never stretch into pain.</p><ul class="kit"><li>Front of thigh: stand, pull your heel to your bum.</li><li>Back of thigh: sit with one leg straight, reach for your toes.</li><li>Calves: hands on a wall, one foot back with the heel down.</li><li>Hips: kneel on one knee and tilt your hips forward.</li><li>Bum: lie on your back and hug one knee across your chest.</li></ul></section>';
+  return h;
+}
+function extraAct(a,v,k,b){
+  const Z=S.str,M=S.mind;
+  switch(a){
+   case 'qz-start':qzStart(v);render(true);window.scrollTo(0,0);return;
+   case 'qz-ans':{const z=ui.qz;if(!z||z.sel!=null)return;z.sel=+v;if(z.qs[z.i].opts[z.sel].ok)z.score++;render(true);return}
+   case 'qz-next':{const z=ui.qz;if(!z)return;if(z.i===4){z.fin=true;S.quiz.done++;if(z.score===5)S.quiz.perfect++;if(S.quiz.best[z.cat]==null||z.score>S.quiz.best[z.cat])S.quiz.best[z.cat]=z.score;save()}else{z.i++;z.sel=null}render(true);window.scrollTo(0,0);return}
+   case 'qz-quit':ui.qz=null;render(true);return;
+   case 'mi-br':if(ui.br&&ui.br.on)brStop();else brStart();return;
+   case 'mi-str':case 'mi-good':{const rd=(pf,keep)=>[0,1,2].map(i=>{const el=$('#mi-'+pf+i);return el?el.value.trim():(keep[i]||'')});M.strengths=rd('s',M.strengths);const gd=rd('g',M.good[today]||[]).filter(Boolean);if(gd.length)M.good[today]=gd;else delete M.good[today];ui.miMsg=a==='mi-str'?'s':'g';break}
+   case 'st-ses':ui.stS=v;render(true);return;
+   case 'st-lvl':ui.stL=+v;render(true);return;
+   case 'st-tick':Z.t[k]=!Z.t[k];break;
+   case 'st-log':Z.days[today]=ui.stS||'legs';break;
+   case 'st-unlog':delete Z.days[today];break;
+  }
+  save();render(true);
+}
+
+const VIEWS={quiz:viewQuiz,mind:viewMind,strength:viewStrength,badges:viewBadges,more:viewMore,today:viewToday,routines:viewRoutines,calendar:viewCalendar,diary:viewDiary,match:viewMatch,goals:viewGoals,sleep:viewSleep,home:viewHome,meals:viewMeals,tips:viewTips,me:viewMe};
+const TABN={quiz:'Quizzes',mind:'Mind',strength:'Strength',today:'Today',routines:'Routines',calendar:'Calendar',diary:'Diary',match:'Match day',goals:'Goals',sleep:'Sleep',home:'At home',meals:'Meals',tips:'Tips',me:'Me'};
 function render(keepScroll){
   const y=window.scrollY;
   $('#tabs').innerHTML=Object.keys(TABN).map(t=>'<button data-a="tab" data-v="'+t+'"'+(ui.tab===t?' aria-current="page"':'')+'>'+TABN[t]+'</button>').join('');
@@ -1399,7 +1597,7 @@ function render(keepScroll){
   const c=$('#clock');if(c)c.textContent=longDate(today);
   renderAcct();
 }
-function go(tab,keep){ui.tab=tab;ui.msg='';ui.mMsg='';ui.gMsg='';ui.sMsg='';ui.reveal=null;ui.editRow=null;try{history.replaceState(null,'','#'+tab)}catch(e){};render(keep);if(!keep)window.scrollTo(0,0)}
+function go(tab,keep){try{brStop(true)}catch(e){}ui.tab=tab;ui.msg='';ui.mMsg='';ui.gMsg='';ui.sMsg='';ui.reveal=null;ui.editRow=null;try{history.replaceState(null,'','#'+tab)}catch(e){};render(keep);if(!keep)window.scrollTo(0,0)}
 
 /* ---------- session timer ---------- */
 let run=null,runTick=null;
@@ -1455,6 +1653,7 @@ document.addEventListener('click',e=>{
   if(ui.acct&&!e.target.closest('#acct-pop')&&!e.target.closest('#acct-btn')){ui.acct=false;renderAcct()}
   const b=e.target.closest('[data-a]');if(!b||b.tagName==='INPUT')return;
   const a=b.dataset.a,v=b.dataset.v,k=b.dataset.k;
+  if(/^(qz|mi|st)-/.test(a)){extraAct(a,v,k,b);return}
   if(a==='acct-toggle'){ui.acct=!ui.acct;acctLast='';renderAcct();if(ui.acct){const f=$('#cl-email');if(f)f.focus()}return}
   if(a!=='reset')ui.confirm=false;
   switch(a){
