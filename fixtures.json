@@ -1,5 +1,5 @@
 {
- "updated": "21 Oct 2026",
+ "updated": "25 Oct 2026, 19:10",
  "fixtures": [
   {
    "t": "mc",
@@ -11,31 +11,6 @@
     "TNT Sports 1",
     "TNT Sports Ultimate",
     "HBO Max"
-   ],
-   "note": "",
-   "tbc": false
-  },
-  {
-   "t": "aw",
-   "iso": "2026-10-24T12:45:00+01:00",
-   "comp": "Women’s Super League",
-   "h": "Tottenham",
-   "a": "Arsenal",
-   "ch": [
-    "BBC One",
-    "BBC iPlayer"
-   ],
-   "note": "",
-   "tbc": false
-  },
-  {
-   "t": "cw",
-   "iso": "2026-10-25T12:00:00+00:00",
-   "comp": "Women’s Super League",
-   "h": "Crystal Palace",
-   "a": "Chelsea",
-   "ch": [
-    "Sky Sports Mix"
    ],
    "note": "",
    "tbc": false
@@ -56,9 +31,9 @@
   {
    "t": "cw",
    "iso": "2026-10-28T17:45:00+00:00",
-   "comp": "Women’s Champions League",
-   "h": "Chelsea",
-   "a": "Roma",
+   "comp": "Women's Champions League League Phase",
+   "h": "Chelsea Women",
+   "a": "Roma Women",
    "ch": [
     "Disney+"
    ],
@@ -80,9 +55,9 @@
   {
    "t": "aw",
    "iso": "2026-10-28T20:00:00+00:00",
-   "comp": "Women’s Champions League",
-   "h": "Arsenal",
-   "a": "Benfica",
+   "comp": "Women's Champions League League Phase",
+   "h": "Arsenal Women",
+   "a": "Benfica Women",
    "ch": [
     "Disney+"
    ],
@@ -114,9 +89,9 @@
   {
    "t": "aw",
    "iso": "2026-11-01T12:00:00+00:00",
-   "comp": "Women’s Super League",
-   "h": "Arsenal",
-   "a": "Aston Villa",
+   "comp": "Women's Super League",
+   "h": "Arsenal Women",
+   "a": "Aston Villa Women",
    "ch": [
     "Sky Sports+"
    ],
@@ -126,9 +101,9 @@
   {
    "t": "cw",
    "iso": "2026-11-01T14:30:00+00:00",
-   "comp": "Women’s Super League",
-   "h": "Charlton Athletic",
-   "a": "Chelsea",
+   "comp": "Women's Super League",
+   "h": "Charlton Athletic Women",
+   "a": "Chelsea Women",
    "ch": [
     "BBC Two",
     "BBC iPlayer"
@@ -152,9 +127,9 @@
   {
    "t": "cw",
    "iso": "2026-11-07T12:45:00+00:00",
-   "comp": "Women’s Super League",
-   "h": "Chelsea",
-   "a": "Everton",
+   "comp": "Women's Super League",
+   "h": "Chelsea Women",
+   "a": "Everton Women",
    "ch": [
     "Sky Sports Premier League"
    ],
@@ -177,13 +152,13 @@
   {
    "t": "aw",
    "iso": "2026-11-08T12:00:00+00:00",
-   "comp": "Women’s Super League",
-   "h": "Liverpool",
-   "a": "Arsenal",
+   "comp": "Women's Super League",
+   "h": "Liverpool Women",
+   "a": "Arsenal Women",
    "ch": [
-    "Sky Sports"
+    "Sky Sports Football"
    ],
-   "note": "Channel unconfirmed",
+   "note": "",
    "tbc": false
   },
   {
@@ -202,9 +177,9 @@
   {
    "t": "cw",
    "iso": "2026-11-10T17:45:00+00:00",
-   "comp": "Women’s Champions League",
-   "h": "Häcken",
-   "a": "Chelsea",
+   "comp": "Women's Champions League League Phase",
+   "h": "Hacken Women",
+   "a": "Chelsea Women",
    "ch": [
     "Disney+"
    ],
@@ -213,10 +188,10 @@
   },
   {
    "t": "aw",
-   "iso": "2026-11-12T17:45:00+00:00",
-   "comp": "Women’s Champions League",
-   "h": "Barcelona",
-   "a": "Arsenal",
+   "iso": "2026-11-11T17:45:00+00:00",
+   "comp": "Women's Champions League League Phase",
+   "h": "Barcelona Women",
+   "a": "Arsenal Women",
    "ch": [
     "Disney+"
    ],
@@ -226,12 +201,11 @@
   {
    "t": "en",
    "iso": "2026-11-12T19:45:00+00:00",
-   "comp": "Nations League",
+   "comp": "UEFA Nations League Group Stage",
    "h": "England",
    "a": "Croatia",
    "ch": [
-    "ITV1",
-    "ITVX"
+    "ITV1"
    ],
    "note": "",
    "tbc": false
@@ -251,9 +225,9 @@
   {
    "t": "cw",
    "iso": "2026-11-14T13:30:00+00:00",
-   "comp": "Women’s Super League",
-   "h": "Chelsea",
-   "a": "Man City",
+   "comp": "Women's Super League",
+   "h": "Chelsea Women",
+   "a": "Manchester City Women",
    "ch": [
     "BBC One",
     "BBC iPlayer"
@@ -264,8 +238,8 @@
   {
    "t": "aw",
    "iso": "2026-11-15T16:30:00+00:00",
-   "comp": "Women’s Super League",
-   "h": "Arsenal",
+   "comp": "Women's Super League",
+   "h": "Arsenal Women",
    "a": "London City Lionesses",
    "ch": [
     "Sky Sports Main Event",
@@ -277,12 +251,23 @@
   {
    "t": "en",
    "iso": "2026-11-15T19:45:00+00:00",
-   "comp": "Nations League",
+   "comp": "UEFA Nations League Group Stage",
    "h": "Spain",
    "a": "England",
    "ch": [
-    "ITV1",
-    "ITVX"
+    "ITV1"
+   ],
+   "note": "",
+   "tbc": false
+  },
+  {
+   "t": "cw",
+   "iso": "2026-11-18T20:00:00+00:00",
+   "comp": "Women's Champions League League Phase",
+   "h": "Chelsea Women",
+   "a": "PSG Women",
+   "ch": [
+    "Disney+"
    ],
    "note": "",
    "tbc": false
@@ -290,9 +275,9 @@
   {
    "t": "aw",
    "iso": "2026-11-19T20:00:00+00:00",
-   "comp": "Women’s Champions League",
-   "h": "Arsenal",
-   "a": "Lyon",
+   "comp": "Women's Champions League League Phase",
+   "h": "Arsenal Women",
+   "a": "Lyon Women",
    "ch": [
     "Disney+"
    ],
@@ -316,9 +301,9 @@
   {
    "t": "cw",
    "iso": "2026-11-21T12:45:00+00:00",
-   "comp": "Women’s Super League",
-   "h": "Liverpool",
-   "a": "Chelsea",
+   "comp": "Women's Super League",
+   "h": "Liverpool Women",
+   "a": "Chelsea Women",
    "ch": [
     "Sky Sports Premier League",
     "Sky Sports Mix"
@@ -328,10 +313,10 @@
   },
   {
    "t": "aw",
-   "iso": "2026-11-22T12:30:00+00:00",
-   "comp": "Women’s Super League",
-   "h": "Arsenal",
-   "a": "West Ham",
+   "iso": "2026-11-22T14:30:00+00:00",
+   "comp": "Women's Super League",
+   "h": "Arsenal Women",
+   "a": "West Ham United Women",
    "ch": [
     "BBC Two",
     "BBC iPlayer"
@@ -355,13 +340,11 @@
   {
    "t": "li",
    "iso": "2026-11-26T12:00:00+00:00",
-   "comp": "World Cup play-off, 1st leg",
-   "h": "Ukraine",
-   "a": "England",
-   "ch": [
-    "ITV"
-   ],
-   "note": "Kick-off time and channel to be confirmed",
+   "comp": "FIFA Women's World Cup 2027 Play-Off 1st Leg",
+   "h": "Ukraine Women",
+   "a": "England Women",
+   "ch": [],
+   "note": "Kick-off time to be confirmed",
    "tbc": true
   },
   {
@@ -392,13 +375,11 @@
   {
    "t": "li",
    "iso": "2026-12-05T12:00:00+00:00",
-   "comp": "World Cup play-off, 2nd leg",
-   "h": "England",
-   "a": "Ukraine",
-   "ch": [
-    "ITV"
-   ],
-   "note": "Kick-off time and channel to be confirmed",
+   "comp": "FIFA Women's World Cup 2027 Play-Off 2nd Leg",
+   "h": "England Women",
+   "a": "Ukraine Women",
+   "ch": [],
+   "note": "Kick-off time to be confirmed",
    "tbc": true
   },
   {
@@ -443,9 +424,9 @@
   {
    "t": "aw",
    "iso": "2026-12-16T20:00:00+00:00",
-   "comp": "Women’s Champions League",
-   "h": "Inter",
-   "a": "Arsenal",
+   "comp": "Women's Champions League League Phase",
+   "h": "Inter Milan Women",
+   "a": "Arsenal Women",
    "ch": [
     "Disney+"
    ],
@@ -455,9 +436,9 @@
   {
    "t": "cw",
    "iso": "2026-12-16T20:00:00+00:00",
-   "comp": "Women’s Champions League",
-   "h": "OH Leuven",
-   "a": "Chelsea",
+   "comp": "Women's Champions League League Phase",
+   "h": "OH Leuven Women",
+   "a": "Chelsea Women",
    "ch": [
     "Disney+"
    ],
@@ -502,6 +483,5 @@
    "note": "",
    "tbc": false
   }
- ],
- "updated_iso": "2026-10-21T12:00:00+01:00"
+ ]
 }
