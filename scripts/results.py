@@ -23,11 +23,23 @@ def get(path, **params):
     r.raise_for_status()
     return r.json()
 
+def is_women(text):
+    return bool(re.search(r"women|wfc|w\.f\.c|ladies", text.lower()))
+
 def team_id(names):
+    women, seen = any(is_women(n) for n in names), []
     for n in names:
-        for t in get("searchteams.php", t=n).get("teams") or []:
-            if t.get("strSport") == "Soccer" and (t.get("strTeam") or "").lower() == n.lower():
+        base = re.sub(r"\s+(women|wfc|ladies)$", "", n.lower())
+        teams = [t for t in (get("searchteams.php", t=n).get("teams") or []) if t.get("strSport") == "Soccer"]
+        seen += [t.get("strTeam") for t in teams]
+        for t in teams:                      # exact name first
+            if (t.get("strTeam") or "").lower() == n.lower():
                 return t["idTeam"]
+        for t in teams:                      # then e.g. "Chelsea FC Women", never the men's side by mistake
+            name = (t.get("strTeam") or "").lower()
+            if name.startswith(base) and is_women(name) == women:
+                return t["idTeam"]
+    print(f"  no match; the service offered: {seen or 'nothing'}")
     return None
 
 def tidy(name):
@@ -63,8 +75,9 @@ def main():
             ids[key] = ids.get(key) or team_id(names)
             if not ids[key]:
                 print(f"::warning::results: no TheSportsDB team found for {key} ({names[0]})"); continue
-            got = [c for e in (get("eventslast.php", id=ids[key]).get("results") or []) if (c := convert(key, e))]
-            print(f"{key}: {len(got)} results")
+            events = get("eventslast.php", id=ids[key]).get("results") or []
+            got = [c for e in events if (c := convert(key, e))]
+            print(f"{key}: team id {ids[key]}, {len(events)} recent events, {len(got)} with scores")
             results = [r for r in results if r["t"] != key or (r["iso"], r["h"], r["a"]) not in {(g["iso"], g["h"], g["a"]) for g in got}] + got
         except Exception as ex:
             print(f"::warning::results: {key} failed ({ex})", file=sys.stderr)
