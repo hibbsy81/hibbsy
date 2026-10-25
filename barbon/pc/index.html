@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Parish Council – Barbon</title>
+<meta name="description" content="Barbon Parish Council – published meeting minutes.">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="../">Barbon<small>Village</small></a>
+    <nav class="site-nav" aria-label="Main">
+      <a href="../">Home</a>
+      <a href="../church/">St Bartholomew’s Church</a>
+      <a href="./" aria-current="page">Parish Council</a>
+      <a href="https://barbonvillagehall.co.uk/">Village Hall</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <div>
+      <p class="eyebrow">Barbon</p>
+      <h1>Parish Council</h1>
+      <p class="lead">Barbon Parish Council’s meeting minutes are published here for residents to read and download.</p>
+    </div>
+    <figure class="hero-img">
+      <img src="../images/village-cross.jpg" alt="The stone cross at the centre of Barbon village" width="423" height="452">
+    </figure>
+  </div>
+</section>
+
+<main class="wrap">
+  <!-- Shown only when someone with write access to the repository has signed in -->
+  <section id="admin" class="section card admin hidden" aria-labelledby="admin-h">
+    <div class="admin-bar">
+      <div>
+        <h2 id="admin-h">Upload minutes</h2>
+        <p class="note">Signed in as <strong id="who"></strong>.</p>
+      </div>
+      <button type="button" id="logout" class="btn ghost">Sign out</button>
+    </div>
+    <form id="upload-form" class="stack">
+      <label>Meeting date
+        <input type="date" name="date" required>
+      </label>
+      <label>Title <span class="opt">(optional – defaults to “Minutes of meeting – date”)</span>
+        <input type="text" name="title" maxlength="80" placeholder="e.g. Annual Parish Meeting">
+      </label>
+      <label>Minutes (PDF, up to 20 MB)
+        <input type="file" name="file" accept="application/pdf,.pdf" required>
+      </label>
+      <div><button type="submit" class="btn">Upload minutes</button></div>
+      <p id="upload-msg" class="msg" role="status"></p>
+    </form>
+    <p class="fine">New minutes appear on this page about a minute or two after uploading, once the site has republished.</p>
+  </section>
+
+  <section class="section card" aria-labelledby="minutes-h">
+    <h2 id="minutes-h">Meeting minutes</h2>
+    <div id="minutes-list" aria-live="polite"><p class="empty">Loading minutes…</p></div>
+  </section>
+
+  <p class="fine section">
+    Parish Council members and the clerk: <button type="button" id="open-login" class="btn ghost">Sign in to upload minutes</button>
+  </p>
+</main>
+
+<dialog id="login-dialog" aria-labelledby="login-h">
+  <h2 id="login-h">Sign in</h2>
+  <p class="note">For Parish Council members and the clerk who have been given access to the website’s GitHub repository. Paste your personal access token – it is kept only in this browser tab and is forgotten when you close it. <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">How to create one</a> (see the README).</p>
+  <form id="login-form" class="stack" method="dialog">
+    <label>GitHub access token
+      <input type="password" name="token" autocomplete="off" autocapitalize="none" spellcheck="false" required>
+    </label>
+    <p id="login-msg" class="msg err" role="alert"></p>
+    <div class="dialog-actions">
+      <button type="button" id="login-cancel" class="btn ghost">Cancel</button>
+      <button type="submit" class="btn">Sign in</button>
+    </div>
+  </form>
+</dialog>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <span>Barbon Village</span>
+    <span><a href="../church/">Church</a> · <a href="./">Parish Council</a> · <a href="https://barbonvillagehall.co.uk/">Village Hall</a></span>
+  </div>
+</footer>
+<script src="config.js"></script>
+<script src="pc.js"></script>
+</body>
+</html>
