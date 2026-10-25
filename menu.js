@@ -1,6 +1,6 @@
 /* Shared hamburger menu.
    Add it to any page with one line (in <head> or before </body>):
-       <script src="menu.js?v=14" defer></script>
+       <script src="menu.js?v=15" defer></script>
    Bump the ?v= number whenever menu.js or menu.css changes.
    To add or rename a link, edit the `items` list below. */
 (function () {
