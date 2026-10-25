@@ -7,11 +7,14 @@ import requests
 from bs4 import BeautifulSoup
 
 BASE = "https://www.live-footballontv.com/"
+# Listings shared by every women's club: used if a club's own page is missing or empty.
+SHARED = ["wsl-on-tv.html", "womens-champions-league-on-tv.html"]
 PAGES = {
     "mc": ["man-city-on-tv.html"],
-    "aw": ["arsenal-women-on-tv.html", "wsl-on-tv.html"],
-    "mu": ["man-utd-women-on-tv.html", "wsl-on-tv.html"],   # fall back to the WSL listing
-    "cw": ["chelsea-women-on-tv.html", "wsl-on-tv.html"],
+    "mw": ["man-city-women-on-tv.html"] + SHARED,
+    "aw": ["arsenal-women-on-tv.html"] + SHARED,
+    "mu": ["man-utd-women-on-tv.html"] + SHARED,
+    "cw": ["chelsea-women-on-tv.html"] + SHARED,
     "li": ["england-women-on-tv.html"],
     "en": ["england-on-tv.html"],
 }
@@ -28,10 +31,11 @@ DROP = {"Sky Mix", "Sky Sports Ultra HDR", "BBC Sport Website", "BBC Sport Web",
 UNWANTED = re.compile(r"Women|\bU\d\d\b|Lionesses")
 TEAM = {
     "mc": lambda t: "Manchester City" in t and not UNWANTED.search(t),
+    "mw": lambda t: bool(re.search(r"(Manchester City|Man City)\s+(Women|WFC)", t)),
     "aw": lambda t: bool(re.search(r"Arsenal\s+(Women|WFC)", t)),
     "mu": lambda t: bool(re.search(r"(Manchester United|Man Utd)\s+(Women|WFC)", t)),
     "cw": lambda t: bool(re.search(r"Chelsea\s+(Women|WFC)", t)),
-    "li": lambda t: "England" in t and not re.search(r"\bU\d\d\b", t),
+    "li": lambda t: bool(re.search(r"England\s+Women", t)) and not re.search(r"\bU\d\d\b", t),
     "en": lambda t: "England" in t and "Women" not in t and not re.search(r"\bU\d\d\b", t),
 }
 
@@ -88,18 +92,23 @@ def parse(text, key):
     return out
 
 def fetch_team(key):
+    merged = {}
     for slug in PAGES[key]:
         try:
             r = requests.get(BASE + slug, timeout=30, headers={"User-Agent": "Mozilla/5.0 fixtures-page"})
             r.raise_for_status()
             got = parse(BeautifulSoup(r.text, "html.parser").get_text("\n"), key)
-            if got:
-                print(f"{key}: {len(got)} fixtures from {slug}")
-                return got
-            print(f"{key}: {slug} had no matching fixtures", file=sys.stderr)
         except Exception as e:
-            print(f"{key}: {slug} failed ({e})", file=sys.stderr)
-    return []
+            print(f"{key}: {slug} failed ({e})", file=sys.stderr); continue
+        if not got:
+            print(f"{key}: {slug} had no matching fixtures", file=sys.stderr); continue
+        if slug not in SHARED:                       # the club's own page lists every competition
+            print(f"{key}: {len(got)} fixtures from {slug}")
+            return got
+        print(f"{key}: {len(got)} fixtures from shared listing {slug}")
+        for g in got:
+            merged[(g["iso"], g["h"], g["a"])] = g   # WSL + Champions League pages are combined
+    return list(merged.values())
 
 def main():
     try: old = json.load(open("fixtures.json"))["fixtures"]
