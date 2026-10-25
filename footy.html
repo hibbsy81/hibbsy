@@ -280,9 +280,9 @@ const longDate=k=>{const d=parseKey(k);return DAYS[d.getDay()]+' '+d.getDate()+'
 
 /* ---------- state ---------- */
 const DEF={profile:{name:'',age:'a2',pos:'mid',wake:'07:00',leave:'08:15',bed:'21:30',who:'f',dur:45,travel:20,early:15,diet:[],setup:false},
-  week:{0:'recover',1:'rest',2:'train',3:'solo',4:'train',5:'rest',6:'match'},overrides:{},weather:{},ticks:{},shuffle:{},rec:{jug:0,left:0,right:0},chal:{},picks:{},team:{week:{},dates:{}},teamRow:{},feel:{},diary:{},focus:{},recHist:{},matches:[],mTicks:{},goals:[],sleep:{},badges:{},mday:{ko:'10:00',len:60},daily:{},gifts:[],giftRoll:{},shop:{ticks:{},extra:[]},quiz:{done:0,perfect:0,best:{}},mind:{breaths:0,days:{},strengths:['','',''],good:{}},str:{days:{},t:{}},_t:0};
+  week:{0:'recover',1:'rest',2:'train',3:'solo',4:'train',5:'rest',6:'match'},overrides:{},weather:{},ticks:{},shuffle:{},rec:{jug:0,left:0,right:0},chal:{},picks:{},team:{week:{},dates:{}},teamRow:{},feel:{},diary:{},focus:{},recHist:{},matches:[],mTicks:{},goals:[],sleep:{},badges:{},mday:{ko:'10:00',len:60},daily:{},gifts:[],giftRoll:{},shop:{ticks:{},extra:[]},quiz:{done:0,perfect:0,best:{},best10:{},seen:{}},mind:{breaths:0,days:{},strengths:['','',''],good:{}},str:{days:{},t:{}},_t:0};
 let S=JSON.parse(JSON.stringify(DEF));
-function merge(o){S=Object.assign({},JSON.parse(JSON.stringify(DEF)),o);S.teamRow=S.teamRow||{};S.profile=Object.assign({},DEF.profile,o.profile||{});S.week=Object.assign({},DEF.week,o.week||{});S.rec=Object.assign({},DEF.rec,o.rec||{});S.mday=Object.assign({},DEF.mday,o.mday||{});S.badges=S.badges||{};S.daily=S.daily||{};S.gifts=S.gifts||[];S.giftRoll=S.giftRoll||{};S.shop=Object.assign({},DEF.shop,o.shop||{});S.shop.ticks=S.shop.ticks||{};S.shop.extra=S.shop.extra||[];S.team=Object.assign({},DEF.team,o.team||{});S.team.week=S.team.week||{};S.team.dates=S.team.dates||{};S.quiz=Object.assign({},DEF.quiz,o.quiz||{});S.quiz.best=S.quiz.best||{};S.mind=Object.assign({},JSON.parse(JSON.stringify(DEF.mind)),o.mind||{});S.mind.days=S.mind.days||{};S.mind.good=S.mind.good||{};S.mind.strengths=S.mind.strengths||['','',''];S.str=Object.assign({},DEF.str,o.str||{});S.str.days=S.str.days||{};S.str.t=S.str.t||{}}
+function merge(o){S=Object.assign({},JSON.parse(JSON.stringify(DEF)),o);S.teamRow=S.teamRow||{};S.profile=Object.assign({},DEF.profile,o.profile||{});S.week=Object.assign({},DEF.week,o.week||{});S.rec=Object.assign({},DEF.rec,o.rec||{});S.mday=Object.assign({},DEF.mday,o.mday||{});S.badges=S.badges||{};S.daily=S.daily||{};S.gifts=S.gifts||[];S.giftRoll=S.giftRoll||{};S.shop=Object.assign({},DEF.shop,o.shop||{});S.shop.ticks=S.shop.ticks||{};S.shop.extra=S.shop.extra||[];S.team=Object.assign({},DEF.team,o.team||{});S.team.week=S.team.week||{};S.team.dates=S.team.dates||{};S.quiz=Object.assign({},DEF.quiz,o.quiz||{});S.quiz.best=S.quiz.best||{};S.quiz.best10=S.quiz.best10||{};S.quiz.seen=S.quiz.seen||{};S.mind=Object.assign({},JSON.parse(JSON.stringify(DEF.mind)),o.mind||{});S.mind.days=S.mind.days||{};S.mind.good=S.mind.good||{};S.mind.strengths=S.mind.strengths||['','',''];S.str=Object.assign({},DEF.str,o.str||{});S.str.days=S.str.days||{};S.str.t=S.str.t||{}}
 function load(){try{const v=localStorage.getItem('pitchplan_v1');if(v)merge(JSON.parse(v))}catch(e){}}
 function save(){S._t=Date.now();try{localStorage.setItem('pitchplan_v1',JSON.stringify(S))}catch(e){}if(window.__footy&&window.__footy.onSave)window.__footy.onSave();try{renderAcct()}catch(e){}}
 load();
@@ -1396,7 +1396,7 @@ function badgeData(){
    ['kg','Golden find','Find a golden sticker',S.gifts.some(g=>g.opened&&g.r.rare)],
    ['mr','Morning routine pro','Tick 3 morning steps, 3 days in a row',sd.morn.best>=3],
    ['q1','Quiz starter','Finish a football quiz',S.quiz.done>=1],
-   ['q2','Full marks','Get 5 out of 5 in a quiz',S.quiz.perfect>=1],
+   ['q2','Full marks','Get full marks in a quiz',S.quiz.perfect>=1],
    ['q3','Quiz regular','Finish 10 quizzes',S.quiz.done>=10],
    ['t1','Strength starter','Log your first strength session',Object.keys(S.str.days).length>=1],
    ['t2','Getting stronger','Log 5 strength sessions',Object.keys(S.str.days).length>=5],
@@ -1474,28 +1474,83 @@ const QZ={
   ['What is the centre circle for?',['Opponents must stay outside it at kick-off','Where only the keeper can stand','Where penalties are taken','It has no use'],0,'At kick-off the other team must stay outside the circle until the ball is kicked.']
  ]
 };
+QZ.rules.push(
+  ['What is the smallest number of players a team can have for a match to carry on?',['7','5','9','11'],0,'A match cannot start or carry on if a team has fewer than seven players.'],
+  ['When does the attacking team get a goal kick instead of a goal?',['When the ball goes over the goal line, outside the goal, off an attacker','When the keeper picks the ball up','When the ball hits the crossbar','When there is a foul in midfield'],0,'If an attacker touched the ball last before it crossed the goal line, it is a goal kick.'],
+  ['When is a corner kick given?',['When the defending team last touches the ball before it crosses their own goal line','When the attacking team kicks it out at the side','When the keeper is fouled','When the ball hits the post'],0,'A corner goes to the attackers when the ball goes out over the goal line off a defender.'],
+  ['How far must defenders stand from a free kick?',['About 9 metres (10 yards)','About 2 metres','About 20 metres','They can stand next to the ball'],0,'Defenders must be at least 10 yards, or about 9.15 metres, away until the ball is kicked.'],
+  ['When is a goal given?',['When the whole ball crosses the whole goal line, between the posts and under the bar','When the ball touches the line','When the ball hits the post','When the keeper touches it'],0,'The ball must be completely over the line.'],
+  ['What must you do when you take a throw-in?',['Keep part of both feet on or behind the line and throw with both hands from over your head','Throw it with one hand','Jump as you throw','Throw it underarm'],0,'A foul throw means the other team gets the throw-in.'],
+  ['Which of these is a foul?',['Tripping an opponent','Winning the ball with a fair tackle','Heading the ball','Shielding the ball with your body'],0,'Tripping, kicking, pushing and holding are fouls.'],
+  ['What must the goalkeeper do when a penalty is taken?',['Keep at least one foot on the goal line until the ball is kicked','Stand on the penalty spot','Stand behind the goal','Run out to meet the kicker'],0,'Keepers can move along the line but must not leave it early.'],
+  ['What is added time (stoppage time) for?',['Making up time lost to injuries, substitutions and delays','Giving the losing team a chance','Giving the referee a rest','Letting the crowd get out'],0,'The referee adds time at the end of each half for stoppages.'],
+  ['What does VAR stand for?',['Video Assistant Referee','Very Active Referee','Verified Attack Review','Visual Area Rule'],0,'VAR helps the referee check big decisions such as goals and red cards.']
+);
+QZ.tactics.push(
+  ['What is the main job of a holding midfielder?',['Protect the defence and break up attacks','Take all the throw-ins','Stay in the other team’s box','Play in goal'],0,'The holding midfielder sits in front of the defence and wins the ball back.'],
+  ['What is a counter-attack?',['A quick attack right after winning the ball, while the other team is out of shape','A shot from a corner','A back pass to the keeper','A tackle from behind'],0,'Counter-attacks work best when the first pass is forward and quick.'],
+  ['What does it mean to stay compact?',['Keep players close together so there is little space between the lines','Stand as far apart as you can','Only defend the goal','Play in a small boot'],0,'A compact team is hard to play through.'],
+  ['What is a set piece?',['A restart such as a corner, free kick or throw-in','Any pass','A tackle','A substitute'],0,'Teams practise set pieces so everyone knows their job.'],
+  ['What is a high defensive line?',['Defenders stand high up the pitch, far from their own goal','Defenders who are very tall','Defenders who only head the ball','Defenders playing on a hill'],0,'A high line squeezes the space but needs good pace behind it.'],
+  ['What is an offside trap?',['Defenders step up together to catch an attacker offside','A hole in the pitch','A tackle from behind','A type of formation'],0,'It needs the whole back line to move on the same signal.'],
+  ['What is zonal marking?',['Each defender covers an area of the pitch','Each defender follows one opponent everywhere','Everyone defends on the goal line','Only the keeper defends'],0,'The alternative is man-to-man marking.'],
+  ['Why do teams switch the play?',['To pass from one side to the other and find space','To confuse the referee','To waste time','To change the kit'],0,'A quick switch can leave the other team stretched and out of position.'],
+  ['What does a winger usually do?',['Attack down the side, beat defenders and cross the ball','Stay in goal','Defend the middle','Take every penalty'],0,'Wingers give the team width and chances for strikers.'],
+  ['Why should you talk to your team-mates during a match?',['It helps everyone know where the space and the danger are','To distract the referee','Because you have to','It makes you run faster'],0,'Short calls like “man on”, “turn” and “time” help team-mates a lot.']
+);
+QZ.body.push(
+  ['Which is a good match-day breakfast, about 2 to 3 hours before kick-off?',['Porridge or toast with a banana','A big greasy fry-up','Just sweets','Nothing'],0,'Easy-to-digest carbs give lasting energy without upsetting your stomach.'],
+  ['Which nutrient helps build strong bones?',['Calcium','Sugar','Salt','Caffeine'],0,'Milk, yoghurt, cheese, tofu and leafy greens all help with calcium.'],
+  ['What should you do if you feel dizzy or sick while training in the heat?',['Stop, rest in the shade, sip water and tell an adult','Run faster','Ignore it','Drink as much as you can in one go'],0,'Heat can make you ill quickly, so stop early and tell someone.'],
+  ['Why wear shin pads?',['To protect your lower legs from knocks and kicks','To run faster','To keep your socks clean','To look like a pro'],0,'Shin pads are a rule in matches. Wear them in training too.'],
+  ['What is DOMS?',['Muscle soreness a day or two after hard or new exercise','A type of boot','A pass in football','A type of drink'],0,'DOMS stands for delayed onset muscle soreness. Gentle movement helps it ease.'],
+  ['Why are rest days important?',['Your body repairs and gets stronger while you rest','They are not important','Because you will forget the drills','So you can eat more'],0,'Training breaks you down a little. Rest and sleep let you rebuild stronger.'],
+  ['Which foods give you vitamins and fibre?',['Fruit and vegetables','Chips only','Fizzy drinks','Sweets'],0,'Try to have a mix of colours each day.'],
+  ['What helps your body recover best overnight?',['Good sleep','Staying up late','Energy drinks','Skipping dinner'],0,'Most recovery and growth happens while you sleep.'],
+  ['What should you do if you feel sharp pain while training?',['Stop and tell an adult','Push through it','Do a harder drill','Ignore it until tomorrow'],0,'Pain is a warning sign. Never train through it.'],
+  ['Why wear sun cream on a cloudy day?',['Ultraviolet rays still get through clouds','Clouds make you hotter','It keeps the ball clean','It does not help'],0,'You can burn on cloudy days, especially in the middle of the day.']
+);
+QZ.world.push(
+  ['How many players are on court for each side in futsal?',['5','7','11','9'],0,'Futsal is five-a-side with a smaller, heavier ball. It is great for close control.'],
+  ['What is the nickname of the England women’s team?',['The Lionesses','The Three Lions','The Red Roses','The Dragons'],0,'The Lionesses won the Women’s Euros in 2022.'],
+  ['Which part of the foot is best for short, accurate passes?',['The inside of the foot','The toes','The heel','The laces'],0,'The inside of the foot gives the most contact with the ball.'],
+  ['What is a derby?',['A match between local rivals','A type of free kick','A trophy','A transfer'],0,'Derbies are played between teams from the same city or area.'],
+  ['What is the biggest club competition in European men’s football?',['The UEFA Champions League','The League Cup','The Charity Shield','The Friendly Cup'],0,'The best clubs from across Europe take part. There is a women’s version too.'],
+  ['How long is extra time in a knockout match?',['30 minutes, in two halves of 15','10 minutes','45 minutes','5 minutes'],0,'If it is still level, the match goes to penalties.'],
+  ['What decides a knockout match that is still level after extra time?',['A penalty shoot-out','A coin toss','The referee decides','The older team wins'],0,'Each team takes five penalties, then sudden death if still level.'],
+  ['What does WSL stand for in English women’s football?',['Women’s Super League','World Soccer League','Winter Sports League','Wembley Stadium League'],0,'The Women’s Super League is the top division in England.'],
+  ['Why does the goalkeeper wear a different colour from the outfield players?',['So the referee and players can tell who the keeper is','To look nicer','To stay warm','Because it is lucky'],0,'The keeper must be easy to tell apart from both teams and the officials.'],
+  ['What is the point of a rondo (piggy in the middle) in training?',['To practise passing and moving under pressure','To practise shooting','To practise throwing in','To practise tackling from behind'],0,'Rondos build quick passing, movement and good decisions.']
+);
+
 QZ.mix=[].concat(QZ.rules,QZ.tactics,QZ.body,QZ.world);
 function qzShuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));const t=a[i];a[i]=a[j];a[j]=t}return a}
+const QN=10;
+function qzPool(cat){const cs=cat==='mix'?['rules','tactics','body','world']:[cat],o=[];cs.forEach(c=>QZ[c].forEach((q,i)=>o.push({c:c,i:i,q:q})));return o}
 function qzStart(cat){
-  const qs=qzShuffle(QZ[cat]).slice(0,5).map(q=>{const opts=qzShuffle(q[1].map((t,i)=>({t:t,ok:i===q[2]})));return {q:q[0],opts:opts,why:q[3]}});
+  const pool=qzPool(cat),sn=S.quiz.seen;
+  const unseen=e=>(sn[e.c]||[]).indexOf(e.i)<0;
+  let fresh=qzShuffle(pool.filter(unseen));
+  if(fresh.length<QN){const left=fresh;pool.forEach(e=>{sn[e.c]=[]});fresh=left.concat(qzShuffle(pool.filter(e=>left.indexOf(e)<0)))}
+  const qs=fresh.slice(0,QN).map(e=>{const q=e.q,opts=qzShuffle(q[1].map((t,i)=>({t:t,ok:i===q[2]})));return {c:e.c,i:e.i,q:q[0],opts:opts,why:q[3]}});
   ui.qz={cat:cat,qs:qs,i:0,sel:null,score:0,fin:false};
 }
 function viewQuiz(){
   const Q=S.quiz,z=ui.qz;
   if(!z){
-    let h='<section class="card"><h2>Football quizzes</h2><p class="sub">Five questions each time, picked at random. Answers come with a quick explanation, so you learn as you play.</p><div class="more-grid">'+
-     Object.keys(QCAT).map(c=>{const b=Q.best[c];return '<button data-a="qz-start" data-v="'+c+'"><b>'+QCAT[c]+'</b><span>'+(b!=null?'Best score: '+b+' out of 5':'Not played yet')+'</span></button>'}).join('')+'</div></section>';
+    let h='<section class="card"><h2>Football quizzes</h2><p class="sub">Ten questions each time. Every quiz is a fresh set from the same topic, and you will not see a question again until you have seen them all. Answers come with a quick explanation.</p><div class="more-grid">'+
+     Object.keys(QCAT).map(c=>{const b=Q.best10[c];return '<button data-a="qz-start" data-v="'+c+'"><b>'+QCAT[c]+'</b><span>'+(b!=null?'Best score: '+b+' out of '+QN:'Not played yet')+'</span></button>'}).join('')+'</div></section>';
     h+='<section class="card"><h3>Your quiz record</h3><div class="cols2" style="margin-top:10px"><div><div class="small">Quizzes finished</div><div class="min" style="font-size:2.2rem">'+Q.done+'</div></div><div><div class="small">Full marks</div><div class="min" style="font-size:2.2rem">'+Q.perfect+'</div></div></div></section>';
     return h;
   }
   if(z.fin){
-    const m=z.score===5?'Full marks. Brilliant!':z.score>=4?'Great score.':z.score>=3?'Good effort. Have another go to beat it.':'Keep going. Every quiz teaches you something new.';
-    return '<section class="card"><h2>'+QCAT[z.cat]+'</h2><p class="sub">Quiz finished</p><div class="min" style="font-size:3.4rem;margin:8px 0">'+z.score+'<span class="small"> out of 5</span></div><p>'+m+'</p><div class="row" style="margin-top:14px"><button class="btn" data-a="qz-start" data-v="'+z.cat+'">Play again</button><button class="btn alt" data-a="qz-quit">Choose another quiz</button></div></section>';
+    const m=z.score===QN?'Full marks. Brilliant!':z.score>=QN*0.8?'Great score.':z.score>=QN*0.6?'Good effort. A new set of questions is ready when you are.':'Keep going. Every quiz teaches you something new.';
+    return '<section class="card"><h2>'+QCAT[z.cat]+'</h2><p class="sub">Quiz finished</p><div class="min" style="font-size:3.4rem;margin:8px 0">'+z.score+'<span class="small"> out of '+QN+'</span></div><p>'+m+'</p><div class="row" style="margin-top:14px"><button class="btn" data-a="qz-start" data-v="'+z.cat+'">New quiz, same topic</button><button class="btn alt" data-a="qz-quit">Choose another quiz</button></div></section>';
   }
   const q=z.qs[z.i],ans=z.sel!=null;
-  let h='<section class="card"><div class="sec-head"><h2>'+QCAT[z.cat]+'</h2><span class="small">Question '+(z.i+1)+' of 5</span></div><div class="qprog" aria-hidden="true"><span style="width:'+(z.i*20+(ans?20:0))+'%"></span></div><p class="chal-text">'+esc(q.q)+'</p><div class="qopts" role="group" aria-label="Answers">'+
+  let h='<section class="card"><div class="sec-head"><h2>'+QCAT[z.cat]+'</h2><span class="small">Question '+(z.i+1)+' of '+QN+'</span></div><div class="qprog" aria-hidden="true"><span style="width:'+((z.i+(ans?1:0))*100/QN)+'%"></span></div><p class="chal-text">'+esc(q.q)+'</p><div class="qopts" role="group" aria-label="Answers">'+
    q.opts.map((o,i)=>{let c='qopt';if(ans){if(o.ok)c+=' ok';else if(i===z.sel)c+=' bad'}return '<button class="'+c+'" data-a="qz-ans" data-v="'+i+'"'+(ans?' disabled':'')+'>'+esc(o.t)+'</button>'}).join('')+'</div>';
-  if(ans){const ok=q.opts[z.sel].ok;h+='<div class="note" role="status" style="margin-top:12px"><b>'+(ok?'Correct.':'Not this time.')+'</b> '+esc(q.why)+'</div><div class="row" style="margin-top:12px"><button class="btn" data-a="qz-next">'+(z.i===4?'See my score':'Next question')+'</button></div>'}
+  if(ans){const ok=q.opts[z.sel].ok;h+='<div class="note" role="status" style="margin-top:12px"><b>'+(ok?'Correct.':'Not this time.')+'</b> '+esc(q.why)+'</div><div class="row" style="margin-top:12px"><button class="btn" data-a="qz-next">'+(z.i===QN-1?'See my score':'Next question')+'</button></div>'}
   else h+='<div class="row" style="margin-top:12px"><button class="btn alt" data-a="qz-quit">Stop quiz</button></div>';
   return h+'</section>';
 }
@@ -1572,8 +1627,8 @@ function extraAct(a,v,k,b){
   const Z=S.str,M=S.mind;
   switch(a){
    case 'qz-start':qzStart(v);render(true);window.scrollTo(0,0);return;
-   case 'qz-ans':{const z=ui.qz;if(!z||z.sel!=null)return;z.sel=+v;if(z.qs[z.i].opts[z.sel].ok)z.score++;render(true);return}
-   case 'qz-next':{const z=ui.qz;if(!z)return;if(z.i===4){z.fin=true;S.quiz.done++;if(z.score===5)S.quiz.perfect++;if(S.quiz.best[z.cat]==null||z.score>S.quiz.best[z.cat])S.quiz.best[z.cat]=z.score;save()}else{z.i++;z.sel=null}render(true);window.scrollTo(0,0);return}
+   case 'qz-ans':{const z=ui.qz;if(!z||z.sel!=null)return;z.sel=+v;const cq=z.qs[z.i];if(cq.opts[z.sel].ok)z.score++;const sn=S.quiz.seen;sn[cq.c]=sn[cq.c]||[];if(sn[cq.c].indexOf(cq.i)<0)sn[cq.c].push(cq.i);render(true);return}
+   case 'qz-next':{const z=ui.qz;if(!z)return;if(z.i===QN-1){z.fin=true;S.quiz.done++;if(z.score===QN)S.quiz.perfect++;if(S.quiz.best10[z.cat]==null||z.score>S.quiz.best10[z.cat])S.quiz.best10[z.cat]=z.score;save()}else{z.i++;z.sel=null}render(true);window.scrollTo(0,0);return}
    case 'qz-quit':ui.qz=null;render(true);return;
    case 'mi-br':if(ui.br&&ui.br.on)brStop();else brStart();return;
    case 'mi-str':case 'mi-good':{const rd=(pf,keep)=>[0,1,2].map(i=>{const el=$('#mi-'+pf+i);return el?el.value.trim():(keep[i]||'')});M.strengths=rd('s',M.strengths);const gd=rd('g',M.good[today]||[]).filter(Boolean);if(gd.length)M.good[today]=gd;else delete M.good[today];ui.miMsg=a==='mi-str'?'s':'g';break}
