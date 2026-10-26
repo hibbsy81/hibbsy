@@ -23,7 +23,7 @@
 *{box-sizing:border-box}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 body{margin:0;background:radial-gradient(1200px 500px at 50% -200px,#14402a 0,var(--bg) 70%) no-repeat,var(--bg);color:var(--tx);font:16px/1.4 "Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;min-height:100vh;min-height:100dvh}
-main{max-width:680px;margin:0 auto;padding:calc(20px + env(safe-area-inset-top,0px)) 14px calc(48px + env(safe-area-inset-bottom,0px))}
+main{max-width:720px;margin:0 auto;padding:calc(20px + env(safe-area-inset-top,0px)) 14px calc(48px + env(safe-area-inset-bottom,0px))}
 header{display:flex;align-items:center;justify-content:center;min-height:46px;padding:0 62px;margin-bottom:20px}
 h1{font-size:24px;margin:0;letter-spacing:-.02em;text-align:center;line-height:1.15}
 .month{font-size:13px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--mu);margin:22px 2px 10px}
@@ -48,7 +48,10 @@ h1{font-size:24px;margin:0;letter-spacing:-.02em;text-align:center;line-height:1
 .when{display:block;text-align:right;flex:none}
 .when b{display:block;font-size:20px;line-height:1.1}
 .when span{font-size:12px;color:var(--mu)}
-.vs{font-size:19px;font-weight:700;margin:12px 0 4px;letter-spacing:-.01em}
+.vs{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;font-size:19px;font-weight:700;margin:12px 0 4px;letter-spacing:-.01em}
+.side{display:inline-flex;align-items:center;gap:7px}
+.opp{width:24px;height:24px;flex:none;object-fit:contain;background:#fff;border-radius:50%;padding:2px}
+.v{color:var(--mu);font-size:.75em;font-weight:600}
 .meta{font-size:13px;color:var(--mu)}
 .ch{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
 .b{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:5px 10px;border-radius:8px;background:var(--bc,#21402f);color:var(--bt,#fff);border:1px solid rgba(255,255,255,.1)}
@@ -65,9 +68,20 @@ h1{font-size:24px;margin:0;letter-spacing:-.02em;text-align:center;line-height:1
 .hrow{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:6px 0 2px}
 .hcount{font-size:38px;font-weight:800;letter-spacing:-.03em;line-height:1.05}
 .hsub{font-size:14px;color:var(--mu);margin-bottom:10px}
-.hvs{font-size:20px;font-weight:700;letter-spacing:-.01em}
+.hvs{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;font-size:20px;font-weight:700;letter-spacing:-.01em}
+.hvs .opp{width:28px;height:28px}
 .upd{color:var(--mu);font-size:12px;text-align:center;margin:24px 0 0;opacity:.85}
 .upd.warn{color:#f5b74a;opacity:1}
+/* Computer-sized screens: team buttons sit in a tidy 4 x 2 grid instead of wrapping unevenly. */
+@media (min-width:700px){
+  .chips{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:0 auto 6px}
+  .chip{justify-content:flex-start;width:100%;min-width:0;padding:7px 12px 7px 7px;white-space:nowrap}
+  .chip.all{justify-content:center;padding-left:12px}
+}
+.logos{margin:16px 0 0;padding:12px 14px;border:1px dashed var(--bd);border-radius:12px;font-size:13px;color:var(--mu)}
+.logos b{color:var(--tx)}
+.logos ul{list-style:none;margin:8px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:4px 12px}
+.logos .have{color:#86efac}
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -111,11 +125,15 @@ const listEl=document.getElementById("list");
 
 function setUpd(j){
   const el=document.getElementById("upd");
-  let t=j.updated||"",warn=false;
+  let t=j.updated||"",warn=false,msg;
   const u=j.updated_iso?new Date(j.updated_iso):null;
   if(u&&!isNaN(u)){t=fd({day:"numeric",month:"short",hour:"2-digit",minute:"2-digit",hour12:false}).format(u);warn=Date.now()-u>36*36e5;}
+  msg=warn?"Fixtures last updated "+t+". Automatic updates may have stalled.":"Fixtures updated "+t;
+  // Per-team check: a team whose page hasn't been read successfully for 2+ days is flagged by name.
+  const late=Object.keys(T).filter(k=>{const hh=j.health&&j.health[k];if(!hh)return false;const x=hh.last_ok_iso?new Date(hh.last_ok_iso):null;return !x||isNaN(x)||Date.now()-x>48*36e5;});
+  if(late.length){warn=true;msg+=(warn&&/stalled/.test(msg)?" ":". ")+"Not refreshed for 2+ days: "+late.map(k=>T[k].n).join(", ")+".";}
   el.className="upd"+(warn?" warn":"");
-  el.textContent=warn?"Fixtures last updated "+t+". Automatic updates may have stalled.":"Fixtures updated "+t;
+  el.textContent=msg;
 }
 function load(j,stale){
   F=j.fixtures.map(f=>({t:f.t,iso:f.iso,d:new Date(f.iso),comp:f.comp,h:f.h,a:f.a,ch:f.ch||[],note:f.note||"",tbc:!!f.tbc})).filter(f=>T[f.t]);
@@ -145,6 +163,9 @@ function chanHtml(f){
   const unconf=/confirm/i.test(f.note);
   return f.ch.length?f.ch.map(badge).join("")+(unconf?'<span class="b tbc">TBC</span>':""):'<span class="b none">'+(unconf?"Channel TBC":esc(f.note||"No UK broadcast"))+'</span>';
 }
+const slug=n=>String(n).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/&/g,"and").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");
+const side=n=>'<span class="side"><img class="opp" src="logos/opponents/'+slug(n)+'.png" alt="" onerror="this.remove()">'+esc(n)+'</span>';
+const versus=f=>side(f.h)+' <span class="v">v</span> '+side(f.a);
 const ORDER=Object.keys(T);
 const names=f=>f.teams.map(k=>T[k].n.toUpperCase()).join(" · ");
 const cvars=f=>"--c:"+T[f.teams[0]].c+";--c2:"+T[f.teams[f.teams.length-1]].c;
@@ -169,7 +190,7 @@ function hero(f,now){
   return '<section class="hero" style="'+cvars(f)+'" aria-label="Next match"><div class="hk">'+(status(f,now)==="live"?"LIVE NOW":"NEXT UP")+' · '+names(f)+'</div>'+
     '<div class="hrow"><div class="hcount">'+label(f,now)+'</div>'+crests(f,52)+'</div>'+
     '<div class="hsub"><time datetime="'+esc(f.iso)+'">'+(f.tbc?"Time TBC":clock(f))+'</time> · '+esc(f.comp)+'</div>'+
-    '<div class="hvs">'+esc(f.h)+' v '+esc(f.a)+'</div><div class="ch">'+chanHtml(f)+'</div></section>';
+    '<div class="hvs">'+versus(f)+'</div><div class="ch">'+chanHtml(f)+'</div></section>';
 }
 function render(){
   if(!ready)return;
@@ -191,7 +212,7 @@ function render(){
     const head=mk!==last?'<h2 class="month">'+mk+'</h2>':"";last=mk;
     const note=f.ch.length&&f.note&&!/confirm/i.test(f.note)?'<div class="meta">'+esc(f.note)+'</div>':"";
     return head+'<article class="card" style="'+cvars(f)+'"><div class="top">'+crests(f,40)+'<div class="who"><div class="tag">'+names(f)+'</div><div class="comp">'+esc(f.comp)+'</div></div><time class="when" datetime="'+esc(f.iso)+'"><b>'+label(f,now)+'</b><span>'+(f.tbc?"Time TBC":clock(f))+'</span></time></div>'+
-      '<div class="vs">'+esc(f.h)+' v '+esc(f.a)+'</div><div class="meta rel" data-i="'+i+'">'+relText(f,now)+'</div>'+note+'<div class="ch">'+chanHtml(f)+'</div></article>';
+      '<div class="vs">'+versus(f)+'</div><div class="meta rel" data-i="'+i+'">'+relText(f,now)+'</div>'+note+'<div class="ch">'+chanHtml(f)+'</div></article>';
   }).join("");
 }
 function pressed(){document.querySelectorAll("#chips [data-k]").forEach(b=>{const k=b.dataset.k;b.setAttribute("aria-pressed",k==="all"?sel.size===0:sel.has(k));});}
@@ -207,6 +228,15 @@ function pressed(){document.querySelectorAll("#chips [data-k]").forEach(b=>{cons
   pressed();
 })();
 setInterval(render,60000);
+// Add ?logos to the address (sports.html?logos) to see which opponent logo files you can add.
+if(/[?&]logos\b/.test(location.search))addEventListener("load",()=>setTimeout(()=>{
+  if(!ready)return;
+  const names=[...new Set(F.flatMap(f=>[f.h,f.a]))].sort(),box=document.createElement("div");
+  box.className="logos";box.innerHTML="<b>Opponent logos</b> — save PNGs in <code>logos/opponents/</code> with these names:<ul></ul>";
+  const ul=box.querySelector("ul");
+  names.forEach(n=>{const li=document.createElement("li"),img=new Image(),f=slug(n)+".png";li.textContent="✗ "+f;
+    img.onload=()=>{li.textContent="✓ "+f;li.className="have";};img.src="logos/opponents/"+f;ul.appendChild(li);});
+  document.getElementById("chips").after(box);},600));
 if("serviceWorker" in navigator&&/^https?:$/.test(location.protocol))addEventListener("load",()=>navigator.serviceWorker.register("sports-sw.js",{scope:"./sports.html"}).catch(()=>{}));
 </script>
 </body>
