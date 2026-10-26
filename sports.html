@@ -27,7 +27,7 @@ main{max-width:720px;margin:0 auto;padding:calc(20px + env(safe-area-inset-top,0
 header{display:flex;align-items:center;justify-content:center;min-height:46px;padding:0 62px;margin-bottom:20px}
 h1{font-size:24px;margin:0;letter-spacing:-.02em;text-align:center;line-height:1.15}
 .month{font-size:13px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--mu);margin:22px 2px 10px}
-.chips{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-bottom:4px}
+.chips{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px}
 .chip{flex:none;display:flex;align-items:center;gap:8px;border:1px solid var(--bd);background:var(--card);color:var(--tx);padding:6px 13px 6px 6px;border-radius:999px;font-family:inherit;font-weight:600;font-size:14px;cursor:pointer;transition:background-color .15s ease,border-color .15s ease,transform .15s ease}
 @media (hover:hover){.chip:not([aria-pressed="true"]):hover{background:var(--card2);border-color:var(--menu-accent);transform:translateY(-1px)}}
 .chip:focus-visible{outline:2px solid var(--menu-accent);outline-offset:2px}
@@ -49,8 +49,6 @@ h1{font-size:24px;margin:0;letter-spacing:-.02em;text-align:center;line-height:1
 .when b{display:block;font-size:20px;line-height:1.1}
 .when span{font-size:12px;color:var(--mu)}
 .vs{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;font-size:19px;font-weight:700;margin:12px 0 4px;letter-spacing:-.01em}
-.side{display:inline-flex;align-items:center;gap:7px}
-.opp{width:24px;height:24px;flex:none;object-fit:contain;background:#fff;border-radius:50%;padding:2px}
 .v{color:var(--mu);font-size:.75em;font-weight:600}
 .meta{font-size:13px;color:var(--mu)}
 .ch{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
@@ -69,15 +67,14 @@ h1{font-size:24px;margin:0;letter-spacing:-.02em;text-align:center;line-height:1
 .hcount{font-size:38px;font-weight:800;letter-spacing:-.03em;line-height:1.05}
 .hsub{font-size:14px;color:var(--mu);margin-bottom:10px}
 .hvs{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;font-size:20px;font-weight:700;letter-spacing:-.01em}
-.hvs .opp{width:28px;height:28px}
 .upd{color:var(--mu);font-size:12px;text-align:center;margin:24px 0 0;opacity:.85}
 .upd.warn{color:#f5b74a;opacity:1}
-/* Computer-sized screens: team buttons sit in a tidy 4 x 2 grid instead of wrapping unevenly. */
-@media (min-width:700px){
-  .chips{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:0 auto 6px}
-  .chip{justify-content:flex-start;width:100%;min-width:0;padding:7px 12px 7px 7px;white-space:nowrap}
-  .chip.all{justify-content:center;padding-left:12px}
-}
+/* Team buttons: equal-width grid, two columns on phones, four on computer-sized screens. */
+.chip{width:100%;min-width:0;justify-content:flex-start;padding:7px 12px 7px 7px;overflow:hidden}
+.chip .lbl{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chip.all{justify-content:center;padding-left:12px}
+@media (min-width:700px){.chips{grid-template-columns:repeat(4,1fr);gap:10px;margin:0 auto 6px}}
+@media (max-width:359px){.chip{font-size:13px;gap:6px;padding-right:8px}.chip .crest{--s:20px!important}}
 .logos{margin:16px 0 0;padding:12px 14px;border:1px dashed var(--bd);border-radius:12px;font-size:13px;color:var(--mu)}
 .logos b{color:var(--tx)}
 .logos ul{list-style:none;margin:8px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:4px 12px}
@@ -143,7 +140,7 @@ function load(j,stale){
 const slow=setTimeout(()=>{if(!ready)listEl.innerHTML='<p class="empty">Loading fixtures…</p>';},700);
 fetch("fixtures.json",{cache:"no-cache"}).then(r=>{if(!r.ok)throw 0;return r.json()}).then(j=>load(j,false))
   .catch(()=>{try{load(EMBED,true);}catch(e){clearTimeout(slow);listEl.innerHTML='<p class="empty">Couldn’t load fixtures. Check your connection and refresh.</p>';}});
-function crest(k,s){return '<span class="crest" aria-hidden="true" style="--c:'+T[k].c+';--s:'+s+'px"><span>'+T[k].m+'</span><img src="logos/teams/'+k+'.png" alt="" onload="this.parentNode.classList.add(\'has\')" onerror="this.remove()"></span>';}
+function crest(k,s,alt){return '<span class="crest" aria-hidden="true" style="--c:'+T[k].c+';--s:'+s+'px"><span>'+T[k].m+'</span><img src="logos/teams/'+k+'.png"'+(alt?' data-alt="'+alt+'"':'')+' alt="" onload="this.parentNode.classList.add(\'has\')" onerror="var a=this.dataset.alt;if(a){this.removeAttribute(\'data-alt\');this.src=a}else this.remove()"></span>';}
 function status(f,now){const ms=now-f.d;return ms<0?"up":ms<2*36e5?"live":"ft";}
 function relText(f,now){
   const s=status(f,now);
@@ -164,12 +161,16 @@ function chanHtml(f){
   return f.ch.length?f.ch.map(badge).join("")+(unconf?'<span class="b tbc">TBC</span>':""):'<span class="b none">'+(unconf?"Channel TBC":esc(f.note||"No UK broadcast"))+'</span>';
 }
 const slug=n=>String(n).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/&/g,"and").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");
-const side=n=>'<span class="side"><img class="opp" src="logos/opponents/'+slug(n)+'.png" alt="" onerror="this.remove()">'+esc(n)+'</span>';
-const versus=f=>side(f.h)+' <span class="v">v</span> '+side(f.a);
+const versus=f=>esc(f.h)+' <span class="v">v</span> '+esc(f.a);
+const ROOT={mc:"Man City",mw:"Man City",aw:"Arsenal",mu:"Man Utd",cw:"Chelsea",li:"England",en:"England"};
+const initials=n=>{const w=String(n).replace(/[^A-Za-z0-9 ]/g,"").split(/\s+/).filter(Boolean);return(w.length>1?w[0][0]+w[1][0]:(w[0]||"?").slice(0,2)).toUpperCase();};
+function oppCrest(n,s){return '<span class="crest" aria-hidden="true" style="--c:#3b5a4c;--s:'+s+'px"><span>'+initials(n)+'</span><img src="logos/opponents/'+slug(n)+'.png" alt="" onload="this.parentNode.classList.add(\'has\')" onerror="this.remove()"></span>';}
+// Every match shows both clubs' logos overlapped: home on the left, away on the right.
+function sideBadge(n,f,s){const k=f.teams.find(k=>n.includes(ROOT[k]));return k?crest(k,s,"logos/opponents/"+slug(n)+".png"):oppCrest(n,s);}
+const matchCrests=(f,s)=>'<span class="crests">'+sideBadge(f.h,f,s)+sideBadge(f.a,f,s)+'</span>';
 const ORDER=Object.keys(T);
 const names=f=>f.teams.map(k=>T[k].n.toUpperCase()).join(" · ");
 const cvars=f=>"--c:"+T[f.teams[0]].c+";--c2:"+T[f.teams[f.teams.length-1]].c;
-const crests=(f,s)=>f.teams.length>1?'<span class="crests">'+f.teams.map(k=>crest(k,s)).join("")+'</span>':crest(f.teams[0],s);
 // One match followed through two teams (e.g. Arsenal v Chelsea) becomes a single card with both badges.
 function mergeDupes(list){
   const m=new Map();
@@ -188,7 +189,7 @@ function mergeDupes(list){
 }
 function hero(f,now){
   return '<section class="hero" style="'+cvars(f)+'" aria-label="Next match"><div class="hk">'+(status(f,now)==="live"?"LIVE NOW":"NEXT UP")+' · '+names(f)+'</div>'+
-    '<div class="hrow"><div class="hcount">'+label(f,now)+'</div>'+crests(f,52)+'</div>'+
+    '<div class="hrow"><div class="hcount">'+label(f,now)+'</div>'+matchCrests(f,52)+'</div>'+
     '<div class="hsub"><time datetime="'+esc(f.iso)+'">'+(f.tbc?"Time TBC":clock(f))+'</time> · '+esc(f.comp)+'</div>'+
     '<div class="hvs">'+versus(f)+'</div><div class="ch">'+chanHtml(f)+'</div></section>';
 }
@@ -211,14 +212,14 @@ function render(){
     const mk=fd({month:"long",year:"numeric"}).format(f.d);
     const head=mk!==last?'<h2 class="month">'+mk+'</h2>':"";last=mk;
     const note=f.ch.length&&f.note&&!/confirm/i.test(f.note)?'<div class="meta">'+esc(f.note)+'</div>':"";
-    return head+'<article class="card" style="'+cvars(f)+'"><div class="top">'+crests(f,40)+'<div class="who"><div class="tag">'+names(f)+'</div><div class="comp">'+esc(f.comp)+'</div></div><time class="when" datetime="'+esc(f.iso)+'"><b>'+label(f,now)+'</b><span>'+(f.tbc?"Time TBC":clock(f))+'</span></time></div>'+
+    return head+'<article class="card" style="'+cvars(f)+'"><div class="top">'+matchCrests(f,40)+'<div class="who"><div class="tag">'+names(f)+'</div><div class="comp">'+esc(f.comp)+'</div></div><time class="when" datetime="'+esc(f.iso)+'"><b>'+label(f,now)+'</b><span>'+(f.tbc?"Time TBC":clock(f))+'</span></time></div>'+
       '<div class="vs">'+versus(f)+'</div><div class="meta rel" data-i="'+i+'">'+relText(f,now)+'</div>'+note+'<div class="ch">'+chanHtml(f)+'</div></article>';
   }).join("");
 }
 function pressed(){document.querySelectorAll("#chips [data-k]").forEach(b=>{const k=b.dataset.k;b.setAttribute("aria-pressed",k==="all"?sel.size===0:sel.has(k));});}
 (function(){
   const c=document.getElementById("chips");
-  c.innerHTML='<button class="chip all" type="button" data-k="all">All</button>'+Object.keys(T).map(k=>'<button class="chip" type="button" data-k="'+k+'">'+crest(k,24)+T[k].n+'</button>').join("");
+  c.innerHTML='<button class="chip all" type="button" data-k="all">All</button>'+Object.keys(T).map(k=>'<button class="chip" type="button" data-k="'+k+'">'+crest(k,24)+'<span class="lbl">'+T[k].n+'</span></button>').join("");
   c.onclick=e=>{
     const b=e.target.closest("[data-k]");if(!b)return;
     const k=b.dataset.k;

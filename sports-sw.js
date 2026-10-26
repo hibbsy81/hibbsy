@@ -1,5 +1,5 @@
 // Service worker for the Fixtures web app (sports.html only; registered with its own scope so it leaves the rest of the site alone). Bump V to force every device to refresh its cached files.
-const V = "fixtures-v8";
+const V = "fixtures-v9";
 const SHELL = ["sports.html", "menu.js?v=14", "menu.css?v=14", "sports.webmanifest", "sports-icons/icon-192.png", "sports-icons/icon-512.png"];
 
 self.addEventListener("install", e => {
