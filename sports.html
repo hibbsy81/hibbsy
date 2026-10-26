@@ -37,7 +37,10 @@ h1{font-size:24px;margin:0;letter-spacing:-.02em;text-align:center;line-height:1
 .crest img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;padding:12%;background:#fff}
 .crest.has span{display:none}
 .card{position:relative;background:linear-gradient(135deg,color-mix(in srgb,var(--c) 22%,var(--card)) 0,var(--card) 55%);border:1px solid var(--bd);border-radius:16px;padding:14px;margin-bottom:12px;overflow:hidden}
-.card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--c)}
+.card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:linear-gradient(180deg,var(--c),var(--c2,var(--c)))}
+.crests{display:flex;flex:none}
+.crests .crest{outline:2px solid var(--card)}
+.crests .crest+.crest{margin-left:-10px}
 .top{display:flex;align-items:center;gap:10px}
 .who{min-width:0;flex:1}
 .tag{font-size:12px;font-weight:800;letter-spacing:.06em;color:color-mix(in srgb,var(--c) 55%,#fff)}
@@ -57,7 +60,7 @@ h1{font-size:24px;margin:0;letter-spacing:-.02em;text-align:center;line-height:1
 .stale{margin:12px 0 0}
 .stale:empty{display:none}
 .hero{position:relative;overflow:hidden;margin-top:18px;padding:16px 16px 14px 20px;border:1px solid var(--bd);border-radius:20px;background:linear-gradient(135deg,color-mix(in srgb,var(--c) 38%,var(--card)) 0,var(--card) 70%)}
-.hero::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--c)}
+.hero::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:linear-gradient(180deg,var(--c),var(--c2,var(--c)))}
 .hk{font-size:12px;font-weight:800;letter-spacing:.1em;color:var(--mu)}
 .hrow{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:6px 0 2px}
 .hcount{font-size:38px;font-weight:800;letter-spacing:-.03em;line-height:1.05}
@@ -142,20 +145,40 @@ function chanHtml(f){
   const unconf=/confirm/i.test(f.note);
   return f.ch.length?f.ch.map(badge).join("")+(unconf?'<span class="b tbc">TBC</span>':""):'<span class="b none">'+(unconf?"Channel TBC":esc(f.note||"No UK broadcast"))+'</span>';
 }
+const ORDER=Object.keys(T);
+const names=f=>f.teams.map(k=>T[k].n.toUpperCase()).join(" · ");
+const cvars=f=>"--c:"+T[f.teams[0]].c+";--c2:"+T[f.teams[f.teams.length-1]].c;
+const crests=(f,s)=>f.teams.length>1?'<span class="crests">'+f.teams.map(k=>crest(k,s)).join("")+'</span>':crest(f.teams[0],s);
+// One match followed through two teams (e.g. Arsenal v Chelsea) becomes a single card with both badges.
+function mergeDupes(list){
+  const m=new Map();
+  list.forEach(f=>{
+    const k=f.iso+"|"+[f.h,f.a].map(s=>s.toLowerCase()).sort().join("|"),g=m.get(k);
+    if(!g){m.set(k,Object.assign({},f,{teams:[f.t],ch:f.ch.slice()}));return;}
+    if(!g.teams.includes(f.t))g.teams.push(f.t);
+    f.ch.forEach(c=>{if(!g.ch.includes(c))g.ch.push(c);});
+    g.note=(g.note&&f.note)?g.note:"";
+    g.tbc=g.tbc&&f.tbc;
+    if(!g.comp)g.comp=f.comp;
+  });
+  const out=[...m.values()];
+  out.forEach(g=>g.teams.sort((a,b)=>ORDER.indexOf(a)-ORDER.indexOf(b)));
+  return out;
+}
 function hero(f,now){
-  return '<section class="hero" style="--c:'+T[f.t].c+'" aria-label="Next match"><div class="hk">'+(status(f,now)==="live"?"LIVE NOW":"NEXT UP")+' · '+T[f.t].n.toUpperCase()+'</div>'+
-    '<div class="hrow"><div class="hcount">'+label(f,now)+'</div>'+crest(f.t,52)+'</div>'+
+  return '<section class="hero" style="'+cvars(f)+'" aria-label="Next match"><div class="hk">'+(status(f,now)==="live"?"LIVE NOW":"NEXT UP")+' · '+names(f)+'</div>'+
+    '<div class="hrow"><div class="hcount">'+label(f,now)+'</div>'+crests(f,52)+'</div>'+
     '<div class="hsub"><time datetime="'+esc(f.iso)+'">'+(f.tbc?"Time TBC":clock(f))+'</time> · '+esc(f.comp)+'</div>'+
     '<div class="hvs">'+esc(f.h)+' v '+esc(f.a)+'</div><div class="ch">'+chanHtml(f)+'</div></section>';
 }
 function render(){
   if(!ready)return;
   const now=new Date();
-  const all=F.filter(f=>f.d>now-3*36e5&&(sel.size===0||sel.has(f.t))).sort((a,b)=>a.d-b.d);
+  const all=mergeDupes(F.filter(f=>f.d>now-3*36e5&&(sel.size===0||sel.has(f.t))).sort((a,b)=>a.d-b.d));
   heroF=all.find(f=>status(f,now)!=="ft")||null;
   shown=all.filter(f=>f!==heroF);
   // Rebuild the list only when something visible changes; otherwise just refresh the countdowns.
-  const sig="u|"+(heroF?heroF.t+heroF.iso+label(heroF,now)+status(heroF,now):"")+"|"+shown.map(f=>f.t+f.iso+label(f,now)+status(f,now)).join(";")+"|"+sel.size;
+  const sig="u|"+(heroF?heroF.teams.join()+heroF.iso+label(heroF,now)+status(heroF,now):"")+"|"+shown.map(f=>f.teams.join()+f.iso+label(f,now)+status(f,now)).join(";")+"|"+sel.size;
   if(sig===lastSig){
     listEl.querySelectorAll(".rel").forEach(el=>{el.innerHTML=relText(shown[+el.dataset.i],now);});
     return;
@@ -167,7 +190,7 @@ function render(){
     const mk=fd({month:"long",year:"numeric"}).format(f.d);
     const head=mk!==last?'<h2 class="month">'+mk+'</h2>':"";last=mk;
     const note=f.ch.length&&f.note&&!/confirm/i.test(f.note)?'<div class="meta">'+esc(f.note)+'</div>':"";
-    return head+'<article class="card" style="--c:'+T[f.t].c+'"><div class="top">'+crest(f.t,40)+'<div class="who"><div class="tag">'+T[f.t].n.toUpperCase()+'</div><div class="comp">'+esc(f.comp)+'</div></div><time class="when" datetime="'+esc(f.iso)+'"><b>'+label(f,now)+'</b><span>'+(f.tbc?"Time TBC":clock(f))+'</span></time></div>'+
+    return head+'<article class="card" style="'+cvars(f)+'"><div class="top">'+crests(f,40)+'<div class="who"><div class="tag">'+names(f)+'</div><div class="comp">'+esc(f.comp)+'</div></div><time class="when" datetime="'+esc(f.iso)+'"><b>'+label(f,now)+'</b><span>'+(f.tbc?"Time TBC":clock(f))+'</span></time></div>'+
       '<div class="vs">'+esc(f.h)+' v '+esc(f.a)+'</div><div class="meta rel" data-i="'+i+'">'+relText(f,now)+'</div>'+note+'<div class="ch">'+chanHtml(f)+'</div></article>';
   }).join("");
 }
