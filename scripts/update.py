@@ -1,7 +1,8 @@
-"""Refresh fixtures.json from live-footballontv.com listings.
+"""Refresh fixtures.json from live-footballontv.com listings (be gentle: few requests, robots.txt respected).
 Each team has a list of pages to try; the first that yields fixtures wins.
 If every page fails for a team, that team's existing fixtures are kept."""
-import json, re, sys, datetime as dt
+import json, re, sys, time, datetime as dt
+import urllib.robotparser
 from zoneinfo import ZoneInfo
 import requests
 from bs4 import BeautifulSoup
@@ -91,36 +92,83 @@ def parse(text, key):
         i += 1
     return out
 
+UA = "Mozilla/5.0 (compatible; personal-fixtures-page; +https://www.hibbs.org.uk/)"
+PAUSE = 3          # seconds between requests to the listings site
+_pages, _last = {}, [0.0]
+_robots = urllib.robotparser.RobotFileParser()
+
+def load_robots():
+    try:
+        r = requests.get(BASE + "robots.txt", timeout=20, headers={"User-Agent": UA})
+        if r.ok:
+            _robots.parse(r.text.splitlines()); return
+    except Exception:
+        pass
+    _robots.parse([])                    # no robots.txt reachable: nothing is forbidden
+
+def page_text(slug):
+    """Each page is fetched at most once per run (a failure is remembered too)."""
+    if slug not in _pages:
+        try:
+            if not _robots.can_fetch(UA, BASE + slug):
+                raise RuntimeError("blocked by robots.txt")
+            wait = PAUSE - (time.time() - _last[0])
+            if wait > 0:
+                time.sleep(wait)
+            r = requests.get(BASE + slug, timeout=30, headers={"User-Agent": UA})
+            _last[0] = time.time()
+            r.raise_for_status()
+            _pages[slug] = BeautifulSoup(r.text, "html.parser").get_text("\n")
+        except Exception as e:
+            _pages[slug] = e
+    if isinstance(_pages[slug], Exception):
+        raise _pages[slug]
+    return _pages[slug]
+
 def fetch_team(key):
-    merged = {}
+    """-> (fixtures, page it came from)"""
+    merged, used = {}, []
     for slug in PAGES[key]:
         try:
-            r = requests.get(BASE + slug, timeout=30, headers={"User-Agent": "Mozilla/5.0 fixtures-page"})
-            r.raise_for_status()
-            got = parse(BeautifulSoup(r.text, "html.parser").get_text("\n"), key)
+            got = parse(page_text(slug), key)
         except Exception as e:
             print(f"{key}: {slug} failed ({e})", file=sys.stderr); continue
         if not got:
             print(f"{key}: {slug} had no matching fixtures", file=sys.stderr); continue
         if slug not in SHARED:                       # the club's own page lists every competition
             print(f"{key}: {len(got)} fixtures from {slug}")
-            return got
+            return got, slug
         print(f"{key}: {len(got)} fixtures from shared listing {slug}")
+        used.append(slug)
         for g in got:
             merged[(g["iso"], g["h"], g["a"])] = g   # WSL + Champions League pages are combined
-    return list(merged.values())
+    return list(merged.values()), "+".join(used)
 
 def main():
-    try: old = json.load(open("fixtures.json"))["fixtures"]
-    except Exception: old = []
-    new, now = [], dt.datetime.now(LON)
+    try: prev = json.load(open("fixtures.json"))
+    except Exception: prev = {}
+    old, old_health = prev.get("fixtures", []), prev.get("health", {})
+    now = dt.datetime.now(LON)
+    recent = lambda f: dt.datetime.fromisoformat(f["iso"]) > now - dt.timedelta(hours=3)
+    load_robots()
+    new, health = [], {}
     for key in PAGES:
-        got = [g for g in fetch_team(key) if dt.datetime.fromisoformat(g["iso"]) > now - dt.timedelta(hours=3)]
-        if not got:
-            print(f"::warning::fixtures: nothing found for {key}; keeping its previous fixtures")
-        new += got or [f for f in old if f["t"] == key]
+        got, src = fetch_team(key)
+        got = [g for g in got if recent(g)]
+        kept = [f for f in old if f["t"] == key and recent(f)]
+        upcoming_before = len([f for f in kept if dt.datetime.fromisoformat(f["iso"]) > now])
+        if got and upcoming_before >= 4 and len(got) < upcoming_before / 2:
+            print(f"::warning::fixtures: {key} returned only {len(got)} fixtures (had {upcoming_before}); keeping the previous ones in case the page layout changed")
+            got = []
+        if got:
+            new += got
+            health[key] = {"last_ok_iso": now.isoformat(), "from": src, "count": len(got)}
+        else:
+            print(f"::warning::fixtures: nothing usable for {key}; keeping its previous fixtures")
+            new += kept
+            health[key] = {"last_ok_iso": old_health.get(key, {}).get("last_ok_iso"), "from": None, "count": len(kept)}
     new.sort(key=lambda f: f["iso"])
-    json.dump({"updated": now.strftime("%-d %b %Y, %H:%M"), "updated_iso": now.isoformat(), "fixtures": new},
+    json.dump({"updated": now.strftime("%-d %b %Y, %H:%M"), "updated_iso": now.isoformat(), "health": health, "fixtures": new},
               open("fixtures.json", "w"), indent=1, ensure_ascii=False)
 
 if __name__ == "__main__":
