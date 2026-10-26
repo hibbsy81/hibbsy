@@ -1,6 +1,43 @@
 {
- "updated": "26 Oct 2026, 11:39",
- "updated_iso": "2026-10-26T11:39:16.505430+00:00",
+ "updated": "26 Oct 2026, 22:44",
+ "updated_iso": "2026-10-26T22:44:39.639028+00:00",
+ "health": {
+  "mc": {
+   "last_ok_iso": "2026-10-26T22:44:39.639028+00:00",
+   "from": "man-city-on-tv.html",
+   "count": 16
+  },
+  "mw": {
+   "last_ok_iso": "2026-10-26T22:44:39.639028+00:00",
+   "from": "man-city-women-on-tv.html",
+   "count": 8
+  },
+  "aw": {
+   "last_ok_iso": "2026-10-26T22:44:39.639028+00:00",
+   "from": "arsenal-women-on-tv.html",
+   "count": 8
+  },
+  "mu": {
+   "last_ok_iso": "2026-10-26T22:44:39.639028+00:00",
+   "from": "man-utd-women-on-tv.html",
+   "count": 4
+  },
+  "cw": {
+   "last_ok_iso": "2026-10-26T22:44:39.639028+00:00",
+   "from": "chelsea-women-on-tv.html",
+   "count": 8
+  },
+  "li": {
+   "last_ok_iso": "2026-10-26T22:44:39.639028+00:00",
+   "from": "england-women-on-tv.html",
+   "count": 2
+  },
+  "en": {
+   "last_ok_iso": "2026-10-26T22:44:39.639028+00:00",
+   "from": "england-on-tv.html",
+   "count": 2
+  }
+ },
  "fixtures": [
   {
    "t": "cw",
@@ -71,7 +108,9 @@
    "h": "London City Lionesses",
    "a": "Man City",
    "ch": [
-    "Sky Sports Premier League"
+    "Sky Sports Main Event",
+    "Sky Sports Premier League",
+    "Sky One"
    ],
    "note": "",
    "tbc": false
@@ -83,7 +122,7 @@
    "h": "Arsenal",
    "a": "Aston Villa",
    "ch": [
-    "Sky Sports+"
+    "Sky Sports Mix"
    ],
    "note": "",
    "tbc": false
