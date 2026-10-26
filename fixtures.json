@@ -1,33 +1,7 @@
 {
- "updated": "25 Oct 2026, 20:03",
- "updated_iso": "2026-10-25T20:03:42.093187+00:00",
+ "updated": "26 Oct 2026, 01:57",
+ "updated_iso": "2026-10-26T01:57:19.045942+00:00",
  "fixtures": [
-  {
-   "t": "mw",
-   "iso": "2026-10-25T18:00:00+00:00",
-   "comp": "Women's Super League",
-   "h": "Man Utd",
-   "a": "Man City",
-   "ch": [
-    "Sky Sports Football",
-    "Sky One"
-   ],
-   "note": "",
-   "tbc": false
-  },
-  {
-   "t": "mu",
-   "iso": "2026-10-25T18:00:00+00:00",
-   "comp": "Women's Super League",
-   "h": "Man Utd",
-   "a": "Man City",
-   "ch": [
-    "Sky Sports Football",
-    "Sky One"
-   ],
-   "note": "",
-   "tbc": false
-  },
   {
    "t": "cw",
    "iso": "2026-10-28T17:45:00+00:00",
