@@ -75,6 +75,8 @@ body {
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
+html, body, button, input, select, label, output { touch-action: manipulation; }
+button, output, .pl, .erow { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
 button, input, select { font: inherit; color: inherit; }
 button { cursor: pointer; }
 :focus-visible { outline: 3px solid var(--accent-text); outline-offset: 2px; }
@@ -133,6 +135,8 @@ fieldset.field { border: 0; margin: 0; padding: 0; }
 .btn.primary { background: var(--felt); color: var(--on-felt); border-color: var(--felt); }
 .btn.primary:disabled { opacity: 0.4; cursor: not-allowed; }
 .btn.grow { flex: 1; }
+#setupForm .btnrow { flex-direction: column; }
+#setupForm .btnrow .btn { flex: none; width: 100%; }
 .btn.danger { color: var(--heart); }
 
 /* Scoreboard */
@@ -149,6 +153,7 @@ fieldset.field { border: 0; margin: 0; padding: 0; }
 .pl.lead .bar { background: color-mix(in srgb, var(--on-felt) 25%, transparent); }
 .pl.lead .bar i { background: var(--on-felt); }
 .pl.lead .bar i.hot { background: #FF9AA7; }
+#banner:empty { display: none; }
 .banner { background: var(--felt); color: var(--on-felt); border-radius: 18px; padding: 14px 16px; font-family: var(--display); font-weight: 700; font-size: 21px; line-height: 1.2; box-shadow: var(--shadow); }
 .banner small { display: block; font-family: var(--body); font-weight: 500; font-size: 13px; color: var(--on-felt-dim); margin-top: 4px; }
 
