@@ -1,78 +1,44 @@
 {
- "updated": "28 Oct 2026, 13:07",
- "updated_iso": "2026-10-28T13:07:25.716398+00:00",
+ "updated": "28 Oct 2026, 22:41",
+ "updated_iso": "2026-10-28T22:41:00.577593+00:00",
  "health": {
   "mc": {
-   "last_ok_iso": "2026-10-28T13:07:25.716398+00:00",
+   "last_ok_iso": "2026-10-28T22:41:00.577593+00:00",
    "from": "man-city-on-tv.html",
-   "count": 16
+   "count": 15
   },
   "mw": {
-   "last_ok_iso": "2026-10-28T13:07:25.716398+00:00",
+   "last_ok_iso": "2026-10-28T22:41:00.577593+00:00",
    "from": "man-city-women-on-tv.html",
    "count": 8
   },
   "aw": {
-   "last_ok_iso": "2026-10-28T13:07:25.716398+00:00",
+   "last_ok_iso": "2026-10-28T22:41:00.577593+00:00",
    "from": "arsenal-women-on-tv.html",
    "count": 8
   },
   "mu": {
-   "last_ok_iso": "2026-10-28T13:07:25.716398+00:00",
+   "last_ok_iso": "2026-10-28T22:41:00.577593+00:00",
    "from": "man-utd-women-on-tv.html",
-   "count": 5
+   "count": 4
   },
   "cw": {
-   "last_ok_iso": "2026-10-28T13:07:25.716398+00:00",
+   "last_ok_iso": "2026-10-28T22:41:00.577593+00:00",
    "from": "chelsea-women-on-tv.html",
-   "count": 8
+   "count": 7
   },
   "li": {
-   "last_ok_iso": "2026-10-28T13:07:25.716398+00:00",
+   "last_ok_iso": "2026-10-28T22:41:00.577593+00:00",
    "from": "england-women-on-tv.html",
    "count": 2
   },
   "en": {
-   "last_ok_iso": "2026-10-28T13:07:25.716398+00:00",
+   "last_ok_iso": "2026-10-28T22:41:00.577593+00:00",
    "from": "england-on-tv.html",
    "count": 2
   }
  },
  "fixtures": [
-  {
-   "t": "cw",
-   "iso": "2026-10-28T17:45:00+00:00",
-   "comp": "Women's Champions League League Phase",
-   "h": "Chelsea",
-   "a": "Roma",
-   "ch": [
-    "Disney+"
-   ],
-   "note": "",
-   "tbc": false
-  },
-  {
-   "t": "mu",
-   "iso": "2026-10-28T19:00:00+00:00",
-   "comp": "Women's Players Cup Group Stage",
-   "h": "Man Utd",
-   "a": "Burnley",
-   "ch": [],
-   "note": "Channel to be confirmed",
-   "tbc": false
-  },
-  {
-   "t": "mc",
-   "iso": "2026-10-28T19:30:00+00:00",
-   "comp": "Carabao Cup Round Four",
-   "h": "Man City",
-   "a": "Brighton & Hove Albion",
-   "ch": [
-    "Sky Sports+"
-   ],
-   "note": "",
-   "tbc": false
-  },
   {
    "t": "aw",
    "iso": "2026-10-28T20:00:00+00:00",
