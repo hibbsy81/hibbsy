@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><meta name="theme-color" content="#17503A"><meta name="application-name" content="Hearts Scorepad"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Hearts"><link rel="manifest" href="cards-manifest.webmanifest"><link rel="apple-touch-icon" href="cards-apple-touch-icon.png"><link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2215%22%20fill%3D%22%2317503A%22%2F%3E%3Cpath%20fill%3D%22%23FF7D8E%22%20transform%3D%22translate%289.2%208.775%29%20scale%281.9%29%22%20d%3D%22M12%2021s-7.5-4.6-9.6-9.3C.9%208.2%203%204.5%206.6%204.5c2%200%203.6%201.1%205.4%203.2%201.8-2.1%203.4-3.2%205.4-3.2%203.6%200%205.7%203.7%204.2%207.2C19.5%2016.4%2012%2021%2012%2021z%22%2F%3E%3C%2Fsvg%3E"></head><body>
 <title>Hearts Scorepad</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -71,7 +71,7 @@ body {
   font-family: var(--body);
   font-size: 16px;
   line-height: 1.4;
-  padding-block: 16px 44px;
+  padding-block: 16px 32px;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
@@ -79,26 +79,34 @@ button, input, select { font: inherit; color: inherit; }
 button { cursor: pointer; }
 :focus-visible { outline: 3px solid var(--accent-text); outline-offset: 2px; }
 .ico { width: 1em; height: 1em; fill: currentColor; vertical-align: -0.12em; }
-.stack { display: flex; flex-direction: column; gap: 18px; }
+.stack { display: flex; flex-direction: column; gap: 16px; }
 .wrap { max-width: 520px; margin: 0 auto; }
+
+/* Hibbs menu (menu.js / menu.css): colours follow this page's theme */
+:root {
+  --menu-ink: var(--ink);
+  --menu-accent: var(--accent-text);
+  --menu-glass: color-mix(in srgb, var(--surface) 82%, transparent);
+  --menu-line: color-mix(in srgb, var(--ink) 10%, transparent);
+  --menu-hover: color-mix(in srgb, var(--ink) 7%, transparent);
+}
+/* Sit inside the header card, lined up with the page column (nav.menu beats menu.css's .menu) */
+nav.menu {
+  top: calc(28px + env(safe-area-inset-top, 0px));
+  right: max(calc(28px + env(safe-area-inset-right, 0px)), calc((100vw - 520px) / 2 + 12px));
+}
 
 /* Header with cards */
 .hero {
   position: relative; overflow: hidden; display: flex; align-items: stretch; gap: 6px;
-  min-height: 160px; padding: 20px 0 0 20px; border-radius: 24px; color: var(--on-felt);
+  min-height: 108px; padding: 16px 0 0 20px; border-radius: 24px; color: var(--on-felt);
   background: linear-gradient(140deg, var(--hero-a), var(--hero-b));
   box-shadow: var(--shadow);
 }
-.hero .mark { position: absolute; right: -46px; top: -56px; width: 230px; height: 230px; fill: var(--on-felt); opacity: 0.07; pointer-events: none; }
-.hero-text { position: relative; flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: space-between; gap: 12px; padding-bottom: 20px; }
+.hero .mark { position: absolute; right: -30px; top: -50px; width: 190px; height: 190px; fill: var(--on-felt); opacity: 0.07; pointer-events: none; }
+.hero-text { position: relative; flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; padding-bottom: 16px; }
 h1 { font-family: var(--display); font-weight: 800; font-size: 32px; line-height: 1; letter-spacing: -0.02em; margin: 0; text-wrap: balance; }
-.sub { margin: 8px 0 0; font-size: 14px; color: var(--on-felt-dim); }
-.pill {
-  align-self: flex-start; min-height: 36px; padding: 6px 14px; border-radius: 999px; font-weight: 600; font-size: 14px;
-  color: var(--on-felt); background: color-mix(in srgb, var(--on-felt) 14%, transparent);
-  border: 1px solid color-mix(in srgb, var(--on-felt) 34%, transparent);
-}
-.hero-art { position: relative; flex: none; width: clamp(130px, 46%, 232px); align-self: flex-end; margin-right: 6px; }
+.hero-art { position: relative; flex: none; width: clamp(96px, 30%, 128px); align-self: flex-end; margin-right: 66px; }
 svg.fan { display: block; width: 100%; height: auto; filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.32)); }
 .fan .face { fill: var(--cardface); stroke: var(--cardedge); stroke-width: 1; }
 .fan .rank { font-family: var(--display); font-weight: 800; font-size: 26px; }
@@ -112,22 +120,13 @@ svg.fan { display: block; width: 100%; height: auto; filter: drop-shadow(0 8px 1
 .setup { display: flex; flex-direction: column; gap: 18px; }
 .field { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
 .field label, .field legend { font-size: 13px; font-weight: 700; color: var(--muted); padding: 0; }
+.field legend { margin: 0 0 8px; float: none; }
 .field input[type="text"], .field select {
   width: 100%; min-height: 48px; padding: 8px 14px; border: 1px solid var(--line); border-radius: 12px;
   background: var(--bg); font-size: 16px;
 }
 fieldset.field { border: 0; margin: 0; padding: 0; }
 .names { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.opts { display: flex; flex-direction: column; gap: 6px; }
-.opt { display: flex; gap: 10px; align-items: flex-start; font-size: 15px; min-height: 36px; }
-.opt input { margin-top: 3px; width: 18px; height: 18px; accent-color: var(--felt); flex: none; }
-.icons { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-.icopt {
-  display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px 4px 8px; border-radius: 14px;
-  border: 1px solid var(--line); background: var(--bg); font-size: 12px; font-weight: 600; color: var(--muted);
-}
-.icopt img { width: 40px; height: 40px; display: block; }
-.icopt[aria-checked="true"] { border-color: var(--felt); box-shadow: inset 0 0 0 2px var(--felt); color: var(--ink); }
 .hint { margin: 0; font-size: 13px; color: var(--muted); }
 .btnrow { display: flex; gap: 10px; flex-wrap: wrap; }
 .btn { min-height: 50px; padding: 10px 20px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); font-weight: 700; }
@@ -138,13 +137,13 @@ fieldset.field { border: 0; margin: 0; padding: 0; }
 
 /* Scoreboard */
 .board { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
-.pl { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 12px 9px 10px; display: flex; flex-direction: column; gap: 6px; min-width: 0; box-shadow: var(--shadow); }
+.pl { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 14px 10px 12px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px; min-width: 0; box-shadow: var(--shadow); }
 .pl.lead { background: var(--felt); border-color: var(--felt); color: var(--on-felt); }
 .pname { font-size: 14px; font-weight: 700; overflow-wrap: anywhere; line-height: 1.2; }
 .total { font-family: var(--display); font-weight: 800; font-size: 38px; line-height: 1; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
 .tag { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); min-height: 14px; }
 .pl.lead .tag { color: var(--on-felt-dim); }
-.bar { display: block; height: 5px; border-radius: 3px; background: var(--line); overflow: hidden; }
+.bar { display: block; width: 100%; height: 5px; border-radius: 3px; background: var(--line); overflow: hidden; }
 .bar i { display: block; height: 100%; background: var(--felt); border-radius: 3px; }
 .bar i.hot { background: var(--heart); }
 .pl.lead .bar { background: color-mix(in srgb, var(--on-felt) 25%, transparent); }
@@ -154,11 +153,11 @@ fieldset.field { border: 0; margin: 0; padding: 0; }
 .banner small { display: block; font-family: var(--body); font-weight: 500; font-size: 13px; color: var(--on-felt-dim); margin-top: 4px; }
 
 /* Entry */
-.entry { display: flex; flex-direction: column; gap: 2px; }
-.ehead { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; padding-bottom: 10px; }
+.entry { display: flex; flex-direction: column; gap: 0; }
+.ehead { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; padding-bottom: 12px; }
 .ehead h2 { font-family: var(--display); font-weight: 800; font-size: 24px; letter-spacing: -0.01em; margin: 0; }
 .ehead .pass { color: var(--muted); font-size: 13px; font-weight: 600; padding: 3px 10px; border-radius: 999px; background: var(--bg); }
-.erow { display: flex; align-items: center; gap: 8px; padding: 10px 0; border-top: 1px solid var(--line); }
+.erow { display: flex; align-items: center; gap: 8px; padding: 12px 0; border-top: 1px solid var(--line); }
 .who { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .who .pts { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .step { display: flex; align-items: center; flex: none; padding: 3px; border-radius: 999px; background: var(--bg); border: 1px solid var(--line); }
@@ -168,7 +167,7 @@ fieldset.field { border: 0; margin: 0; padding: 0; }
 .tog.q.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 .tog.moon { font-size: 12px; font-weight: 700; border-style: dashed; min-width: 52px; }
 .tog.moon.on { background: var(--heart); color: var(--on-heart); border-color: var(--heart); border-style: solid; }
-.status { margin: 6px 0 12px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 14px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px 14px; }
+.status { margin: 0 0 16px; padding-top: 14px; border-top: 1px solid var(--line); font-size: 14px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px 14px; }
 .status b { color: var(--ink); font-variant-numeric: tabular-nums; }
 .status .bad { color: var(--heart); font-weight: 700; }
 .status .ok { color: var(--accent-text); font-weight: 700; }
@@ -188,10 +187,6 @@ td.moonc { color: var(--heart); font-weight: 800; }
 td .mk { display: block; font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 700; }
 tfoot td { border-top: 2px solid var(--ink); border-bottom: 0; font-weight: 800; font-size: 17px; }
 .empty { margin: 0; padding: 20px 16px; color: var(--muted); font-size: 14px; }
-.legend { margin: 8px 4px 0; font-size: 12px; color: var(--muted); }
-@media (min-width: 460px) {
-  .icons { grid-template-columns: repeat(6, minmax(0, 1fr)); }
-}
 @media (max-width: 360px) {
   .total { font-size: 30px; }
   h1 { font-size: 27px; }
@@ -214,11 +209,7 @@ tfoot td { border-top: 2px solid var(--ink); border-bottom: 0; font-weight: 800;
   <header class="hero">
     <svg class="mark" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#heart"/></svg>
     <div class="hero-text">
-      <div>
-        <h1>Hearts Scorepad</h1>
-        <p class="sub" id="sub"></p>
-      </div>
-      <button class="pill" id="editPlayers" type="button" hidden>Players &amp; rules</button>
+      <h1>Hearts Scorepad</h1>
     </div>
     <div class="hero-art">
       <svg class="fan" viewBox="0 0 260 170" aria-hidden="true" focusable="false">
@@ -263,18 +254,6 @@ tfoot td { border-top: 2px solid var(--ink); border-bottom: 0; font-weight: 800;
           <option value="150">150 points (long game)</option>
         </select>
       </div>
-      <fieldset class="field">
-        <legend>When a player shoots the moon</legend>
-        <div class="opts">
-          <label class="opt"><input type="radio" name="moon" id="moonOthers" value="others"> <span>Everyone else scores 26, the shooter scores 0</span></label>
-          <label class="opt"><input type="radio" name="moon" id="moonSelf" value="self"> <span>The shooter scores &minus;26, everyone else scores 0</span></label>
-        </div>
-      </fieldset>
-      <fieldset class="field">
-        <legend>Tab icon</legend>
-        <div class="icons" id="iconPicker" role="radiogroup" aria-label="Tab icon"></div>
-        <p class="hint">Changes the icon on this page's browser tab. Some apps and browsers ignore it.</p>
-      </fieldset>
       <p class="hint" id="setupNote" hidden>Starting a new game clears the current scores. Saving changes keeps them.</p>
       <div class="btnrow">
         <button class="btn primary grow" id="startBtn" type="submit">Start game</button>
@@ -288,6 +267,7 @@ tfoot td { border-top: 2px solid var(--ink); border-bottom: 0; font-weight: 800;
     <div id="banner"></div>
     <section class="card entry" id="entry" aria-label="Enter a hand"></section>
     <section id="history" aria-label="Score sheet"></section>
+    <button class="btn" id="editPlayers" type="button">Edit players</button>
   </section>
 </main>
 
@@ -304,60 +284,12 @@ tfoot td { border-top: 2px solid var(--ink); border-bottom: 0; font-weight: 800;
   var showingSetup = !state.started;
   var $ = function (id) { return document.getElementById(id); };
 
-  /* Tab icons: six heart and card designs drawn on a 64 x 64 grid */
-  var HEART = 'M12 21s-7.5-4.6-9.6-9.3C.9 8.2 3 4.5 6.6 4.5c2 0 3.6 1.1 5.4 3.2 1.8-2.1 3.4-3.2 5.4-3.2 3.6 0 5.7 3.7 4.2 7.2C19.5 16.4 12 21 12 21z';
-  function heartAt(cx, cy, s, fill, stroke) {
-    return '<path fill="' + fill + '"' + (stroke ? ' stroke="' + stroke + '" stroke-width="' + (1.6 / s) + '"' : '') +
-      ' transform="translate(' + (cx - 12 * s) + ' ' + (cy - 12.75 * s) + ') scale(' + s + ')" d="' + HEART + '"/>';
-  }
-  var ICONS = [
-    { id: 'classic', label: 'Classic', svg: function () {
-      return '<rect width="64" height="64" rx="15" fill="#D8283D"/>' + heartAt(32, 33, 1.9, '#FFFFFF'); } },
-    { id: 'felt', label: 'Felt', svg: function () {
-      return '<rect width="64" height="64" rx="15" fill="#17503A"/>' + heartAt(32, 33, 1.9, '#FF7D8E'); } },
-    { id: 'ace', label: 'Ace', svg: function () {
-      return '<rect x="13" y="4" width="38" height="56" rx="6" fill="#FBFCFA" stroke="#14231B" stroke-width="3"/>' +
-        '<text x="18" y="22" font-family="Arial,Helvetica,sans-serif" font-weight="700" font-size="15" fill="#D8283D">A</text>' +
-        heartAt(32, 40, 1.25, '#D8283D'); } },
-    { id: 'back', label: 'Card back', svg: function () {
-      return '<rect x="13" y="4" width="38" height="56" rx="6" fill="#C42B3E"/>' +
-        '<rect x="18" y="9" width="28" height="46" rx="3" fill="none" stroke="#FFFFFF" stroke-width="2"/>' +
-        '<polygon points="32,16 42,32 32,48 22,32" fill="none" stroke="#FFFFFF" stroke-width="2"/>' +
-        '<circle cx="32" cy="32" r="3" fill="#FFFFFF"/>'; } },
-    { id: 'twin', label: 'Twin', svg: function () {
-      return '<rect width="64" height="64" rx="15" fill="#0E1F17"/>' + heartAt(26, 31, 1.55, '#E0344B') + heartAt(39, 37, 1.55, '#F7FAF6', '#0E1F17'); } },
-    { id: 'moon', label: 'Moon', svg: function () {
-      return '<rect width="64" height="64" rx="15" fill="#0B2A20"/>' + heartAt(30, 37, 1.7, '#E0344B') +
-        '<circle cx="47" cy="17" r="8" fill="#F3E9B5"/><circle cx="50" cy="14" r="7" fill="#0B2A20"/>'; } }
-  ];
-  function iconUri(id) {
-    var it = ICONS.filter(function (x) { return x.id === id; })[0] || ICONS[0];
-    return 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">' + it.svg() + '</svg>');
-  }
-  function applyIcon() {
-    try {
-      var old = document.querySelectorAll('link[rel~="icon"]');
-      for (var i = 0; i < old.length; i++) old[i].parentNode.removeChild(old[i]);
-      var l = document.createElement('link');
-      l.rel = 'icon';
-      l.type = 'image/svg+xml';
-      l.href = iconUri(state.icon);
-      document.head.appendChild(l);
-    } catch (e) {}
-  }
-  function renderIcons() {
-    $('iconPicker').innerHTML = ICONS.map(function (it) {
-      var on = it.id === state.icon;
-      return '<button type="button" class="icopt" role="radio" aria-checked="' + on + '" data-icon="' + it.id + '" aria-label="' + it.label + ' tab icon">' +
-        '<img src="' + iconUri(it.id) + '" alt=""><span>' + it.label + '</span></button>';
-    }).join('');
-  }
-
   function load() {
-    var d = { started: false, names: ['', '', '', ''], target: 100, moon: 'others', icon: 'classic', rounds: [] };
+    var d = { started: false, names: ['', '', '', ''], target: 100, moon: 'others', rounds: [] };
     try {
       var s = JSON.parse(localStorage.getItem(KEY));
       if (s && Array.isArray(s.names) && s.names.length === 4 && Array.isArray(s.rounds)) d = Object.assign(d, s);
+      d.moon = 'others';
     } catch (e) {}
     return d;
   }
@@ -380,10 +312,7 @@ tfoot td { border-top: 2px solid var(--ink); border-bottom: 0; font-weight: 800;
   function scoresOf(r) {
     var m = moonOf(r);
     return r.h.map(function (v, i) {
-      if (m !== null) {
-        if (state.moon === 'self') return i === m ? -26 : 0;
-        return i === m ? 0 : 26;
-      }
+      if (m !== null) return i === m ? 0 : 26;
       return v + (r.q === i ? 13 : 0);
     });
   }
@@ -392,26 +321,20 @@ tfoot td { border-top: 2px solid var(--ink); border-bottom: 0; font-weight: 800;
     state.rounds.forEach(function (r) { scoresOf(r).forEach(function (s, i) { t[i] += s; }); });
     return t;
   }
-  function moonText() {
-    return state.moon === 'self' ? 'Moon: shooter −26' : 'Moon: others +26';
-  }
 
   /* Setup */
   function renderSetup() {
     for (var i = 0; i < 4; i++) $('n' + i).value = state.names[i] || '';
     $('target').value = String(state.target);
-    $('moonOthers').checked = state.moon !== 'self';
-    $('moonSelf').checked = state.moon === 'self';
     $('startBtn').textContent = state.started ? 'Save changes' : 'Start game';
     $('resetBtn').hidden = !state.started;
     $('resetBtn').textContent = resetArm ? 'Tap again to clear scores' : 'Start new game';
     $('setupNote').hidden = !state.started;
-    renderIcons();
   }
   function readSetup() {
     for (var i = 0; i < 4; i++) state.names[i] = $('n' + i).value.trim();
     state.target = parseInt($('target').value, 10) || 100;
-    state.moon = $('moonSelf').checked ? 'self' : 'others';
+    state.moon = 'others';
   }
 
   /* Game */
@@ -490,7 +413,7 @@ tfoot td { border-top: 2px solid var(--ink); border-bottom: 0; font-weight: 800;
     var rs = state.rounds;
     var el = $('history');
     if (!rs.length) {
-      el.innerHTML = '<h2 class="lbl" style="margin-bottom:8px">Score sheet</h2><div class="sheet-wrap"><p class="empty">No hands yet. Set hearts and the queen of spades above, then add the hand.</p></div>';
+      el.innerHTML = '<h2 class="lbl" style="margin-bottom:10px">Score sheet</h2><div class="sheet-wrap"><p class="empty">No hands yet. Set hearts and the queen of spades above, then add the hand.</p></div>';
       return;
     }
     var t = totals();
@@ -504,18 +427,13 @@ tfoot td { border-top: 2px solid var(--ink); border-bottom: 0; font-weight: 800;
         }).join('') + '</tr>';
     }).join('');
     var foot = '<tr><td>Total</td>' + t.map(function (v) { return '<td>' + v + '</td>'; }).join('') + '</tr>';
-    el.innerHTML = '<h2 class="lbl" style="margin-bottom:8px">Score sheet</h2>' +
-      '<div class="sheet-wrap"><table><thead>' + head + '</thead><tbody>' + body + '</tbody><tfoot>' + foot + '</tfoot></table></div>' +
-      '<p class="legend">Tap a hand number to correct it. ' + moonText() + '.</p>';
+    el.innerHTML = '<h2 class="lbl" style="margin-bottom:10px">Score sheet</h2>' +
+      '<div class="sheet-wrap"><table><thead>' + head + '</thead><tbody>' + body + '</tbody><tfoot>' + foot + '</tfoot></table></div>';
   }
 
   function render() {
     $('setup').hidden = !showingSetup;
     $('game').hidden = showingSetup;
-    $('editPlayers').hidden = showingSetup || !state.started;
-    $('sub').textContent = showingSetup
-      ? (state.started ? 'Change names, rules or tab icon' : 'Four players. Lowest score wins.')
-      : 'Four players, play to ' + state.target + '. Lowest score wins.';
     if (showingSetup) { renderSetup(); return; }
     renderBoard();
     renderBanner();
@@ -529,16 +447,6 @@ tfoot td { border-top: 2px solid var(--ink); border-bottom: 0; font-weight: 800;
   }
 
   /* Events */
-  $('iconPicker').addEventListener('click', function (e) {
-    var b = e.target.closest('[data-icon]');
-    if (!b) return;
-    state.icon = b.getAttribute('data-icon');
-    save();
-    applyIcon();
-    renderIcons();
-    var f = document.querySelector('[data-icon="' + state.icon + '"]');
-    if (f) f.focus();
-  });
   $('setupForm').addEventListener('submit', function (e) {
     e.preventDefault();
     readSetup();
@@ -606,9 +514,14 @@ tfoot td { border-top: 2px solid var(--ink); border-bottom: 0; font-weight: 800;
     render();
   });
 
-  applyIcon();
+  /* Offline support (only registers when served over https) */
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () { navigator.serviceWorker.register('cards-sw.js').catch(function () {}); });
+  }
+
   render();
 })();
 </script>
+<script src="menu.js?v=16" defer></script>
 
 </body></html>

@@ -1,0 +1,25 @@
+{
+  "name": "Hearts Scorepad",
+  "short_name": "Hearts",
+  "description": "Four-player Hearts scorekeeper",
+  "start_url": "cards.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#17503A",
+  "theme_color": "#17503A",
+  "icons": [
+    {
+      "src": "cards-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "cards-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
