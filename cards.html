@@ -202,6 +202,10 @@ tfoot td { border-top: 2px solid var(--ink); border-bottom: 0; font-weight: 800;
   .step button { width: 30px; height: 30px; }
   .step output { width: 24px; }
 }
+/* Desktop: top gap matches the 16px gap below the header card */
+@media (min-width: 640px) {
+  body { padding-top: 16px; }
+}
 @media (prefers-reduced-motion: no-preference) {
   .bar i { transition: width 0.25s ease; }
   .pl, .btn, .tog { transition: background-color 0.15s ease, border-color 0.15s ease; }
@@ -266,6 +270,7 @@ tfoot td { border-top: 2px solid var(--ink); border-bottom: 0; font-weight: 800;
       <div class="btnrow">
         <button class="btn primary grow" id="startBtn" type="submit">Start game</button>
         <button class="btn" id="resetBtn" type="button" hidden>Start new game</button>
+        <button class="btn danger" id="wipeBtn" type="button" hidden>Erase all saved data</button>
       </div>
     </form>
   </section>
@@ -288,6 +293,7 @@ tfoot td { border-top: 2px solid var(--ink); border-bottom: 0; font-weight: 800;
   var editing = null;
   var confirmDel = false;
   var resetArm = false;
+  var wipeArm = false;
   var focusSel = null;
   var showingSetup = !state.started;
   var $ = function (id) { return document.getElementById(id); };
@@ -338,6 +344,8 @@ tfoot td { border-top: 2px solid var(--ink); border-bottom: 0; font-weight: 800;
     $('resetBtn').hidden = !state.started;
     $('resetBtn').textContent = resetArm ? 'Tap again to clear scores' : 'Start new game';
     $('setupNote').hidden = !state.started;
+    $('wipeBtn').hidden = !state.started;
+    $('wipeBtn').textContent = wipeArm ? 'Tap again to erase everything' : 'Erase all saved data';
   }
   function readSetup() {
     for (var i = 0; i < 4; i++) state.names[i] = $('n' + i).value.trim();
@@ -480,6 +488,23 @@ tfoot td { border-top: 2px solid var(--ink); border-bottom: 0; font-weight: 800;
     resetArm = false;
     save();
     showingSetup = false;
+    render();
+  });
+  $('wipeBtn').addEventListener('click', function () {
+    if (!wipeArm) {
+      wipeArm = true;
+      $('wipeBtn').textContent = 'Tap again to erase everything';
+      setTimeout(function () { if (wipeArm) { wipeArm = false; if (showingSetup) renderSetup(); } }, 4000);
+      return;
+    }
+    try { localStorage.removeItem(KEY); } catch (e) {}
+    state = load();
+    draft = blank();
+    editing = null;
+    confirmDel = false;
+    resetArm = false;
+    wipeArm = false;
+    showingSetup = true;
     render();
   });
   $('editPlayers').addEventListener('click', function () { showingSetup = true; render(); });
