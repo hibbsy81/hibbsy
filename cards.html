@@ -1,0 +1,614 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Hearts Scorepad</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700;800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Layout: one narrow column. A green felt header with a fanned hand of cards, a four-tile scoreboard, one hand-entry card, then a ruled score sheet. */
+:root {
+  --bg: #EEF3EF;
+  --surface: #FFFFFF;
+  --ink: #0E1F17;
+  --muted: #5A6E63;
+  --line: #DAE4DD;
+  --felt: #17503A;
+  --on-felt: #F2F7F2;
+  --on-felt-dim: #BFD8CB;
+  --hero-a: #1D6B4D;
+  --hero-b: #0E3A2A;
+  --accent-text: #17503A;
+  --heart: #E0344B;
+  --on-heart: #FFFFFF;
+  --shadow: 0 1px 2px rgba(14, 31, 23, 0.06), 0 10px 28px rgba(14, 31, 23, 0.08);
+  --cardface: #FBFCFA;
+  --cardedge: #C9D6CB;
+  --cardred: #D8283D;
+  --cardblack: #14231B;
+  --display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --body: "Figtree", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0A1710;
+    --surface: #12261C;
+    --ink: #E5EFE7;
+    --muted: #93A89B;
+    --line: #244034;
+    --felt: #2A7656;
+    --on-felt: #F2F7F2;
+    --on-felt-dim: #BFD8CB;
+    --hero-a: #17563D;
+    --hero-b: #0A2519;
+    --accent-text: #7FD1A8;
+    --heart: #F2677A;
+    --on-heart: #1A0A0D;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 28px rgba(0, 0, 0, 0.35);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0A1710;
+  --surface: #12261C;
+  --ink: #E5EFE7;
+  --muted: #93A89B;
+  --line: #244034;
+  --felt: #2A7656;
+  --on-felt: #F2F7F2;
+  --on-felt-dim: #BFD8CB;
+  --hero-a: #17563D;
+  --hero-b: #0A2519;
+  --accent-text: #7FD1A8;
+  --heart: #F2677A;
+  --on-heart: #1A0A0D;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 28px rgba(0, 0, 0, 0.35);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 16px;
+  line-height: 1.4;
+  padding-block: 16px 44px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid var(--accent-text); outline-offset: 2px; }
+.ico { width: 1em; height: 1em; fill: currentColor; vertical-align: -0.12em; }
+.stack { display: flex; flex-direction: column; gap: 18px; }
+.wrap { max-width: 520px; margin: 0 auto; }
+
+/* Header with cards */
+.hero {
+  position: relative; overflow: hidden; display: flex; align-items: stretch; gap: 6px;
+  min-height: 160px; padding: 20px 0 0 20px; border-radius: 24px; color: var(--on-felt);
+  background: linear-gradient(140deg, var(--hero-a), var(--hero-b));
+  box-shadow: var(--shadow);
+}
+.hero .mark { position: absolute; right: -46px; top: -56px; width: 230px; height: 230px; fill: var(--on-felt); opacity: 0.07; pointer-events: none; }
+.hero-text { position: relative; flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: space-between; gap: 12px; padding-bottom: 20px; }
+h1 { font-family: var(--display); font-weight: 800; font-size: 32px; line-height: 1; letter-spacing: -0.02em; margin: 0; text-wrap: balance; }
+.sub { margin: 8px 0 0; font-size: 14px; color: var(--on-felt-dim); }
+.pill {
+  align-self: flex-start; min-height: 36px; padding: 6px 14px; border-radius: 999px; font-weight: 600; font-size: 14px;
+  color: var(--on-felt); background: color-mix(in srgb, var(--on-felt) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--on-felt) 34%, transparent);
+}
+.hero-art { position: relative; flex: none; width: clamp(130px, 46%, 232px); align-self: flex-end; margin-right: 6px; }
+svg.fan { display: block; width: 100%; height: auto; filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.32)); }
+.fan .face { fill: var(--cardface); stroke: var(--cardedge); stroke-width: 1; }
+.fan .rank { font-family: var(--display); font-weight: 800; font-size: 26px; }
+.fan .red { fill: var(--cardred); }
+.fan .blk { fill: var(--cardblack); }
+
+.lbl { font-size: 12px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); margin: 0; }
+
+/* Setup */
+.card { background: var(--surface); border-radius: 20px; padding: 18px; box-shadow: var(--shadow); border: 1px solid var(--line); }
+.setup { display: flex; flex-direction: column; gap: 18px; }
+.field { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.field label, .field legend { font-size: 13px; font-weight: 700; color: var(--muted); padding: 0; }
+.field input[type="text"], .field select {
+  width: 100%; min-height: 48px; padding: 8px 14px; border: 1px solid var(--line); border-radius: 12px;
+  background: var(--bg); font-size: 16px;
+}
+fieldset.field { border: 0; margin: 0; padding: 0; }
+.names { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.opts { display: flex; flex-direction: column; gap: 6px; }
+.opt { display: flex; gap: 10px; align-items: flex-start; font-size: 15px; min-height: 36px; }
+.opt input { margin-top: 3px; width: 18px; height: 18px; accent-color: var(--felt); flex: none; }
+.icons { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.icopt {
+  display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px 4px 8px; border-radius: 14px;
+  border: 1px solid var(--line); background: var(--bg); font-size: 12px; font-weight: 600; color: var(--muted);
+}
+.icopt img { width: 40px; height: 40px; display: block; }
+.icopt[aria-checked="true"] { border-color: var(--felt); box-shadow: inset 0 0 0 2px var(--felt); color: var(--ink); }
+.hint { margin: 0; font-size: 13px; color: var(--muted); }
+.btnrow { display: flex; gap: 10px; flex-wrap: wrap; }
+.btn { min-height: 50px; padding: 10px 20px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); font-weight: 700; }
+.btn.primary { background: var(--felt); color: var(--on-felt); border-color: var(--felt); }
+.btn.primary:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn.grow { flex: 1; }
+.btn.danger { color: var(--heart); }
+
+/* Scoreboard */
+.board { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.pl { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 12px 9px 10px; display: flex; flex-direction: column; gap: 6px; min-width: 0; box-shadow: var(--shadow); }
+.pl.lead { background: var(--felt); border-color: var(--felt); color: var(--on-felt); }
+.pname { font-size: 14px; font-weight: 700; overflow-wrap: anywhere; line-height: 1.2; }
+.total { font-family: var(--display); font-weight: 800; font-size: 38px; line-height: 1; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.tag { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); min-height: 14px; }
+.pl.lead .tag { color: var(--on-felt-dim); }
+.bar { display: block; height: 5px; border-radius: 3px; background: var(--line); overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--felt); border-radius: 3px; }
+.bar i.hot { background: var(--heart); }
+.pl.lead .bar { background: color-mix(in srgb, var(--on-felt) 25%, transparent); }
+.pl.lead .bar i { background: var(--on-felt); }
+.pl.lead .bar i.hot { background: #FF9AA7; }
+.banner { background: var(--felt); color: var(--on-felt); border-radius: 18px; padding: 14px 16px; font-family: var(--display); font-weight: 700; font-size: 21px; line-height: 1.2; box-shadow: var(--shadow); }
+.banner small { display: block; font-family: var(--body); font-weight: 500; font-size: 13px; color: var(--on-felt-dim); margin-top: 4px; }
+
+/* Entry */
+.entry { display: flex; flex-direction: column; gap: 2px; }
+.ehead { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; padding-bottom: 10px; }
+.ehead h2 { font-family: var(--display); font-weight: 800; font-size: 24px; letter-spacing: -0.01em; margin: 0; }
+.ehead .pass { color: var(--muted); font-size: 13px; font-weight: 600; padding: 3px 10px; border-radius: 999px; background: var(--bg); }
+.erow { display: flex; align-items: center; gap: 8px; padding: 10px 0; border-top: 1px solid var(--line); }
+.who { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.who .pts { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.step { display: flex; align-items: center; flex: none; padding: 3px; border-radius: 999px; background: var(--bg); border: 1px solid var(--line); }
+.step button { width: 34px; height: 34px; border-radius: 50%; border: 0; background: var(--surface); font-size: 20px; line-height: 1; box-shadow: 0 1px 2px rgba(14, 31, 23, 0.14); }
+.step output { width: 30px; text-align: center; font-weight: 800; font-size: 18px; font-variant-numeric: tabular-nums; }
+.tog { flex: none; height: 40px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg); font-weight: 800; font-size: 14px; padding: 0 8px; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; gap: 2px; }
+.tog.q.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.tog.moon { font-size: 12px; font-weight: 700; border-style: dashed; min-width: 52px; }
+.tog.moon.on { background: var(--heart); color: var(--on-heart); border-color: var(--heart); border-style: solid; }
+.status { margin: 6px 0 12px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 14px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px 14px; }
+.status b { color: var(--ink); font-variant-numeric: tabular-nums; }
+.status .bad { color: var(--heart); font-weight: 700; }
+.status .ok { color: var(--accent-text); font-weight: 700; }
+.editnote { font-size: 13px; font-weight: 700; color: var(--accent-text); }
+
+/* Score sheet */
+.sheet-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 20px; background: var(--surface); box-shadow: var(--shadow); }
+table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+th, td { padding: 10px 8px; text-align: right; border-bottom: 1px solid var(--line); }
+th { font-size: 12px; font-weight: 700; letter-spacing: 0.03em; color: var(--muted); overflow-wrap: anywhere; vertical-align: bottom; }
+th:first-child, td:first-child { text-align: left; padding-left: 16px; width: 64px; }
+th:last-child, td:last-child { padding-right: 16px; }
+tbody tr:last-child td { border-bottom: 0; }
+tr.editing td { background: color-mix(in srgb, var(--felt) 14%, transparent); }
+td .hbtn { background: none; border: 0; padding: 4px 0; font-weight: 700; font-size: 14px; color: var(--accent-text); text-decoration: underline; text-underline-offset: 3px; }
+td.moonc { color: var(--heart); font-weight: 800; }
+td .mk { display: block; font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 700; }
+tfoot td { border-top: 2px solid var(--ink); border-bottom: 0; font-weight: 800; font-size: 17px; }
+.empty { margin: 0; padding: 20px 16px; color: var(--muted); font-size: 14px; }
+.legend { margin: 8px 4px 0; font-size: 12px; color: var(--muted); }
+@media (min-width: 460px) {
+  .icons { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+}
+@media (max-width: 360px) {
+  .total { font-size: 30px; }
+  h1 { font-size: 27px; }
+  .tog.moon { min-width: 46px; }
+  .step button { width: 30px; height: 30px; }
+  .step output { width: 24px; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .bar i { transition: width 0.25s ease; }
+  .pl, .btn, .tog { transition: background-color 0.15s ease, border-color 0.15s ease; }
+}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="heart" viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-9.6-9.3C.9 8.2 3 4.5 6.6 4.5c2 0 3.6 1.1 5.4 3.2 1.8-2.1 3.4-3.2 5.4-3.2 3.6 0 5.7 3.7 4.2 7.2C19.5 16.4 12 21 12 21z"/></symbol>
+  <symbol id="spade" viewBox="0 0 24 24"><path d="M12 2.5c3.6 4 8.2 6.6 8.2 11.1 0 2.6-2 4.4-4.4 4.4-1.2 0-2.2-.4-3-1.2.2 1.6.9 3 2.2 4.2H9c1.3-1.2 2-2.6 2.2-4.2-.8.8-1.8 1.2-3 1.2-2.4 0-4.4-1.8-4.4-4.4C3.8 9.1 8.4 6.5 12 2.5z"/></symbol>
+</svg>
+
+<main class="wrap stack">
+  <header class="hero">
+    <svg class="mark" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#heart"/></svg>
+    <div class="hero-text">
+      <div>
+        <h1>Hearts Scorepad</h1>
+        <p class="sub" id="sub"></p>
+      </div>
+      <button class="pill" id="editPlayers" type="button" hidden>Players &amp; rules</button>
+    </div>
+    <div class="hero-art">
+      <svg class="fan" viewBox="0 0 260 170" aria-hidden="true" focusable="false">
+        <g transform="translate(130 200) rotate(-20)">
+          <rect class="face" x="-54" y="-150" width="108" height="150" rx="11"/>
+          <text class="rank blk" x="-43" y="-123">Q</text>
+          <use class="blk" href="#spade" x="-46" y="-116" width="20" height="20"/>
+          <use class="blk" href="#spade" x="-30" y="-122" width="60" height="60"/>
+        </g>
+        <g transform="translate(130 200) rotate(20)">
+          <rect class="face" x="-54" y="-150" width="108" height="150" rx="11"/>
+          <text class="rank red" x="-43" y="-123">K</text>
+          <use class="red" href="#heart" x="-46" y="-116" width="20" height="20"/>
+          <use class="red" href="#heart" x="-30" y="-122" width="60" height="60"/>
+        </g>
+        <g transform="translate(130 200)">
+          <rect class="face" x="-54" y="-150" width="108" height="150" rx="11"/>
+          <text class="rank red" x="-43" y="-123">A</text>
+          <use class="red" href="#heart" x="-46" y="-116" width="20" height="20"/>
+          <use class="red" href="#heart" x="-34" y="-126" width="68" height="68"/>
+        </g>
+      </svg>
+    </div>
+  </header>
+
+  <section id="setup" hidden>
+    <form class="card setup" id="setupForm" autocomplete="off">
+      <fieldset class="field">
+        <legend>Players</legend>
+        <div class="names">
+          <input type="text" id="n0" placeholder="Player 1" maxlength="20" aria-label="Player 1 name">
+          <input type="text" id="n1" placeholder="Player 2" maxlength="20" aria-label="Player 2 name">
+          <input type="text" id="n2" placeholder="Player 3" maxlength="20" aria-label="Player 3 name">
+          <input type="text" id="n3" placeholder="Player 4" maxlength="20" aria-label="Player 4 name">
+        </div>
+      </fieldset>
+      <div class="field">
+        <label for="target">Game ends when someone reaches</label>
+        <select id="target">
+          <option value="50">50 points (short game)</option>
+          <option value="100">100 points (standard)</option>
+          <option value="150">150 points (long game)</option>
+        </select>
+      </div>
+      <fieldset class="field">
+        <legend>When a player shoots the moon</legend>
+        <div class="opts">
+          <label class="opt"><input type="radio" name="moon" id="moonOthers" value="others"> <span>Everyone else scores 26, the shooter scores 0</span></label>
+          <label class="opt"><input type="radio" name="moon" id="moonSelf" value="self"> <span>The shooter scores &minus;26, everyone else scores 0</span></label>
+        </div>
+      </fieldset>
+      <fieldset class="field">
+        <legend>Tab icon</legend>
+        <div class="icons" id="iconPicker" role="radiogroup" aria-label="Tab icon"></div>
+        <p class="hint">Changes the icon on this page's browser tab. Some apps and browsers ignore it.</p>
+      </fieldset>
+      <p class="hint" id="setupNote" hidden>Starting a new game clears the current scores. Saving changes keeps them.</p>
+      <div class="btnrow">
+        <button class="btn primary grow" id="startBtn" type="submit">Start game</button>
+        <button class="btn" id="resetBtn" type="button" hidden>Start new game</button>
+      </div>
+    </form>
+  </section>
+
+  <section id="game" class="stack" hidden>
+    <div class="board" id="board"></div>
+    <div id="banner"></div>
+    <section class="card entry" id="entry" aria-label="Enter a hand"></section>
+    <section id="history" aria-label="Score sheet"></section>
+  </section>
+</main>
+
+<script>
+(function () {
+  var KEY = 'hearts-scorepad-v1';
+  var PASS = ['Pass left', 'Pass right', 'Pass across', 'Hold, no pass'];
+  var state = load();
+  var draft = blank();
+  var editing = null;
+  var confirmDel = false;
+  var resetArm = false;
+  var focusSel = null;
+  var showingSetup = !state.started;
+  var $ = function (id) { return document.getElementById(id); };
+
+  /* Tab icons: six heart and card designs drawn on a 64 x 64 grid */
+  var HEART = 'M12 21s-7.5-4.6-9.6-9.3C.9 8.2 3 4.5 6.6 4.5c2 0 3.6 1.1 5.4 3.2 1.8-2.1 3.4-3.2 5.4-3.2 3.6 0 5.7 3.7 4.2 7.2C19.5 16.4 12 21 12 21z';
+  function heartAt(cx, cy, s, fill, stroke) {
+    return '<path fill="' + fill + '"' + (stroke ? ' stroke="' + stroke + '" stroke-width="' + (1.6 / s) + '"' : '') +
+      ' transform="translate(' + (cx - 12 * s) + ' ' + (cy - 12.75 * s) + ') scale(' + s + ')" d="' + HEART + '"/>';
+  }
+  var ICONS = [
+    { id: 'classic', label: 'Classic', svg: function () {
+      return '<rect width="64" height="64" rx="15" fill="#D8283D"/>' + heartAt(32, 33, 1.9, '#FFFFFF'); } },
+    { id: 'felt', label: 'Felt', svg: function () {
+      return '<rect width="64" height="64" rx="15" fill="#17503A"/>' + heartAt(32, 33, 1.9, '#FF7D8E'); } },
+    { id: 'ace', label: 'Ace', svg: function () {
+      return '<rect x="13" y="4" width="38" height="56" rx="6" fill="#FBFCFA" stroke="#14231B" stroke-width="3"/>' +
+        '<text x="18" y="22" font-family="Arial,Helvetica,sans-serif" font-weight="700" font-size="15" fill="#D8283D">A</text>' +
+        heartAt(32, 40, 1.25, '#D8283D'); } },
+    { id: 'back', label: 'Card back', svg: function () {
+      return '<rect x="13" y="4" width="38" height="56" rx="6" fill="#C42B3E"/>' +
+        '<rect x="18" y="9" width="28" height="46" rx="3" fill="none" stroke="#FFFFFF" stroke-width="2"/>' +
+        '<polygon points="32,16 42,32 32,48 22,32" fill="none" stroke="#FFFFFF" stroke-width="2"/>' +
+        '<circle cx="32" cy="32" r="3" fill="#FFFFFF"/>'; } },
+    { id: 'twin', label: 'Twin', svg: function () {
+      return '<rect width="64" height="64" rx="15" fill="#0E1F17"/>' + heartAt(26, 31, 1.55, '#E0344B') + heartAt(39, 37, 1.55, '#F7FAF6', '#0E1F17'); } },
+    { id: 'moon', label: 'Moon', svg: function () {
+      return '<rect width="64" height="64" rx="15" fill="#0B2A20"/>' + heartAt(30, 37, 1.7, '#E0344B') +
+        '<circle cx="47" cy="17" r="8" fill="#F3E9B5"/><circle cx="50" cy="14" r="7" fill="#0B2A20"/>'; } }
+  ];
+  function iconUri(id) {
+    var it = ICONS.filter(function (x) { return x.id === id; })[0] || ICONS[0];
+    return 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">' + it.svg() + '</svg>');
+  }
+  function applyIcon() {
+    try {
+      var old = document.querySelectorAll('link[rel~="icon"]');
+      for (var i = 0; i < old.length; i++) old[i].parentNode.removeChild(old[i]);
+      var l = document.createElement('link');
+      l.rel = 'icon';
+      l.type = 'image/svg+xml';
+      l.href = iconUri(state.icon);
+      document.head.appendChild(l);
+    } catch (e) {}
+  }
+  function renderIcons() {
+    $('iconPicker').innerHTML = ICONS.map(function (it) {
+      var on = it.id === state.icon;
+      return '<button type="button" class="icopt" role="radio" aria-checked="' + on + '" data-icon="' + it.id + '" aria-label="' + it.label + ' tab icon">' +
+        '<img src="' + iconUri(it.id) + '" alt=""><span>' + it.label + '</span></button>';
+    }).join('');
+  }
+
+  function load() {
+    var d = { started: false, names: ['', '', '', ''], target: 100, moon: 'others', icon: 'classic', rounds: [] };
+    try {
+      var s = JSON.parse(localStorage.getItem(KEY));
+      if (s && Array.isArray(s.names) && s.names.length === 4 && Array.isArray(s.rounds)) d = Object.assign(d, s);
+    } catch (e) {}
+    return d;
+  }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+  function blank() { return { h: [0, 0, 0, 0], q: null }; }
+  function copy(r) { return { h: r.h.slice(), q: r.q }; }
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function name(i) { var n = (state.names[i] || '').trim(); return n || ('Player ' + (i + 1)); }
+  function sum(a) { return a.reduce(function (x, y) { return x + y; }, 0); }
+
+  /* Scoring: each heart is 1 point, the queen of spades is 13, so a hand always totals 26. */
+  function moonOf(r) {
+    for (var i = 0; i < 4; i++) if (r.h[i] === 13 && r.q === i) return i;
+    return null;
+  }
+  function scoresOf(r) {
+    var m = moonOf(r);
+    return r.h.map(function (v, i) {
+      if (m !== null) {
+        if (state.moon === 'self') return i === m ? -26 : 0;
+        return i === m ? 0 : 26;
+      }
+      return v + (r.q === i ? 13 : 0);
+    });
+  }
+  function totals() {
+    var t = [0, 0, 0, 0];
+    state.rounds.forEach(function (r) { scoresOf(r).forEach(function (s, i) { t[i] += s; }); });
+    return t;
+  }
+  function moonText() {
+    return state.moon === 'self' ? 'Moon: shooter −26' : 'Moon: others +26';
+  }
+
+  /* Setup */
+  function renderSetup() {
+    for (var i = 0; i < 4; i++) $('n' + i).value = state.names[i] || '';
+    $('target').value = String(state.target);
+    $('moonOthers').checked = state.moon !== 'self';
+    $('moonSelf').checked = state.moon === 'self';
+    $('startBtn').textContent = state.started ? 'Save changes' : 'Start game';
+    $('resetBtn').hidden = !state.started;
+    $('resetBtn').textContent = resetArm ? 'Tap again to clear scores' : 'Start new game';
+    $('setupNote').hidden = !state.started;
+    renderIcons();
+  }
+  function readSetup() {
+    for (var i = 0; i < 4; i++) state.names[i] = $('n' + i).value.trim();
+    state.target = parseInt($('target').value, 10) || 100;
+    state.moon = $('moonSelf').checked ? 'self' : 'others';
+  }
+
+  /* Game */
+  function renderBoard() {
+    var t = totals();
+    var hasHands = state.rounds.length > 0;
+    var min = Math.min.apply(null, t);
+    $('board').innerHTML = t.map(function (v, i) {
+      var lead = hasHands && v === min;
+      var pct = Math.max(0, Math.min(100, (v / state.target) * 100));
+      return '<div class="pl' + (lead ? ' lead' : '') + '">' +
+        '<span class="pname">' + esc(name(i)) + '</span>' +
+        '<span class="total">' + v + '</span>' +
+        '<span class="bar" aria-hidden="true"><i class="' + (pct >= 80 ? 'hot' : '') + '" style="width:' + pct + '%"></i></span>' +
+        '<span class="tag">' + (lead ? 'Leading' : '') + '</span></div>';
+    }).join('');
+  }
+  function renderBanner() {
+    var t = totals();
+    var el = $('banner');
+    if (Math.max.apply(null, t) < state.target) { el.innerHTML = ''; return; }
+    var min = Math.min.apply(null, t);
+    var win = [];
+    t.forEach(function (v, i) { if (v === min) win.push(name(i)); });
+    if (win.length === 1) {
+      el.innerHTML = '<div class="banner">' + esc(win[0]) + ' wins with ' + min + '<small>Someone reached ' + state.target + '. Lowest score takes the game.</small></div>';
+    } else {
+      el.innerHTML = '<div class="banner">Tied at ' + min + ': ' + win.map(esc).join(' and ') + '<small>Someone reached ' + state.target + '. Play another hand to break the tie.</small></div>';
+    }
+  }
+  function renderEntry() {
+    var idx = editing !== null ? editing : state.rounds.length;
+    var hs = sum(draft.h);
+    var qOk = draft.q !== null;
+    var valid = hs === 13 && qOk;
+    var sc = scoresOf(draft);
+    var m = moonOf(draft);
+    var rows = [0, 1, 2, 3].map(function (i) {
+      var label = name(i);
+      var pts = sc[i];
+      var ptsText = m !== null && i === m ? 'Shot the moon' : (pts > 0 ? '+' + pts + ' this hand' : (pts < 0 ? pts + ' this hand' : '0 this hand'));
+      return '<div class="erow">' +
+        '<div class="who"><span class="pname">' + esc(label) + '</span><span class="pts">' + ptsText + '</span></div>' +
+        '<div class="step">' +
+          '<button type="button" data-act="dec" data-i="' + i + '" aria-label="Fewer hearts for ' + esc(label) + '">−</button>' +
+          '<output aria-label="Hearts taken by ' + esc(label) + '">' + draft.h[i] + '</output>' +
+          '<button type="button" data-act="inc" data-i="' + i + '" aria-label="More hearts for ' + esc(label) + '">+</button>' +
+        '</div>' +
+        '<button type="button" class="tog q' + (draft.q === i ? ' on' : '') + '" data-act="queen" data-i="' + i + '" aria-pressed="' + (draft.q === i) + '" aria-label="Queen of spades taken by ' + esc(label) + '">Q<svg class="ico" aria-hidden="true"><use href="#spade"/></svg></button>' +
+        '<button type="button" class="tog moon' + (m === i ? ' on' : '') + '" data-act="moon" data-i="' + i + '" aria-pressed="' + (m === i) + '" aria-label="' + esc(label) + ' shot the moon">Moon</button>' +
+      '</div>';
+    }).join('');
+
+    var status = '<span>Hearts <b>' + hs + '</b> of 13</span>';
+    if (hs > 13) status += '<span class="bad">' + (hs - 13) + ' too many</span>';
+    status += '<span>Queen of spades <b>' + (qOk ? esc(name(draft.q)) : 'not assigned') + '</b></span>';
+    if (valid) status += '<span class="ok">Hand adds up to 26</span>';
+
+    var head = editing !== null
+      ? '<h2>Edit hand ' + (idx + 1) + '</h2><span class="editnote">Editing a saved hand</span>'
+      : '<h2>Hand ' + (idx + 1) + '</h2><span class="pass">' + PASS[idx % 4] + '</span>';
+
+    var actions = '<div class="btnrow">' +
+      '<button type="button" class="btn primary grow" data-act="add"' + (valid ? '' : ' disabled') + '>' + (editing !== null ? 'Save hand ' + (idx + 1) : 'Add hand ' + (idx + 1)) + '</button>';
+    if (editing !== null) {
+      actions += '<button type="button" class="btn" data-act="cancel">Cancel</button>' +
+        '<button type="button" class="btn danger" data-act="del">' + (confirmDel ? 'Tap again to delete' : 'Delete hand') + '</button>';
+    } else if (hs > 0 || qOk) {
+      actions += '<button type="button" class="btn" data-act="clear">Clear</button>';
+    }
+    actions += '</div>';
+
+    $('entry').innerHTML = '<div class="ehead">' + head + '</div>' + rows + '<div class="status">' + status + '</div>' + actions;
+  }
+  function renderHistory() {
+    var rs = state.rounds;
+    var el = $('history');
+    if (!rs.length) {
+      el.innerHTML = '<h2 class="lbl" style="margin-bottom:8px">Score sheet</h2><div class="sheet-wrap"><p class="empty">No hands yet. Set hearts and the queen of spades above, then add the hand.</p></div>';
+      return;
+    }
+    var t = totals();
+    var head = '<tr><th scope="col">Hand</th>' + [0, 1, 2, 3].map(function (i) { return '<th scope="col">' + esc(name(i)) + '</th>'; }).join('') + '</tr>';
+    var body = rs.map(function (r, ri) {
+      var sc = scoresOf(r);
+      var m = moonOf(r);
+      return '<tr' + (editing === ri ? ' class="editing"' : '') + '><td><button type="button" class="hbtn" data-act="edit" data-r="' + ri + '" aria-label="Edit hand ' + (ri + 1) + '">' + (ri + 1) + '</button></td>' +
+        sc.map(function (s, i) {
+          return m === i ? '<td class="moonc">' + s + '<span class="mk">Moon</span></td>' : '<td>' + s + '</td>';
+        }).join('') + '</tr>';
+    }).join('');
+    var foot = '<tr><td>Total</td>' + t.map(function (v) { return '<td>' + v + '</td>'; }).join('') + '</tr>';
+    el.innerHTML = '<h2 class="lbl" style="margin-bottom:8px">Score sheet</h2>' +
+      '<div class="sheet-wrap"><table><thead>' + head + '</thead><tbody>' + body + '</tbody><tfoot>' + foot + '</tfoot></table></div>' +
+      '<p class="legend">Tap a hand number to correct it. ' + moonText() + '.</p>';
+  }
+
+  function render() {
+    $('setup').hidden = !showingSetup;
+    $('game').hidden = showingSetup;
+    $('editPlayers').hidden = showingSetup || !state.started;
+    $('sub').textContent = showingSetup
+      ? (state.started ? 'Change names, rules or tab icon' : 'Four players. Lowest score wins.')
+      : 'Four players, play to ' + state.target + '. Lowest score wins.';
+    if (showingSetup) { renderSetup(); return; }
+    renderBoard();
+    renderBanner();
+    renderEntry();
+    renderHistory();
+    if (focusSel) {
+      var f = document.querySelector(focusSel);
+      if (f && !f.disabled) f.focus();
+      focusSel = null;
+    }
+  }
+
+  /* Events */
+  $('iconPicker').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-icon]');
+    if (!b) return;
+    state.icon = b.getAttribute('data-icon');
+    save();
+    applyIcon();
+    renderIcons();
+    var f = document.querySelector('[data-icon="' + state.icon + '"]');
+    if (f) f.focus();
+  });
+  $('setupForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    readSetup();
+    if (!state.started) { state.started = true; state.rounds = []; draft = blank(); editing = null; }
+    resetArm = false;
+    save();
+    showingSetup = false;
+    render();
+  });
+  $('resetBtn').addEventListener('click', function () {
+    if (!resetArm) {
+      resetArm = true;
+      $('resetBtn').textContent = 'Tap again to clear scores';
+      setTimeout(function () { if (resetArm) { resetArm = false; if (showingSetup) renderSetup(); } }, 4000);
+      return;
+    }
+    readSetup();
+    state.rounds = [];
+    state.started = true;
+    draft = blank();
+    editing = null;
+    confirmDel = false;
+    resetArm = false;
+    save();
+    showingSetup = false;
+    render();
+  });
+  $('editPlayers').addEventListener('click', function () { showingSetup = true; render(); });
+
+  $('game').addEventListener('click', function (e) {
+    var t = e.target.closest('[data-act]');
+    if (!t || t.disabled) return;
+    var act = t.getAttribute('data-act');
+    var i = parseInt(t.getAttribute('data-i'), 10);
+    if (act !== 'del') confirmDel = false;
+    if (act === 'inc') { if (draft.h[i] < 13) draft.h[i]++; focusSel = '[data-act="inc"][data-i="' + i + '"]'; }
+    else if (act === 'dec') { if (draft.h[i] > 0) draft.h[i]--; focusSel = '[data-act="dec"][data-i="' + i + '"]'; }
+    else if (act === 'queen') { draft.q = draft.q === i ? null : i; focusSel = '[data-act="queen"][data-i="' + i + '"]'; }
+    else if (act === 'moon') {
+      if (moonOf(draft) === i) draft = blank();
+      else { draft = blank(); draft.h[i] = 13; draft.q = i; }
+      focusSel = '[data-act="moon"][data-i="' + i + '"]';
+    }
+    else if (act === 'clear') { draft = blank(); }
+    else if (act === 'add') {
+      if (sum(draft.h) !== 13 || draft.q === null) return;
+      if (editing !== null) state.rounds[editing] = copy(draft); else state.rounds.push(copy(draft));
+      editing = null;
+      draft = blank();
+      save();
+    }
+    else if (act === 'cancel') { editing = null; draft = blank(); }
+    else if (act === 'del') {
+      if (!confirmDel) { confirmDel = true; }
+      else { state.rounds.splice(editing, 1); editing = null; draft = blank(); confirmDel = false; save(); }
+    }
+    else if (act === 'edit') {
+      var r = parseInt(t.getAttribute('data-r'), 10);
+      editing = r;
+      draft = copy(state.rounds[r]);
+      render();
+      $('entry').scrollIntoView({ block: 'start' });
+      return;
+    }
+    render();
+  });
+
+  applyIcon();
+  render();
+})();
+</script>
+
+</body></html>
