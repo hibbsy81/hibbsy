@@ -92,10 +92,13 @@ button { cursor: pointer; }
   --menu-line: color-mix(in srgb, var(--ink) 10%, transparent);
   --menu-hover: color-mix(in srgb, var(--ink) 7%, transparent);
 }
-/* Sit inside the header card, lined up with the page column (nav.menu beats menu.css's .menu) */
+/* Phone: sits inside the header card. Desktop: top right corner of the screen (nav.menu beats menu.css's .menu) */
 nav.menu {
   top: calc(18px + env(safe-area-inset-top, 0px));
-  right: max(calc(28px + env(safe-area-inset-right, 0px)), calc((100vw - 520px) / 2 + 12px));
+  right: calc(28px + env(safe-area-inset-right, 0px));
+}
+@media (min-width: 640px) {
+  nav.menu { top: calc(20px + env(safe-area-inset-top, 0px)); }
 }
 
 /* Header with cards */
