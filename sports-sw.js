@@ -1,6 +1,6 @@
 // Service worker for the Fixtures web app (sports.html only; registered with its own scope so it leaves the rest of the site alone). Bump V to force every device to refresh its cached files.
-const V = "fixtures-v10";
-const SHELL = ["sports.html", "menu.js?v=14", "menu.css?v=14", "sports.webmanifest", "sports-icons/icon-192.png", "sports-icons/icon-512.png"];
+const V = "fixtures-v11";
+const SHELL = ["sports.html", "sports.webmanifest", "sports-icons/icon-192.png", "sports-icons/icon-512.png"];
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(V).then(c => c.addAll(SHELL.map(u => new Request(u, { cache: "reload" })))).then(() => self.skipWaiting()));
@@ -40,5 +40,5 @@ self.addEventListener("fetch", e => {
     return;
   }
   // Only the files this app uses; anything else on the site is left alone.
-  if (/\/(sports\.html|sports\.webmanifest|menu\.(js|css)|sports-icons\/.*|logos\/.*)$/.test(p)) e.respondWith(swr(r));
+  if (/\/(sports\.html|sports\.webmanifest|sports-icons\/.*|logos\/.*)$/.test(p)) e.respondWith(swr(r));
 });
