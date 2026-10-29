@@ -127,7 +127,6 @@
   .spd.strong{ color:var(--bad); }
   .approx-note{ font-size:11.5px; color:var(--muted); }
 
-  footer{ padding:14px 16px 30px; color:var(--muted); font-size:11.5px; line-height:1.6; }
   a{ color:var(--accent); }
   .table-wrap{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
 
@@ -136,7 +135,7 @@
   .pdf-link:hover{ border-color:var(--accent); }
   @media print{
     :root{ --bg:#fff; --panel:#fff; --panel2:#f1f3f6; --border:#c8ccd2; --text:#000; --muted:#555; --accent:#000; }
-    header, .controls, #status, #map, footer, .pdf-link, #sourcePicker{ display:none !important; }
+    header, .controls, #status, #map, .pdf-link, #sourcePicker{ display:none !important; }
     .layout{ display:block; padding:0; }
     #resultsPane{ max-height:none; overflow:visible; }
     body{ background:#fff; color:#000; }
@@ -204,7 +203,7 @@
     .ctl-actions button:not(.primary){ background:rgba(255,255,255,.04); }
 
     #status{ padding:8px 24px 0; }
-    .layout{ padding:16px 24px 36px; gap:18px; }
+    .layout{ padding:16px 24px 16px; gap:18px; }
     #map{ border-radius:14px; box-shadow:0 10px 30px rgba(0,0,0,.38); background:#dde3ec; }
 
     #resultsPane{ scrollbar-width:thin; scrollbar-color:#2c4066 transparent; padding-right:4px; }
@@ -250,6 +249,15 @@
     .dz-card-name{ display:block; font-size:16px; font-weight:650; color:var(--text); }
   }
 
+  /* ---------------- Computers: fit the page to the window, so there is no empty strip below the map ---------------- */
+  @media screen and (hover:hover) and (pointer:fine) and (min-width:821px){
+    body{ display:flex; flex-direction:column; height:100vh; height:100dvh; }
+    header, .controls, #status{ flex:none; }
+    .layout{ flex:1 1 auto; width:100%; min-height:360px; align-items:stretch; padding-bottom:10px; }
+    #map{ height:auto; min-height:0; }
+    #resultsPane{ height:auto; max-height:none; min-height:0; }
+  }
+
   /* ---------------- Tablets (iPad and similar touch screens) ----------------
      Location and time boxes run the full width, with the map full width below them and the
      winds under the map. Only applies to touch screens, so a laptop window keeps the side-by-side layout. */
@@ -269,6 +277,10 @@
     .ctl-groups > :nth-child(2) .row{ display:grid; grid-template-columns:minmax(0,3fr) minmax(0,2fr); gap:10px; align-items:end; }
     .ctl-groups > :nth-child(2) .row > .field{ flex:none; min-width:0; }
     #resultsPane{ flex:none; width:100%; max-height:none; min-height:0; overflow:visible; padding-right:0; }
+    /* before the winds load, let the map fill the rest of the screen instead of leaving a blank strip */
+    html:not(.has-results) body{ display:flex; flex-direction:column; min-height:100vh; min-height:100dvh; }
+    html:not(.has-results) .layout{ flex:1 1 auto; }
+    html:not(.has-results) #map{ flex:1 1 auto; height:auto; min-height:260px; }
   }
 
   .tip-backdrop{ position:fixed; inset:0; z-index:5000; display:flex; align-items:center; justify-content:center;
@@ -284,7 +296,7 @@
   /* ---------------- Installed web app: keep the title clear of the status bar ---------------- */
   .standalone header{ background:#0b1526; padding-top:calc(env(safe-area-inset-top, 0px) + 28px); }
   .standalone header h1{ font-size:24px; }
-  .standalone .layout{ padding-bottom:calc(36px + env(safe-area-inset-bottom, 0px)); }
+  .standalone .layout{ padding-bottom:calc(16px + env(safe-area-inset-bottom, 0px)); }
   body{ padding-left:env(safe-area-inset-left, 0px); padding-right:env(safe-area-inset-right, 0px); }
 
   /* ---------------- Mobile ---------------- */
@@ -322,12 +334,11 @@
     button{ min-height:46px; }
     select{ padding-right:34px; }
     #installBtn{ width:auto !important; min-height:36px; padding:6px 14px; font-size:13px; }
-    .layout{ padding:12px 12px 24px; gap:12px; }
+    .layout{ padding:12px 12px 16px; gap:12px; }
     #map{ height:42vh; min-height:220px; }
     table{ font-size:12.5px; }
     thead th{ padding:7px 8px; font-size:10.5px; }
     tbody td{ padding:7px 8px; }
-    footer{ padding:12px 14px 24px; font-size:11px; }
   }
 </style>
 </head>
@@ -353,13 +364,13 @@
       <div class="ctl-title">Location</div>
       <div class="row">
         <div class="field" id="dzPresetField">
-          <label>Drop zone</label>
+          <label for="dzPreset">Drop zone</label>
           <select id="dzPreset">
             <option value="">Custom location</option>
           </select>
         </div>
         <div class="field">
-          <label>Format</label>
+          <label for="locFormat">Format</label>
           <select id="locFormat">
             <option value="mgrs" selected>MGRS</option>
             <option value="ddm">Lat/Long (DDM)</option>
@@ -368,26 +379,26 @@
         </div>
 
         <div class="field fmt-group" id="ddmFields">
-          <label>Latitude</label>
+          <label for="latDDM">Latitude</label>
           <input type="text" id="latDDM" placeholder="51 30.444 N">
         </div>
         <div class="field fmt-group" id="ddmFields2">
-          <label>Longitude</label>
+          <label for="lonDDM">Longitude</label>
           <input type="text" id="lonDDM" placeholder="000 07.668 W">
         </div>
 
         <div class="field fmt-group" id="decFields">
-          <label>Latitude, longitude</label>
+          <label for="decInput">Latitude, longitude</label>
           <input type="text" id="decInput" placeholder="51.7500, -1.5836" autocomplete="off" autocorrect="off" spellcheck="false">
         </div>
 
         <div class="field fmt-group active" id="mgrsFields">
-          <label>MGRS</label>
+          <label for="mgrsInput">MGRS</label>
           <input type="text" id="mgrsInput" placeholder="30U WC 12345 67890" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false">
         </div>
 
         <div class="field field-btn">
-          <label>&nbsp;</label>
+          <label aria-hidden="true">&nbsp;</label>
           <button id="myLocBtn">Use my location</button>
         </div>
       </div>
@@ -398,11 +409,11 @@
       <div class="ctl-title">Time</div>
       <div class="row">
         <div class="field field-wide">
-          <label>Date &amp; time</label>
+          <label for="datetime">Date &amp; time</label>
           <input type="datetime-local" id="datetime" step="300">
         </div>
         <div class="field field-wide">
-          <label>Basis</label>
+          <label for="timeBasis">Basis</label>
           <select id="timeBasis">
             <option value="zulu" selected>Zulu (GMT)</option>
             <option value="local">Local to DZ</option>
@@ -418,7 +429,7 @@
   </div>
 </div>
 
-<div id="status"></div>
+<div id="status" role="status" aria-live="polite"></div>
 
 <div class="layout">
   <div id="map"></div>
@@ -433,11 +444,6 @@
     </div>
   </div>
 </div>
-
-<footer>
-  Data: <a href="https://open-meteo.com" target="_blank">Open-Meteo</a>.
-</footer>
-
 <div id="installTip" class="tip-backdrop" hidden>
   <div class="tip-card" role="dialog" aria-modal="true" aria-labelledby="tipTitle">
     <h2 id="tipTitle">Add to Home Screen</h2>
@@ -1281,7 +1287,11 @@ async function fetchSource(sourceKey, lat, lon){
     try{ const j = await res.json(); if(j.reason) reason = j.reason; }catch(e){}
     throw new Error(`${sourceKey} request failed: ${reason}`);
   }
-  return res.json();
+  const json = await res.json();
+  if(!json || !json.hourly || !Array.isArray(json.hourly.time) || json.hourly.time.length === 0){
+    throw new Error(`${sourceKey} returned no forecast data`);
+  }
+  return json;
 }
 
 function nearestIndex(timesArr, targetLocalIso){
@@ -1419,7 +1429,7 @@ function compass(deg){
 function renderSourcePicker(activeKey){
   const opts = SOURCES.filter(s => lastData[s.key])
     .map(s => `<option value="${s.key}" ${s.key===activeKey?'selected':''}>${s.label}</option>`).join('');
-  return `<select id="sourcePicker">${opts}</select>`;
+  return `<select id="sourcePicker" aria-label="Forecast source">${opts}</select>`;
 }
 
 // index of the forecast hour matching a DZ-local ISO time, or -1 if none within 30 min
@@ -1489,6 +1499,7 @@ let lastPresetName = '';   // name of the preset DZ in use, or '' for a custom l
 
 function renderResults(activeKey){
   currentSource = activeKey;
+  document.documentElement.classList.add('has-results');
   const entry = lastData[activeKey];
   const pane = document.getElementById('resultsPane');
   if(!entry){ pane.innerHTML = '<div class="approx-note">No data for this source.</div>'; return; }
