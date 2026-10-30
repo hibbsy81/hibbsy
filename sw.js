@@ -1,8 +1,8 @@
 // Service worker for DZ Wind Forecasts: lets the app open offline and load fast.
 // The page itself is fetched from the network first (so updates appear straight away) and
 // the saved copy is only used when there is no connection. Forecast data is never cached here.
-const CACHE = 'dz-winds-shell-v3';
-const SHELL = ['./para.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
+const CACHE = 'dz-winds-shell-v4';
+const SHELL = ['./para.html', './manifest.webmanifest', './para-icon-192.png', './para-icon-512.png'];
 const LIBS = [
   'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css',
   'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js',
