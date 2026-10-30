@@ -1688,7 +1688,7 @@ async function runFetch(force = true){
   const originalLabel = fetchBtn.textContent;
   if(need.length){
     statusEl.className = '';
-    statusEl.textContent = 'Fetching winds…';
+    statusEl.textContent = '';
     document.getElementById('resultsPane').innerHTML = '';
     fetchBtn.disabled = true;
     fetchBtn.textContent = 'Loading…';
