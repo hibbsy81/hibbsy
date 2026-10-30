@@ -5,7 +5,10 @@ var CACHE = 'hearts-scorepad-v1';
 var FILES = ['cards.html', 'menu.js', 'menu.css', 'cards-manifest.webmanifest', 'cards-icon-192.png', 'cards-icon-512.png', 'cards-apple-touch-icon.png'];
 
 self.addEventListener('install', function (e) {
-  e.waitUntil(caches.open(CACHE).then(function (c) { return c.addAll(FILES); }).then(function () { return self.skipWaiting(); }));
+  e.waitUntil(caches.open(CACHE).then(function (c) {
+    // one missing file (for example menu.css) must not stop the install
+    return Promise.all(FILES.map(function (f) { return c.add(f).catch(function () {}); }));
+  }).then(function () { return self.skipWaiting(); }));
 });
 
 self.addEventListener('activate', function (e) {
