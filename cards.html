@@ -132,6 +132,11 @@ svg.fan { display: block; width: 100%; height: auto; filter: drop-shadow(0 8px 1
   width: 100%; min-height: 48px; padding: 8px 14px; border: 1px solid var(--line); border-radius: 12px;
   background: var(--bg); font-size: 16px;
 }
+.field input[type="text"]:focus, .field select:focus {
+  outline: none; border-color: var(--accent-text);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-text) 22%, transparent);
+}
+.field input[type="text"], .field select { transition: border-color 0.15s ease, box-shadow 0.15s ease; }
 fieldset.field { border: 0; margin: 0; padding: 0; }
 .names { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .hint { margin: 0; font-size: 13px; color: var(--muted); }
@@ -266,7 +271,7 @@ html.standalone .hero-art { margin-right: 12px; }
       </fieldset>
       <div class="field">
         <label for="target">Game ends when someone reaches</label>
-        <select id="target">
+        <select id="target" autocomplete="off">
           <option value="50">50 points (short game)</option>
           <option value="100">100 points (standard)</option>
           <option value="150">150 points (long game)</option>
@@ -355,7 +360,6 @@ html.standalone .hero-art { margin-right: 12px; }
   }
   function readSetup() {
     for (var i = 0; i < 4; i++) state.names[i] = $('n' + i).value.trim();
-    state.target = parseInt($('target').value, 10) || 100;
     state.moon = 'others';
   }
 
@@ -469,6 +473,11 @@ html.standalone .hero-art { margin-right: 12px; }
   }
 
   /* Events */
+  /* The game-ending score is saved the moment it is changed, so Back/Forward or a restored form can never reset it */
+  $('target').addEventListener('change', function () {
+    state.target = parseInt(this.value, 10) || 100;
+    save();
+  });
   $('setupForm').addEventListener('submit', function (e) {
     e.preventDefault();
     readSetup();
@@ -566,6 +575,6 @@ html.standalone .hero-art { margin-right: 12px; }
   render();
 })();
 </script>
-<script src="menu.js?v=16" defer></script>
+<script src="menu.js?v=17" defer></script>
 
 </body></html>
