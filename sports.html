@@ -259,14 +259,21 @@ function pressed(){document.querySelectorAll("#chips [data-k]").forEach(b=>{cons
   pressed();
 })();
 setInterval(render,60000);
-// Add ?logos to the address (sports.html?logos) to see which opponent logo files you can add.
+// Add ?logos to the address (sports.html?logos) to see which logo files you can add.
+// Opponent logos are for football only; Formula 1 cards use the F1 logo plus a country flag instead.
 if(/[?&]logos\b/.test(location.search))addEventListener("load",()=>setTimeout(()=>{
   if(!ready)return;
-  const names=[...new Set(F.flatMap(f=>[f.h,f.a]))].sort(),box=document.createElement("div");
-  box.className="logos";box.innerHTML="<b>Opponent logos</b> — save PNGs in <code>logos/opponents/</code> with these names:<ul></ul>";
-  const ul=box.querySelector("ul");
-  names.forEach(n=>{const li=document.createElement("li"),img=new Image(),f=slug(n)+".png";li.textContent="✗ "+f;
-    img.onload=()=>{li.textContent="✓ "+f;li.className="have";};img.src="logos/opponents/"+f;ul.appendChild(li);});
+  const box=document.createElement("div");box.className="logos";
+  const section=(title,dir,files)=>{
+    box.insertAdjacentHTML("beforeend","<b>"+title+"</b> — save PNGs in <code>"+dir+"</code> with these names:<ul></ul>");
+    const ul=box.querySelector("ul:last-of-type");
+    if(!files.length){ul.innerHTML="<li>none needed right now</li>";return;}
+    files.forEach(f=>{const li=document.createElement("li"),img=new Image();li.textContent="✗ "+f;
+      img.onload=()=>{li.textContent="✓ "+f;li.className="have";};img.src=dir+f;ul.appendChild(li);});
+  };
+  const football=F.filter(f=>f.t!=="f1");
+  section("Opponent logos","logos/opponents/",[...new Set(football.flatMap(f=>[f.h,f.a]).filter(Boolean).map(n=>slug(n)+".png"))].sort());
+  section("Formula 1 flags","logos/flags/",[...new Set(F.filter(f=>f.t==="f1"&&f.cc).map(f=>f.cc+".png"))].sort());
   document.getElementById("chips").after(box);},600));
 if("serviceWorker" in navigator&&/^https?:$/.test(location.protocol))addEventListener("load",()=>navigator.serviceWorker.register("sports-sw.js",{scope:"./sports.html"}).catch(()=>{}));
 </script>
