@@ -1,41 +1,46 @@
 {
- "updated": "30 Oct 2026, 22:27",
- "updated_iso": "2026-10-30T22:27:04.860323+00:00",
+ "updated": "31 Oct 2026, 06:55",
+ "updated_iso": "2026-10-31T06:55:10.522162+00:00",
  "health": {
   "mc": {
-   "last_ok_iso": "2026-10-30T22:27:04.860323+00:00",
+   "last_ok_iso": "2026-10-31T06:55:10.522162+00:00",
    "from": "man-city-on-tv.html",
    "count": 15
   },
   "mw": {
-   "last_ok_iso": "2026-10-30T22:27:04.860323+00:00",
+   "last_ok_iso": "2026-10-31T06:55:10.522162+00:00",
    "from": "man-city-women-on-tv.html",
    "count": 9
   },
   "aw": {
-   "last_ok_iso": "2026-10-30T22:27:04.860323+00:00",
+   "last_ok_iso": "2026-10-31T06:55:10.522162+00:00",
    "from": "arsenal-women-on-tv.html",
    "count": 9
   },
   "mu": {
-   "last_ok_iso": "2026-10-30T22:27:04.860323+00:00",
+   "last_ok_iso": "2026-10-31T06:55:10.522162+00:00",
    "from": "man-utd-women-on-tv.html",
    "count": 6
   },
   "cw": {
-   "last_ok_iso": "2026-10-30T22:27:04.860323+00:00",
+   "last_ok_iso": "2026-10-31T06:55:10.522162+00:00",
    "from": "chelsea-women-on-tv.html",
    "count": 9
   },
   "li": {
-   "last_ok_iso": "2026-10-30T22:27:04.860323+00:00",
+   "last_ok_iso": "2026-10-31T06:55:10.522162+00:00",
    "from": "england-women-on-tv.html",
    "count": 2
   },
   "en": {
-   "last_ok_iso": "2026-10-30T22:27:04.860323+00:00",
+   "last_ok_iso": "2026-10-31T06:55:10.522162+00:00",
    "from": "england-on-tv.html",
    "count": 2
+  },
+  "f1": {
+   "last_ok_iso": "2026-10-31T06:55:10.522162+00:00",
+   "from": "api.jolpi.ca",
+   "count": 10
   }
  },
  "fixtures": [
@@ -47,6 +52,18 @@
    "a": "Man Utd",
    "ch": [
     "Sky Sports Premier League"
+   ],
+   "note": "",
+   "tbc": false
+  },
+  {
+   "t": "f1",
+   "iso": "2026-10-31T21:00:00+00:00",
+   "comp": "Formula 1, Qualifying",
+   "h": "Mexico City Grand Prix",
+   "a": "",
+   "ch": [
+    "Sky Sports F1"
    ],
    "note": "",
    "tbc": false
@@ -72,7 +89,8 @@
    "h": "Arsenal",
    "a": "Aston Villa",
    "ch": [
-    "Sky Sports Mix"
+    "Sky Sports Mix",
+    "Sky Sports+"
    ],
    "note": "",
    "tbc": false
@@ -86,6 +104,18 @@
    "ch": [
     "BBC Two",
     "BBC iPlayer"
+   ],
+   "note": "",
+   "tbc": false
+  },
+  {
+   "t": "f1",
+   "iso": "2026-11-01T20:00:00+00:00",
+   "comp": "Formula 1, Race",
+   "h": "Mexico City Grand Prix",
+   "a": "",
+   "ch": [
+    "Sky Sports F1"
    ],
    "note": "",
    "tbc": false
@@ -141,6 +171,18 @@
    "tbc": false
   },
   {
+   "t": "f1",
+   "iso": "2026-11-07T18:00:00+00:00",
+   "comp": "Formula 1, Qualifying",
+   "h": "Brazilian Grand Prix",
+   "a": "",
+   "ch": [
+    "Sky Sports F1"
+   ],
+   "note": "",
+   "tbc": false
+  },
+  {
    "t": "aw",
    "iso": "2026-11-08T12:00:00+00:00",
    "comp": "Women's Super League",
@@ -162,6 +204,18 @@
    "ch": [
     "Sky Sports Mix",
     "WSL YouTube"
+   ],
+   "note": "",
+   "tbc": false
+  },
+  {
+   "t": "f1",
+   "iso": "2026-11-08T17:00:00+00:00",
+   "comp": "Formula 1, Race",
+   "h": "Brazilian Grand Prix",
+   "a": "",
+   "ch": [
+    "Sky Sports F1"
    ],
    "note": "",
    "tbc": false
@@ -316,6 +370,18 @@
    "tbc": false
   },
   {
+   "t": "f1",
+   "iso": "2026-11-21T04:00:00+00:00",
+   "comp": "Formula 1, Qualifying",
+   "h": "Las Vegas Grand Prix",
+   "a": "",
+   "ch": [
+    "Sky Sports F1"
+   ],
+   "note": "",
+   "tbc": false
+  },
+  {
    "t": "mc",
    "iso": "2026-11-21T12:30:00+00:00",
    "comp": "Premier League",
@@ -338,6 +404,18 @@
    "ch": [
     "Sky Sports Premier League",
     "Sky Sports Mix"
+   ],
+   "note": "",
+   "tbc": false
+  },
+  {
+   "t": "f1",
+   "iso": "2026-11-22T04:00:00+00:00",
+   "comp": "Formula 1, Race",
+   "h": "Las Vegas Grand Prix",
+   "a": "",
+   "ch": [
+    "Sky Sports F1"
    ],
    "note": "",
    "tbc": false
@@ -394,6 +472,30 @@
    "tbc": false
   },
   {
+   "t": "f1",
+   "iso": "2026-11-28T18:00:00+00:00",
+   "comp": "Formula 1, Qualifying",
+   "h": "Qatar Grand Prix",
+   "a": "",
+   "ch": [
+    "Sky Sports F1"
+   ],
+   "note": "",
+   "tbc": false
+  },
+  {
+   "t": "f1",
+   "iso": "2026-11-29T16:00:00+00:00",
+   "comp": "Formula 1, Race",
+   "h": "Qatar Grand Prix",
+   "a": "",
+   "ch": [
+    "Sky Sports F1"
+   ],
+   "note": "",
+   "tbc": false
+  },
+  {
    "t": "mc",
    "iso": "2026-11-29T16:30:00+00:00",
    "comp": "Premier League",
@@ -431,6 +533,18 @@
    "tbc": false
   },
   {
+   "t": "f1",
+   "iso": "2026-12-05T14:00:00+00:00",
+   "comp": "Formula 1, Qualifying",
+   "h": "Abu Dhabi Grand Prix",
+   "a": "",
+   "ch": [
+    "Sky Sports F1"
+   ],
+   "note": "",
+   "tbc": false
+  },
+  {
    "t": "li",
    "iso": "2026-12-05T17:30:00+00:00",
    "comp": "FIFA Women's World Cup 2027 Play-Off 2nd Leg",
@@ -451,6 +565,18 @@
    "ch": [
     "Sky Sports Main Event",
     "Sky Sports Premier League"
+   ],
+   "note": "",
+   "tbc": false
+  },
+  {
+   "t": "f1",
+   "iso": "2026-12-06T13:00:00+00:00",
+   "comp": "Formula 1, Race",
+   "h": "Abu Dhabi Grand Prix",
+   "a": "",
+   "ch": [
+    "Sky Sports F1"
    ],
    "note": "",
    "tbc": false
