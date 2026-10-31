@@ -11,7 +11,7 @@
   var items = [
     { label: 'Home',             href: 'index.html' },
     { label: 'DZ Wind Forecast', href: 'para.html' },
-    { label: 'Football Tracker', href: 'sports.html' },
+    { label: 'Sports Fixtures', href: 'sports.html' },
    { label: 'Hearts Scorecard', href: 'cards.html' },
     { label: 'Webmail',          href: 'https://webmail.hibbs.org.uk/' }
   ];
