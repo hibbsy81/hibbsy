@@ -38,6 +38,7 @@ h1{font-size:24px;margin:0;letter-spacing:-.02em;text-align:center;line-height:1
 .crest{position:relative;flex:none;width:var(--s,28px);height:var(--s,28px);border-radius:50%;background:var(--c);color:#fff;display:grid;place-items:center;font-weight:800;font-size:calc(var(--s,28px)*.38);overflow:hidden}
 .crest img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;padding:12%;background:#fff}
 .crest.has span{display:none}
+.crest img.flag{padding:0;object-fit:cover}
 .card{position:relative;background:linear-gradient(135deg,color-mix(in srgb,var(--c) 22%,var(--card)) 0,var(--card) 55%);border:1px solid var(--bd);border-radius:16px;padding:14px;margin-bottom:12px;overflow:hidden}
 .card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:linear-gradient(180deg,var(--c),var(--c2,var(--c)))}
 .crests{display:flex;flex:none}
@@ -148,7 +149,7 @@ function setUpd(j){
   el.textContent=msg;
 }
 function load(j,stale){
-  F=j.fixtures.map(f=>({t:f.t,iso:f.iso,d:new Date(f.iso),comp:f.comp,h:f.h,a:f.a,ch:f.ch||[],note:f.note||"",tbc:!!f.tbc})).filter(f=>T[f.t]);
+  F=j.fixtures.map(f=>({t:f.t,iso:f.iso,d:new Date(f.iso),comp:f.comp,h:f.h,a:f.a,ch:f.ch||[],note:f.note||"",tbc:!!f.tbc,cc:f.cc||""})).filter(f=>T[f.t]);
   document.getElementById("stale").textContent=stale?"Showing saved fixtures. Couldn’t load the latest.":"";
   setUpd(j);ready=true;lastSig="";render();
 }
@@ -182,7 +183,9 @@ const initials=n=>{const w=String(n).replace(/[^A-Za-z0-9 ]/g,"").split(/\s+/).f
 function oppCrest(n,s){return '<span class="crest" aria-hidden="true" style="--c:#3b5a4c;--s:'+s+'px"><span>'+initials(n)+'</span><img src="logos/opponents/'+slug(n)+'.png" alt="" onload="this.parentNode.classList.add(\'has\')" onerror="this.remove()"></span>';}
 // Every match shows both clubs' logos overlapped: home on the left, away on the right.
 function sideBadge(n,f,s){const k=f.teams.find(k=>n.includes(ROOT[k]));return k?crest(k,s,"logos/opponents/"+slug(n)+".png"):oppCrest(n,s);}
-const matchCrests=(f,s)=>f.teams[0]==="f1"?'<span class="crests">'+crest("f1",s)+'</span>':'<span class="crests">'+sideBadge(f.h,f,s)+sideBadge(f.a,f,s)+'</span>';
+// Formula 1: the F1 logo overlapped with the flag of the grand prix's country (logos/flags/<code>.png)
+function flagCrest(cc,s){return '<span class="crest" aria-hidden="true" style="--c:#3b5a4c;--s:'+s+'px"><span>'+esc(cc.toUpperCase())+'</span><img class="flag" src="logos/flags/'+esc(cc)+'.png" alt="" onload="this.parentNode.classList.add(\'has\')" onerror="this.remove()"></span>';}
+const matchCrests=(f,s)=>f.teams[0]==="f1"?'<span class="crests">'+crest("f1",s)+(f.cc?flagCrest(f.cc,s):"")+'</span>':'<span class="crests">'+sideBadge(f.h,f,s)+sideBadge(f.a,f,s)+'</span>';
 const ORDER=Object.keys(T);
 const CHIP_ORDER=["f1","mc","li","en","aw","mu","cw","mw"];   // All, then F1 + the non-WSL teams, then the four WSL teams
 const names=f=>f.teams.map(k=>T[k].n.toUpperCase()).join(" · ");

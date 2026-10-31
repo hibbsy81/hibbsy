@@ -151,6 +151,12 @@ F1_API = "https://api.jolpi.ca/ergast/f1/{}.json"
 F1_SESSIONS = [("SprintQualifying", "Sprint Qualifying"), ("SprintShootout", "Sprint Qualifying"),
                ("Qualifying", "Qualifying"), ("Sprint", "Sprint"), ("Race", "Race")]
 F1_CHANNELS = ["Sky Sports F1"]
+# Country name as the calendar spells it -> flag file in logos/flags/ (lower-case two-letter code)
+F1_FLAGS = {"australia": "au", "china": "cn", "japan": "jp", "bahrain": "bh", "saudi arabia": "sa", "usa": "us",
+            "united states": "us", "canada": "ca", "monaco": "mc", "spain": "es", "austria": "at", "uk": "gb",
+            "united kingdom": "gb", "great britain": "gb", "belgium": "be", "hungary": "hu", "netherlands": "nl",
+            "italy": "it", "azerbaijan": "az", "singapore": "sg", "mexico": "mx", "brazil": "br", "qatar": "qa",
+            "uae": "ae", "united arab emirates": "ae", "portugal": "pt", "france": "fr", "turkey": "tr"}
 F1_DAYS = 60          # only list sessions up to this many days ahead, so a whole season does not flood the page
 
 def f1_iso(date, time_):
@@ -170,11 +176,15 @@ def f1_year(year):
     out = []
     for race in r.json()["MRData"]["RaceTable"]["Races"]:
         gp = race.get("raceName") or "Grand Prix"
+        country = ((race.get("Circuit") or {}).get("Location") or {}).get("country", "")
+        cc = F1_FLAGS.get(country.strip().lower(), "")
+        if country and not cc:
+            print(f"f1: no flag known for country '{country}' ({gp})", file=sys.stderr)
         for key, label in F1_SESSIONS:
             s = {"date": race.get("date"), "time": race.get("time")} if key == "Race" else race.get(key)
             iso = f1_iso((s or {}).get("date"), (s or {}).get("time"))
             if iso:                                   # sessions without a published time are skipped
-                out.append({"t": "f1", "iso": iso, "comp": "Formula 1, " + label, "h": gp, "a": "",
+                out.append({"t": "f1", "iso": iso, "comp": "Formula 1, " + label, "h": gp, "a": "", "cc": cc,
                             "ch": list(F1_CHANNELS), "note": "", "tbc": False})
     return out
 
