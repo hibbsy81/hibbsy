@@ -1,61 +1,49 @@
 {
- "updated": "31 Oct 2026, 12:44",
- "updated_iso": "2026-10-31T12:44:02.214576+00:00",
+ "updated": "31 Oct 2026, 21:42",
+ "updated_iso": "2026-10-31T21:42:13.065567+00:00",
  "health": {
   "mc": {
-   "last_ok_iso": "2026-10-31T12:44:02.214576+00:00",
+   "last_ok_iso": "2026-10-31T21:42:13.065567+00:00",
    "from": "man-city-on-tv.html",
    "count": 15
   },
   "mw": {
-   "last_ok_iso": "2026-10-31T12:44:02.214576+00:00",
+   "last_ok_iso": "2026-10-31T21:42:13.065567+00:00",
    "from": "man-city-women-on-tv.html",
    "count": 9
   },
   "aw": {
-   "last_ok_iso": "2026-10-31T12:44:02.214576+00:00",
+   "last_ok_iso": "2026-10-31T21:42:13.065567+00:00",
    "from": "arsenal-women-on-tv.html",
    "count": 9
   },
   "mu": {
-   "last_ok_iso": "2026-10-31T12:44:02.214576+00:00",
+   "last_ok_iso": "2026-10-31T21:42:13.065567+00:00",
    "from": "man-utd-women-on-tv.html",
-   "count": 6
+   "count": 5
   },
   "cw": {
-   "last_ok_iso": "2026-10-31T12:44:02.214576+00:00",
+   "last_ok_iso": "2026-10-31T21:42:13.065567+00:00",
    "from": "chelsea-women-on-tv.html",
    "count": 9
   },
   "li": {
-   "last_ok_iso": "2026-10-31T12:44:02.214576+00:00",
+   "last_ok_iso": "2026-10-31T21:42:13.065567+00:00",
    "from": "england-women-on-tv.html",
    "count": 2
   },
   "en": {
-   "last_ok_iso": "2026-10-31T12:44:02.214576+00:00",
+   "last_ok_iso": "2026-10-31T21:42:13.065567+00:00",
    "from": "england-on-tv.html",
    "count": 2
   },
   "f1": {
-   "last_ok_iso": "2026-10-31T12:44:02.214576+00:00",
+   "last_ok_iso": "2026-10-31T21:42:13.065567+00:00",
    "from": "api.jolpi.ca",
    "count": 10
   }
  },
  "fixtures": [
-  {
-   "t": "mu",
-   "iso": "2026-10-31T12:45:00+00:00",
-   "comp": "Women's Super League",
-   "h": "Everton",
-   "a": "Man Utd",
-   "ch": [
-    "Sky Sports Premier League"
-   ],
-   "note": "",
-   "tbc": false
-  },
   {
    "t": "f1",
    "iso": "2026-10-31T21:00:00+00:00",
