@@ -1,5 +1,6 @@
 """Refresh fixtures.json from live-footballontv.com listings (be gentle: few requests, robots.txt respected).
 Each team has a list of pages to try; the first that yields fixtures wins.
+Formula 1 session times come from the free Jolpica F1 calendar API (two requests: this year and next); Sky Sports F1 shows every session.
 If every page fails for a team, that team's existing fixtures are kept."""
 import json, re, sys, time, datetime as dt
 import urllib.robotparser
@@ -144,6 +145,56 @@ def fetch_team(key):
             merged[(g["iso"], g["h"], g["a"])] = g   # WSL + Champions League pages are combined
     return list(merged.values()), "+".join(used)
 
+# ---- Formula 1: qualifying, sprints and races, from the free Jolpica calendar (Ergast-compatible) ----
+F1_API = "https://api.jolpi.ca/ergast/f1/{}.json"
+# (key in the API's race record, name shown on the card). Practice sessions are left out on purpose.
+F1_SESSIONS = [("SprintQualifying", "Sprint Qualifying"), ("SprintShootout", "Sprint Qualifying"),
+               ("Qualifying", "Qualifying"), ("Sprint", "Sprint"), ("Race", "Race")]
+F1_CHANNELS = ["Sky Sports F1"]
+F1_DAYS = 60          # only list sessions up to this many days ahead, so a whole season does not flood the page
+
+def f1_iso(date, time_):
+    """API date + UTC time -> London-time ISO string, or None when no time is published yet."""
+    if not date or not time_:
+        return None
+    utc = dt.datetime.fromisoformat(f"{date}T{time_}".replace("Z", "+00:00"))
+    return utc.astimezone(LON).isoformat()
+
+def f1_year(year):
+    wait = PAUSE - (time.time() - _last[0])
+    if wait > 0:
+        time.sleep(wait)
+    r = requests.get(F1_API.format(year), timeout=30, headers={"User-Agent": UA})
+    _last[0] = time.time()
+    r.raise_for_status()
+    out = []
+    for race in r.json()["MRData"]["RaceTable"]["Races"]:
+        gp = race.get("raceName") or "Grand Prix"
+        for key, label in F1_SESSIONS:
+            s = {"date": race.get("date"), "time": race.get("time")} if key == "Race" else race.get(key)
+            iso = f1_iso((s or {}).get("date"), (s or {}).get("time"))
+            if iso:                                   # sessions without a published time are skipped
+                out.append({"t": "f1", "iso": iso, "comp": "Formula 1, " + label, "h": gp, "a": "",
+                            "ch": list(F1_CHANNELS), "note": "", "tbc": False})
+    return out
+
+def fetch_f1():
+    """-> (fixtures, source, ok). ok is True when this year's calendar was read, even if no sessions are left."""
+    year = dt.datetime.now(LON).year
+    try:
+        out = f1_year(year)
+    except Exception as e:
+        print(f"f1: {year} calendar failed ({e})", file=sys.stderr)
+        return [], None, False
+    try:
+        out += f1_year(year + 1)                      # next season, once its calendar has times
+    except Exception as e:
+        print(f"f1: {year + 1} calendar not available yet ({e})", file=sys.stderr)
+    limit = (dt.datetime.now(LON) + dt.timedelta(days=F1_DAYS)).isoformat()
+    out = [f for f in out if dt.datetime.fromisoformat(f["iso"]) <= dt.datetime.fromisoformat(limit)]
+    print(f"f1: {len(out)} sessions in the next {F1_DAYS} days from the Jolpica calendar")
+    return out, "api.jolpi.ca", True
+
 def main():
     try: prev = json.load(open("fixtures.json"))
     except Exception: prev = {}
@@ -152,15 +203,19 @@ def main():
     recent = lambda f: dt.datetime.fromisoformat(f["iso"]) > now - dt.timedelta(hours=3)
     load_robots()
     new, health = [], {}
-    for key in PAGES:
-        got, src = fetch_team(key)
+    for key in [*PAGES, "f1"]:
+        ok = False
+        if key == "f1":
+            got, src, ok = fetch_f1()
+        else:
+            got, src = fetch_team(key)
         got = [g for g in got if recent(g)]
         kept = [f for f in old if f["t"] == key and recent(f)]
         upcoming_before = len([f for f in kept if dt.datetime.fromisoformat(f["iso"]) > now])
-        if got and upcoming_before >= 4 and len(got) < upcoming_before / 2:
+        if key != "f1" and got and upcoming_before >= 4 and len(got) < upcoming_before / 2:
             print(f"::warning::fixtures: {key} returned only {len(got)} fixtures (had {upcoming_before}); keeping the previous ones in case the page layout changed")
             got = []
-        if got:
+        if got or ok:                     # F1 can legitimately have nothing left in the off-season
             new += got
             health[key] = {"last_ok_iso": now.isoformat(), "from": src, "count": len(got)}
         else:

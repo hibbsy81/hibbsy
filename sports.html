@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="dark">
 <meta name="theme-color" content="#06130c">
-<meta name="description" content="Upcoming fixtures and UK TV channels for Man City, Arsenal, Man Utd and Chelsea Women, the Lionesses and England Men.">
+<meta name="description" content="Upcoming fixtures and UK TV channels for Man City, Arsenal, Man Utd and Chelsea Women, the Lionesses, England Men and Formula 1 on Sky Sports.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Fixtures &amp; TV Guide">
 <meta property="og:description" content="Upcoming fixtures and which UK channel to watch them on.">
@@ -18,6 +18,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2306130c'/%3E%3Ccircle cx='26' cy='40' r='11' fill='%23fff'/%3E%3Cpath d='M26 35l4.300 3.200-1.700 5.100h-5.200l-1.700-5.100z' fill='%2306130c'/%3E%3Cpath d='M26 22A18 18 0 0 1 44 40' fill='none' stroke='%236CABDD' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M26 14A26 26 0 0 1 52 40' fill='none' stroke='%236CABDD' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
 <title>Fixtures &amp; UK TV Guide</title>
+<script>/* Installed web app: mark the page so the site menu can be hidden. */(function(){try{if(navigator.standalone||(window.matchMedia&&matchMedia("(display-mode: standalone)").matches))document.documentElement.classList.add("app");}catch(e){}})();</script>
 <style>
 :root{color-scheme:dark;--bg:#06130c;--card:#0e2118;--card2:#13291d;--tx:#eef5f0;--mu:#8fb3a0;--bd:#1f3d2c;--menu-ink:#eef5f0;--menu-accent:#4ade80;--menu-glass:rgba(10,30,20,.78);--menu-line:rgba(255,255,255,.13);--menu-hover:rgba(255,255,255,.09)}
 *{box-sizing:border-box}
@@ -25,14 +26,10 @@ html{scroll-padding-top:env(safe-area-inset-top,0px)}
 body{margin:0;background:radial-gradient(1200px 500px at 50% -200px,#14402a 0,var(--bg) 70%) no-repeat,var(--bg);color:var(--tx);font:16px/1.4 "Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;min-height:100vh;min-height:100dvh}
 main{max-width:720px;margin:0 auto;padding:calc(20px + env(safe-area-inset-top,0px)) 14px calc(48px + env(safe-area-inset-bottom,0px))}
 header{display:flex;align-items:center;justify-content:center;min-height:46px;padding:0 62px;margin-bottom:20px}
-/* Installed web app: no burger menu, so the title needs no side room for it */
-@media (display-mode:standalone){nav.menu{display:none}header{padding:0}}
-html.standalone nav.menu{display:none}
-html.standalone header{padding:0}
 h1{font-size:24px;margin:0;letter-spacing:-.02em;text-align:center;line-height:1.15}
 .month{font-size:13px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--mu);margin:22px 2px 10px}
 /* Phone: two columns, the four WSL teams down the right-hand side. */
-.chips{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(4,auto);grid-auto-flow:column;gap:8px;margin-bottom:4px}
+.chips{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(5,auto);grid-auto-flow:row;gap:8px;margin-bottom:4px}
 .chip{flex:none;display:flex;align-items:center;gap:8px;border:1px solid var(--bd);background:var(--card);color:var(--tx);padding:6px 13px 6px 6px;border-radius:999px;font-family:inherit;font-weight:600;font-size:14px;cursor:pointer;transition:background-color .15s ease,border-color .15s ease,transform .15s ease}
 @media (hover:hover){.chip:not([aria-pressed="true"]):hover{background:var(--card2);border-color:var(--menu-accent);transform:translateY(-1px)}}
 .chip:focus-visible{outline:2px solid var(--menu-accent);outline-offset:2px}
@@ -78,18 +75,30 @@ h1{font-size:24px;margin:0;letter-spacing:-.02em;text-align:center;line-height:1
 .chip{width:100%;min-width:0;justify-content:flex-start;padding:7px 12px 7px 7px;overflow:hidden}
 .chip .lbl{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .chip.all{justify-content:center;padding-left:12px}
-/* Computer: top row = All, Man City, Lionesses, England Men; bottom row = the four WSL teams. */
-@media (min-width:700px){.chips{grid-template-columns:repeat(4,1fr);grid-template-rows:none;grid-auto-flow:row;gap:10px;margin:0 auto 6px}}
+/* Phone: All across the top; F1, Man City, Lionesses, England Men down the left; the four WSL teams down the right. */
+.chip.all{grid-column:1/-1;grid-row:1}
+.chip[data-k="f1"],.chip[data-k="mc"],.chip[data-k="li"],.chip[data-k="en"]{grid-column:1}
+.chip[data-k="aw"],.chip[data-k="mu"],.chip[data-k="cw"],.chip[data-k="mw"]{grid-column:2}
+.chip[data-k="f1"],.chip[data-k="aw"]{grid-row:2}
+.chip[data-k="mc"],.chip[data-k="mu"]{grid-row:3}
+.chip[data-k="li"],.chip[data-k="cw"]{grid-row:4}
+.chip[data-k="en"],.chip[data-k="mw"]{grid-row:5}
+/* Computer (interim layout, 4 columns): All across the top, then F1, Man City, Lionesses, England Men, then the four WSL teams. */
+@media (min-width:700px){.chips{grid-template-columns:repeat(4,1fr);grid-template-rows:none;grid-auto-flow:row;gap:10px;margin:0 auto 6px}.chip[data-k]{grid-column:auto;grid-row:auto}.chip.all{grid-column:1/-1}}
 @media (max-width:359px){.chip{font-size:13px;gap:6px;padding-right:8px}.chip .crest{--s:20px!important}}
 .logos{margin:16px 0 0;padding:12px 14px;border:1px dashed var(--bd);border-radius:12px;font-size:13px;color:var(--mu)}
 .logos b{color:var(--tx)}
 .logos ul{list-style:none;margin:8px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:4px 12px}
 .logos .have{color:#86efac}
+/* Installed web app: no site menu, so the title needs no room for the button. */
+.app .menu{display:none!important}
+.app header{padding:0}
+@media (display-mode:standalone){.menu{display:none!important}header{padding:0}}
 </style>
-<script src="menu.js?v=14" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+<script src="menu.js?v=14" defer></script>
 </head>
 <body>
 <main>
@@ -100,8 +109,7 @@ h1{font-size:24px;margin:0;letter-spacing:-.02em;text-align:center;line-height:1
 <p class="upd" id="upd"></p>
 </main>
 <script>
-if(window.navigator.standalone===true||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches))document.documentElement.classList.add('standalone');
-const T={aw:{n:"Arsenal WSL",m:"AW",c:"#EF0107"},mc:{n:"Man City",m:"MC",c:"#6CABDD"},mu:{n:"Man Utd WSL",m:"MU",c:"#DA291C"},cw:{n:"Chelsea WSL",m:"CW",c:"#1B5FD1"},mw:{n:"Man City WSL",m:"MW",c:"#7DB9E8"},li:{n:"Lionesses",m:"L",c:"#8A3FB0"},en:{n:"England Men",m:"EN",c:"#2B4DB8"}};
+const T={f1:{n:"F1",m:"F1",c:"#E10600"},aw:{n:"Arsenal WSL",m:"AW",c:"#EF0107"},mc:{n:"Man City",m:"MC",c:"#6CABDD"},mu:{n:"Man Utd WSL",m:"MU",c:"#DA291C"},cw:{n:"Chelsea WSL",m:"CW",c:"#1B5FD1"},mw:{n:"Man City WSL",m:"MW",c:"#7DB9E8"},li:{n:"Lionesses",m:"L",c:"#8A3FB0"},en:{n:"England Men",m:"EN",c:"#2B4DB8"}};
 // Channel brand colours: [background, text]
 const BR={bbc:["#bb1919","#fff"],itv:["#101820","#fff"],sky:["#0072c9","#fff"],tnt:["#d6001c","#fff"],hbo:["#5822b4","#fff"],disney:["#113ccf","#fff"],prime:["#00a8e1","#04202b"],youtube:["#ff0000","#fff"],dazn:["#f8f8f5","#111"]};
 const brand=c=>/^BBC/i.test(c)?"bbc":/^ITV/i.test(c)?"itv":/^Sky/i.test(c)?"sky":/^TNT/i.test(c)?"tnt":/^HBO/i.test(c)?"hbo":/^Disney/i.test(c)?"disney":/YouTube/i.test(c)?"youtube":/Prime/i.test(c)?"prime":/^DAZN/i.test(c)?"dazn":c.toLowerCase().replace(/[^a-z0-9]+/g,"-");
@@ -168,15 +176,15 @@ function chanHtml(f){
   return f.ch.length?f.ch.map(badge).join("")+(unconf?'<span class="b tbc">TBC</span>':""):'<span class="b none">'+(unconf?"Channel TBC":esc(f.note||"No UK broadcast"))+'</span>';
 }
 const slug=n=>String(n).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/&/g,"and").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");
-const versus=f=>esc(f.h)+' <span class="v">v</span> '+esc(f.a);
-const ROOT={mc:"Man City",mw:"Man City",aw:"Arsenal",mu:"Man Utd",cw:"Chelsea",li:"England",en:"England"};
+const versus=f=>f.a?esc(f.h)+' <span class="v">v</span> '+esc(f.a):esc(f.h);   // F1 sessions have only the grand prix name
+const ROOT={f1:"Formula 1",mc:"Man City",mw:"Man City",aw:"Arsenal",mu:"Man Utd",cw:"Chelsea",li:"England",en:"England"};
 const initials=n=>{const w=String(n).replace(/[^A-Za-z0-9 ]/g,"").split(/\s+/).filter(Boolean);return(w.length>1?w[0][0]+w[1][0]:(w[0]||"?").slice(0,2)).toUpperCase();};
 function oppCrest(n,s){return '<span class="crest" aria-hidden="true" style="--c:#3b5a4c;--s:'+s+'px"><span>'+initials(n)+'</span><img src="logos/opponents/'+slug(n)+'.png" alt="" onload="this.parentNode.classList.add(\'has\')" onerror="this.remove()"></span>';}
 // Every match shows both clubs' logos overlapped: home on the left, away on the right.
 function sideBadge(n,f,s){const k=f.teams.find(k=>n.includes(ROOT[k]));return k?crest(k,s,"logos/opponents/"+slug(n)+".png"):oppCrest(n,s);}
-const matchCrests=(f,s)=>'<span class="crests">'+sideBadge(f.h,f,s)+sideBadge(f.a,f,s)+'</span>';
+const matchCrests=(f,s)=>f.teams[0]==="f1"?'<span class="crests">'+crest("f1",s)+'</span>':'<span class="crests">'+sideBadge(f.h,f,s)+sideBadge(f.a,f,s)+'</span>';
 const ORDER=Object.keys(T);
-const CHIP_ORDER=["mc","li","en","aw","mu","cw","mw"];   // All + non-WSL first, then the four WSL teams
+const CHIP_ORDER=["f1","mc","li","en","aw","mu","cw","mw"];   // All, then F1 + the non-WSL teams, then the four WSL teams
 const names=f=>f.teams.map(k=>T[k].n.toUpperCase()).join(" · ");
 const cvars=f=>"--c:"+T[f.teams[0]].c+";--c2:"+T[f.teams[f.teams.length-1]].c;
 // One match followed through two teams (e.g. Arsenal v Chelsea) becomes a single card with both badges.
