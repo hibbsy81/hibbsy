@@ -206,8 +206,9 @@ def fetch_f1():
         out += f1_year(year + 1)                      # next season, once its calendar has times
     except Exception as e:
         print(f"f1: {year + 1} calendar not available yet ({e})", file=sys.stderr)
-    limit = (dt.datetime.now(LON) + dt.timedelta(days=F1_DAYS)).isoformat()
-    out = [f for f in out if dt.datetime.fromisoformat(f["iso"]) <= dt.datetime.fromisoformat(limit)]
+    now = dt.datetime.now(LON)
+    start, end = now - dt.timedelta(hours=3), now + dt.timedelta(days=F1_DAYS)
+    out = [f for f in out if start < dt.datetime.fromisoformat(f["iso"]) <= end]   # recent and upcoming only
     print(f"f1: {len(out)} sessions in the next {F1_DAYS} days from the Jolpica calendar")
     return out, "api.jolpi.ca", True
 
