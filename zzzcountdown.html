@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Birthday and Christmas Countdown</title>
+<meta name="theme-color" content="#ff8a1f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Countdown">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="zzzcountdown.webmanifest">
+<link rel="icon" href="zzzcountdown-icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="zzzcountdown-apple-touch-icon.png">
+<style>
+:root { color-scheme: light; padding: env(safe-area-inset-top, 0px) 0 env(safe-area-inset-bottom, 0px); }
+html { background: #f5f3ee; }
+body { margin: 0; min-height: 100vh; }
+[hidden] { display: none !important; }
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=DM+Sans:wght@400;500;700&display=swap">
+<style>
+/* Layout: two big counters on top (birthday, Christmas), then Nov and Dec calendar grids where each past or current day can be crossed off. */
+:root {
+  --bg: #f5f3ee;
+  --surface: #ffffff;
+  --fg: #1d2420;
+  --muted: #6a736d;
+  --line: #dcd9d0;
+  --bday: #d9467a;
+  --bday-soft: #fbe3ec;
+  --xmas: #1c6b4c;
+  --xmas-soft: #dcefe5;
+  --cross: #1d2420;
+  --font-display: "Bricolage Grotesque", "Arial Narrow", system-ui, sans-serif;
+  --font-body: "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #121715; --surface: #1a211e; --fg: #eef0ea; --muted: #98a39c; --line: #2b3530;
+    --bday: #f0709c; --bday-soft: #3a1f2c; --xmas: #5fc596; --xmas-soft: #1b3328; --cross: #eef0ea;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #121715; --surface: #1a211e; --fg: #eef0ea; --muted: #98a39c; --line: #2b3530;
+  --bday: #f0709c; --bday-soft: #3a1f2c; --xmas: #5fc596; --xmas-soft: #1b3328; --cross: #eef0ea;
+  color-scheme: dark;
+}
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); }
+* { box-sizing: border-box; }
+.wrap {
+  max-width: 920px; margin: 0 auto;
+  padding-block: 28px 56px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex; flex-direction: column; gap: 28px;
+}
+h1 { font: 800 clamp(1.5rem, 4vw, 2.1rem)/1.1 var(--font-display); margin: 0; text-wrap: balance; letter-spacing: -0.01em; }
+.sub { color: var(--muted); margin: 6px 0 0; font-size: 0.95rem; }
+
+.counters { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+.counter { border-radius: 18px; padding: 22px 22px 20px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.counter.bday { background: var(--bday-soft); color: var(--bday); }
+.counter.xmas { background: var(--xmas-soft); color: var(--xmas); }
+.counter .label { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
+.counter .num { font: 800 clamp(4.5rem, 16vw, 7rem)/0.95 var(--font-display); font-variant-numeric: tabular-nums; letter-spacing: -0.03em; }
+.counter .unit { font-weight: 700; font-size: 1.05rem; }
+.counter .meta { color: var(--fg); opacity: 0.75; font-size: 0.88rem; margin-top: 6px; }
+.counter.done .num { font-size: clamp(2.6rem, 9vw, 3.8rem); line-height: 1.05; }
+.counter.bday { --tone: var(--bday); }
+.counter.xmas { --tone: var(--xmas); }
+.pill { align-self: flex-start; margin-top: 8px; border: 2px solid var(--tone); border-radius: 999px; padding: 4px 12px; font-weight: 700; font-size: 0.9rem; }
+.pill.strong { background: var(--tone); color: var(--bg); }
+#confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 50; }
+
+.months { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
+.month { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 16px; min-width: 0; }
+.month h2 { font: 800 1.25rem/1 var(--font-display); margin: 0 0 12px; }
+.grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+.dow { font-size: 0.7rem; color: var(--muted); text-align: center; letter-spacing: 0.08em; text-transform: uppercase; padding-bottom: 2px; }
+.day {
+  position: relative; aspect-ratio: 1; border-radius: 10px;
+  border: 1px solid var(--line); background: transparent; color: var(--fg);
+  font: 500 0.95rem var(--font-body); font-variant-numeric: tabular-nums;
+  display: flex; align-items: center; justify-content: center; padding: 0; cursor: pointer;
+}
+.day.blank { border: 0; pointer-events: none; }
+.day:focus-visible { outline: 3px solid var(--fg); outline-offset: 2px; }
+.day.future { color: var(--muted); cursor: not-allowed; border-style: dashed; }
+.day.today { border: 2px solid var(--fg); font-weight: 700; }
+.day.crossed { color: var(--muted); background: var(--bg); }
+.day.crossed::after {
+  content: ""; position: absolute; inset: 22%;
+  background:
+    linear-gradient(to top right, transparent calc(50% - 1.5px), var(--cross) calc(50% - 1.5px), var(--cross) calc(50% + 1.5px), transparent calc(50% + 1.5px)),
+    linear-gradient(to bottom right, transparent calc(50% - 1.5px), var(--cross) calc(50% - 1.5px), var(--cross) calc(50% + 1.5px), transparent calc(50% + 1.5px));
+}
+.day.event { cursor: pointer; flex-direction: column; gap: 0; font-weight: 800; border: 0; line-height: 1; }
+.day.event.crossed { --cross: #fff; }
+.day.event small { font-size: 0.55rem; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 700; margin-top: 3px; }
+.day.event.bday { background: var(--bday); color: #fff; }
+.day.event.xmas { background: var(--xmas); color: #fff; }
+.day.event.future { border-style: solid; color: #fff; cursor: default; }
+
+.foot { display: flex; flex-wrap: wrap; gap: 12px 18px; align-items: center; justify-content: space-between; color: var(--muted); font-size: 0.88rem; }
+.btn { font: 500 0.88rem var(--font-body); color: var(--fg); background: transparent; border: 1px solid var(--line); border-radius: 999px; padding: 8px 14px; cursor: pointer; }
+.btn:hover { border-color: var(--fg); }
+.btn:focus-visible { outline: 3px solid var(--fg); outline-offset: 2px; }
+.btn.danger { border-color: var(--bday); color: var(--bday); }
+.actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+@media (prefers-reduced-motion: no-preference) {
+  .day { transition: background 0.15s; }
+  .day.event.ready { animation: nudge 1.6s ease-in-out infinite; }
+  @keyframes nudge { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+}
+</style>
+
+</head>
+<body>
+<main class="wrap">
+  <header>
+    <h1>Birthday and Christmas countdown</h1>
+    <p class="sub">Tap each day once it's over to cross it off. The numbers count the days you haven't crossed off yet. When the big day arrives, tap it to celebrate.</p>
+  </header>
+
+  <section class="counters" aria-live="polite">
+    <div class="counter bday" id="c-bday"></div>
+    <div class="counter xmas" id="c-xmas"></div>
+  </section>
+
+  <section class="months" id="months" aria-label="Calendar"></section>
+
+  <footer class="foot">
+    <span id="saveNote">Saved on this device.</span>
+    <span class="actions">
+      <button class="btn" id="catchup" type="button">Cross off everything up to yesterday</button>
+      <button class="btn" id="reset" type="button">Start over</button>
+    </span>
+  </footer>
+</main>
+
+<script>
+(function () {
+  var START = new Date(2026, 10, 1);     // 1 Nov 2026
+  var BDAY = new Date(2026, 11, 2);      // 2 Dec 2026
+  var XMAS = new Date(2026, 11, 25);     // 25 Dec 2026
+  var MONTHS = ["November", "December"];
+  var LS_KEY = "bday-xmas-countdown-v1";
+  var DAY = 86400000;
+
+  function iso(d) { return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
+  function midnight(d) { return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+  function daysBetween(a, b) { return Math.round((midnight(b) - midnight(a)) / DAY); }
+
+  var crossed = new Set();
+  var cloud = null;     // db doc ref when signed in
+  var resetArmed = false;
+
+  // ---- storage ----
+  function loadLocal() {
+    try { var raw = localStorage.getItem(LS_KEY); if (raw) JSON.parse(raw).forEach(function (k) { crossed.add(k); }); } catch (e) {}
+  }
+  function saveLocal() { try { localStorage.setItem(LS_KEY, JSON.stringify(Array.from(crossed))); } catch (e) {} }
+  var saveTimer = null;
+  function save() {
+    saveLocal();
+    if (cloud) {
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(function () {
+        cloud.set({ crossed: Array.from(crossed).sort() }).catch(function () {});
+      }, 400);
+    }
+  }
+
+  // ---- model ----
+  function allDays() {
+    var out = [], d = new Date(START);
+    while (d < XMAS) { out.push(new Date(d)); d.setDate(d.getDate() + 1); }
+    return out;
+  }
+  function remaining(target) {
+    return allDays().filter(function (d) { return d < target && !crossed.has(iso(d)); }).length;
+  }
+
+  // ---- render ----
+  function renderCounter(el, cls, label, target, name, emoji) {
+    var today = midnight(new Date());
+    var n = remaining(target);
+    var calendar = daysBetween(today, target);
+    el.className = "counter " + cls;
+    if (calendar < 0) {
+      el.classList.add("done");
+      el.innerHTML = '<div class="label">' + label + '</div><div class="num">' + (cls === "bday" ? "Happy birthday" : "Merry Christmas") + '</div><div class="meta">All counted down.</div>';
+      return;
+    }
+    if (calendar === 0) {
+      el.classList.add("done");
+      el.innerHTML = '<div class="label">' + label + '</div><div class="num">Today</div><div class="meta">' + name + ' is here. Tap it in the calendar to celebrate.</div>';
+      return;
+    }
+    var meta = n === calendar
+      ? "You're up to date. " + target.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" }) + "."
+      : (n > calendar ? (n - calendar) + " past day" + (n - calendar === 1 ? "" : "s") + " not crossed off yet. " : "") +
+        calendar + " day" + (calendar === 1 ? "" : "s") + " by the calendar.";
+    var pill = calendar === 7 ? '<div class="pill strong">A week to go!</div>'
+      : calendar === 1 ? '<div class="pill strong">Tomorrow!</div>'
+      : calendar < 7 ? '<div class="pill">Less than a week to go</div>' : "";
+    el.innerHTML = '<div class="label">' + label + '</div><div class="num">' + n + '</div><div class="unit">day' + (n === 1 ? "" : "s") + ' to go</div>' + pill + '<div class="meta">' + meta + '</div>';
+  }
+
+  function renderMonths() {
+    var today = midnight(new Date());
+    var host = document.getElementById("months");
+    var html = "";
+    [10, 11].forEach(function (m, idx) {
+      var first = new Date(2026, m, 1);
+      var count = new Date(2026, m + 1, 0).getDate();
+      var offset = (first.getDay() + 6) % 7; // Monday first
+      html += '<div class="month"><h2>' + MONTHS[idx] + '</h2><div class="grid">';
+      ["M", "T", "W", "T", "F", "S", "S"].forEach(function (l) { html += '<div class="dow">' + l + '</div>'; });
+      for (var i = 0; i < offset; i++) html += '<div class="day blank"></div>';
+      for (var d = 1; d <= count; d++) {
+        var date = new Date(2026, m, d);
+        var key = iso(date);
+        var label = date.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" });
+        if (date < START) { html += '<div class="day blank"></div>'; continue; }
+        if (+date === +BDAY || +date === +XMAS) {
+          var isB = +date === +BDAY, fut = date > today, done = crossed.has(key);
+          html += '<button type="button" class="day event ' + (isB ? "bday" : "xmas") + (fut ? " future" : "") + (done ? " crossed" : "") + (!fut && !done ? " ready" : "") +
+            '" data-d="' + key + '"' + (fut ? " disabled" : "") + ' aria-pressed="' + done + '" aria-label="' + label + (isB ? ", birthday" : ", Christmas Day") + '">' +
+            d + '<small>' + (isB ? "Birthday" : "Xmas") + '</small></button>';
+          continue;
+        }
+        if (date > XMAS) { html += '<div class="day blank"></div>'; continue; }
+        var isFuture = date > today;
+        var cls = "day" + (crossed.has(key) ? " crossed" : "") + (isFuture ? " future" : "") + (+date === +today ? " today" : "");
+        html += '<button type="button" class="' + cls + '" data-d="' + key + '"' + (isFuture ? " disabled" : "") +
+          ' aria-pressed="' + crossed.has(key) + '" aria-label="' + label + '">' + d + '</button>';
+      }
+      html += '</div></div>';
+    });
+    host.innerHTML = html;
+  }
+
+  function render() {
+    renderCounter(document.getElementById("c-bday"), "bday", "Until my birthday", BDAY, "Your birthday");
+    renderCounter(document.getElementById("c-xmas"), "xmas", "Until Christmas", XMAS, "Christmas");
+    renderMonths();
+    var reset = document.getElementById("reset");
+    reset.textContent = resetArmed ? "Tap again to clear all crosses" : "Start over";
+    reset.classList.toggle("danger", resetArmed);
+  }
+
+  // ---- confetti ----
+  var cv = null, ctx = null, bits = [], raf = 0;
+  var COLORS = ["#d9467a", "#1c6b4c", "#ff8a1f", "#3d8bfd", "#f5c518", "#6b4de6", "#e8212b"];
+  function rnd(a, b) { return a + Math.random() * (b - a); }
+  function confetti(x, y) {
+    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (!cv) {
+      cv = document.createElement("canvas"); cv.id = "confetti"; cv.setAttribute("aria-hidden", "true");
+      document.body.appendChild(cv); ctx = cv.getContext("2d");
+    }
+    var dpr = window.devicePixelRatio || 1;
+    cv.width = innerWidth * dpr; cv.height = innerHeight * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    function piece(px, py, vx, vy) {
+      bits.push({ x: px, y: py, vx: vx, vy: vy, w: rnd(6, 11), h: rnd(4, 7), a: rnd(0, 6.28), va: rnd(-0.25, 0.25),
+        c: COLORS[(Math.random() * COLORS.length) | 0], life: rnd(130, 220), age: 0, wob: rnd(0, 6.28) });
+    }
+    for (var i = 0; i < 150; i++) {            // burst from the day you tapped
+      var ang = rnd(-Math.PI * 0.95, -Math.PI * 0.05), sp = rnd(6, 16);
+      piece(x, y, Math.cos(ang) * sp, Math.sin(ang) * sp);
+    }
+    setTimeout(function () {                   // then a shower from the top
+      for (var j = 0; j < 90; j++) piece(rnd(0, innerWidth), rnd(-60, -10), rnd(-1.5, 1.5), rnd(2, 5));
+    }, 350);
+    if (!raf) raf = requestAnimationFrame(tick);
+  }
+  function tick() {
+    ctx.clearRect(0, 0, innerWidth, innerHeight);
+    bits = bits.filter(function (p) { return p.age < p.life && p.y < innerHeight + 40; });
+    bits.forEach(function (p) {
+      p.age++; p.vy += 0.3; p.vx *= 0.985; p.vy *= 0.985; p.x += p.vx + Math.sin(p.wob + p.age * 0.1) * 0.6; p.y += p.vy; p.a += p.va;
+      ctx.save(); ctx.globalAlpha = Math.min(1, (p.life - p.age) / 40);
+      ctx.translate(p.x, p.y); ctx.rotate(p.a); ctx.fillStyle = p.c; ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); ctx.restore();
+    });
+    raf = bits.length ? requestAnimationFrame(tick) : 0;
+    if (!bits.length) ctx.clearRect(0, 0, innerWidth, innerHeight);
+  }
+
+  // ---- events ----
+  document.getElementById("months").addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-d]");
+    if (!b) return;
+    var k = b.getAttribute("data-d");
+    var nowCrossed;
+    if (crossed.has(k)) { crossed.delete(k); nowCrossed = false; } else { crossed.add(k); nowCrossed = true; }
+    save(); render();
+    var again = document.querySelector('button[data-d="' + k + '"]');
+    if (again) {
+      again.focus({ preventScroll: true });
+      if (nowCrossed && (k === iso(BDAY) || k === iso(XMAS))) {
+        var r = again.getBoundingClientRect();
+        confetti(r.left + r.width / 2, r.top + r.height / 2);
+      }
+    }
+  });
+  document.getElementById("catchup").addEventListener("click", function () {
+    var today = midnight(new Date());
+    allDays().forEach(function (d) { if (d < today) crossed.add(iso(d)); });
+    save(); render();
+  });
+  document.getElementById("reset").addEventListener("click", function () {
+    if (!resetArmed) { resetArmed = true; render(); setTimeout(function () { resetArmed = false; render(); }, 4000); return; }
+    resetArmed = false; crossed.clear(); save(); render();
+  });
+
+  loadLocal();
+  render();
+
+  // Roll the display over at midnight.
+  setInterval(render, 60000);
+})();
+</script>
+<script>
+if ("serviceWorker" in navigator) { window.addEventListener("load", function () { navigator.serviceWorker.register("zzzcountdown-sw.js", { scope: "./zzzcountdown" }).catch(function () {}); }); }
+</script>
+</body>
+</html>
