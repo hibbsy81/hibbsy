@@ -14,10 +14,18 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install requests beautifulsoup4
-      - run: python scripts/update.py
+      - name: Update fixtures
+        id: update
+        continue-on-error: true          # a problem must not stop the good data being saved below
+        run: python scripts/update.py
       - name: Commit if changed
         run: |
           git config user.name "fixtures-bot"
           git config user.email "fixtures-bot@users.noreply.github.com"
-          git add fixtures.json
+          git add fixtures.json sports.html
           git diff --staged --quiet || (git commit -m "Update fixtures" && git push)
+      - name: Flag problems
+        if: steps.update.outcome == 'failure'
+        run: |
+          echo "::error::The fixtures update had problems (see the 'Update fixtures' step above). Good data was still saved."
+          exit 1
