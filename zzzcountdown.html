@@ -8,7 +8,6 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Countdown">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="manifest" href="zzzcountdown.webmanifest">
 <link rel="icon" href="zzzcountdown-icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="zzzcountdown-apple-touch-icon.png">
@@ -57,7 +56,6 @@ body { background: var(--bg); color: var(--fg); font-family: var(--font-body); }
   display: flex; flex-direction: column; gap: 28px;
 }
 h1 { font: 800 clamp(1.5rem, 4vw, 2.1rem)/1.1 var(--font-display); margin: 0; text-wrap: balance; letter-spacing: -0.01em; }
-.sub { color: var(--muted); margin: 6px 0 0; font-size: 0.95rem; }
 
 .counters { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
 .counter { border-radius: 18px; padding: 22px 22px 20px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
@@ -74,7 +72,7 @@ h1 { font: 800 clamp(1.5rem, 4vw, 2.1rem)/1.1 var(--font-display); margin: 0; te
 .pill.strong { background: var(--tone); color: var(--bg); }
 #confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 50; }
 
-.months { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
+.months { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; }
 .month { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 16px; min-width: 0; }
 .month h2 { font: 800 1.25rem/1 var(--font-display); margin: 0 0 12px; }
 .grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
@@ -109,6 +107,24 @@ h1 { font: 800 clamp(1.5rem, 4vw, 2.1rem)/1.1 var(--font-display); margin: 0; te
 .btn:focus-visible { outline: 3px solid var(--fg); outline-offset: 2px; }
 .btn.danger { border-color: var(--bday); color: var(--bday); }
 .actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+@media (max-width: 600px) {
+  .wrap { padding-block: 12px 28px; gap: 12px; }
+  h1 { font-size: 1.15rem; }
+  .counters { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .counter { padding: 12px 12px 10px; border-radius: 14px; gap: 2px; }
+  .counter .label { font-size: 0.62rem; letter-spacing: 0.08em; }
+  .counter .num { font-size: 3.1rem; }
+  .counter .unit { font-size: 0.85rem; }
+  .counter:not(.done) .meta { display: none; }
+  .counter.done .num { font-size: 1.5rem; }
+  .pill { margin-top: 4px; padding: 2px 9px; font-size: 0.75rem; }
+  .months { gap: 12px; }
+  .month { padding: 10px; border-radius: 14px; }
+  .month h2 { font-size: 1rem; margin-bottom: 8px; }
+  .grid { gap: 4px; }
+  .day { aspect-ratio: 1 / 0.9; font-size: 0.85rem; border-radius: 8px; }
+  .day.event small { font-size: 0.48rem; }
+}
 @media (prefers-reduced-motion: no-preference) {
   .day { transition: background 0.15s; }
   .day.event.ready { animation: nudge 1.6s ease-in-out infinite; }
@@ -121,7 +137,6 @@ h1 { font: 800 clamp(1.5rem, 4vw, 2.1rem)/1.1 var(--font-display); margin: 0; te
 <main class="wrap">
   <header>
     <h1>Birthday and Christmas countdown</h1>
-    <p class="sub">Tap each day once it's over to cross it off. The numbers count the days you haven't crossed off yet. When the big day arrives, tap it to celebrate.</p>
   </header>
 
   <section class="counters" aria-live="polite">
@@ -213,11 +228,15 @@ h1 { font: 800 clamp(1.5rem, 4vw, 2.1rem)/1.1 var(--font-display); margin: 0; te
     var today = midnight(new Date());
     var host = document.getElementById("months");
     var html = "";
-    [10, 11].forEach(function (m, idx) {
+    // This month plus the next one, never past the month Christmas falls in.
+    var curM = Math.min(Math.max(today.getMonth(), START.getMonth()), XMAS.getMonth());
+    var list = [curM];
+    if (curM < XMAS.getMonth()) list.push(curM + 1);
+    list.forEach(function (m) {
       var first = new Date(2026, m, 1);
       var count = new Date(2026, m + 1, 0).getDate();
       var offset = (first.getDay() + 6) % 7; // Monday first
-      html += '<div class="month"><h2>' + MONTHS[idx] + '</h2><div class="grid">';
+      html += '<div class="month"><h2>' + first.toLocaleDateString("en-GB", { month: "long" }) + '</h2><div class="grid">';
       ["M", "T", "W", "T", "F", "S", "S"].forEach(function (l) { html += '<div class="dow">' + l + '</div>'; });
       for (var i = 0; i < offset; i++) html += '<div class="day blank"></div>';
       for (var d = 1; d <= count; d++) {
