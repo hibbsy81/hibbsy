@@ -2,7 +2,7 @@
 Each team has a list of pages to try; the first that yields fixtures wins.
 Formula 1 session times come from the free Jolpica F1 calendar API (two requests: this year and next); Sky Sports F1 shows every session.
 If every page fails for a team, that team's existing fixtures are kept."""
-import json, re, sys, time, datetime as dt
+import json, re, sys, time, unicodedata, datetime as dt
 import urllib.robotparser
 from zoneinfo import ZoneInfo
 import requests
@@ -41,10 +41,16 @@ TEAM = {
     "en": lambda t: "England" in t and "Women" not in t and not re.search(r"\bU\d\d\b", t),
 }
 
+# One spelling per club, so each needs a single logo file and the same match from two teams' pages merges into one card.
+ALIAS = {"tottenham": "Tottenham Hotspur", "spurs": "Tottenham Hotspur", "west ham": "West Ham United",
+         "inter": "Inter Milan", "hacken": "Hacken"}
+
 def tidy(name):
     name = re.sub(r"\s*\(.*?\)\s*$", "", name).strip()
     name = name.replace("Manchester City", "Man City").replace("Manchester United", "Man Utd")
-    return re.sub(r"\s+Women$", "", name)
+    name = re.sub(r"\s+Women$", "", name)
+    plain = "".join(c for c in unicodedata.normalize("NFD", name) if not unicodedata.combining(c)).strip().lower()
+    return ALIAS.get(plain, name)
 
 def channels(line):
     """-> (names, unconfirmed) or None if the line isn't a channel line."""
@@ -205,6 +211,22 @@ def fetch_f1():
     print(f"f1: {len(out)} sessions in the next {F1_DAYS} days from the Jolpica calendar")
     return out, "api.jolpi.ca", True
 
+def refresh_fallback(updated, updated_iso, fixtures, now):
+    """Keep the built-in fallback copy in sports.html (used only if fixtures.json can't load) current: the next three weeks."""
+    try:
+        html = open("sports.html", encoding="utf-8").read()
+    except OSError:
+        return
+    cutoff = now + dt.timedelta(days=21)
+    snap = {"updated": updated, "fixtures": [f for f in fixtures if dt.datetime.fromisoformat(f["iso"]) <= cutoff],
+            "updated_iso": updated_iso}
+    text = json.dumps(snap).replace("</", "<\\/")
+    new, n = re.subn(r"^const EMBED=.*;$", lambda m: "const EMBED=" + text + ";", html, count=1, flags=re.M)
+    if n != 1:
+        print("::warning::fixtures: could not find the built-in fallback copy in sports.html", file=sys.stderr)
+    elif new != html:
+        open("sports.html", "w", encoding="utf-8").write(new)
+
 def main():
     try: prev = json.load(open("fixtures.json"))
     except Exception: prev = {}
@@ -212,7 +234,7 @@ def main():
     now = dt.datetime.now(LON)
     recent = lambda f: dt.datetime.fromisoformat(f["iso"]) > now - dt.timedelta(hours=3)
     load_robots()
-    new, health = [], {}
+    new, health, problems = [], {}, []
     for key in [*PAGES, "f1"]:
         ok = False
         if key == "f1":
@@ -225,6 +247,10 @@ def main():
         if key != "f1" and got and upcoming_before >= 4 and len(got) < upcoming_before / 2:
             print(f"::warning::fixtures: {key} returned only {len(got)} fixtures (had {upcoming_before}); keeping the previous ones in case the page layout changed")
             got = []
+        if not got and not ok and upcoming_before > 0:
+            problems.append(f"{key}: no usable fixtures (had {upcoming_before} upcoming)")
+        if key == "f1" and not ok:
+            problems.append("f1: the calendar could not be read")
         if got or ok:                     # F1 can legitimately have nothing left in the off-season
             new += got
             health[key] = {"last_ok_iso": now.isoformat(), "from": src, "count": len(got)}
@@ -233,8 +259,14 @@ def main():
             new += kept
             health[key] = {"last_ok_iso": old_health.get(key, {}).get("last_ok_iso"), "from": None, "count": len(kept)}
     new.sort(key=lambda f: f["iso"])
-    json.dump({"updated": now.strftime("%-d %b %Y, %H:%M"), "updated_iso": now.isoformat(), "health": health, "fixtures": new},
+    updated, updated_iso = now.strftime("%-d %b %Y, %H:%M"), now.isoformat()
+    json.dump({"updated": updated, "updated_iso": updated_iso, "health": health, "fixtures": new},
               open("fixtures.json", "w"), indent=1, ensure_ascii=False)
+    refresh_fallback(updated, updated_iso, new, now)
+    # A non-zero exit makes the GitHub Action show as failed (and email you). fixtures.json is still saved and committed first.
+    for msg in problems:
+        print(f"::error::fixtures: {msg}")
+    sys.exit(1 if problems else 0)
 
 if __name__ == "__main__":
     main()

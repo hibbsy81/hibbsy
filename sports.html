@@ -39,6 +39,10 @@ h1{font-size:24px;margin:0;letter-spacing:-.02em;text-align:center;line-height:1
 .crest img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;padding:12%;background:#fff}
 .crest.has span{display:none}
 .crest img.flag{padding:0;object-fit:cover}
+.ses{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:6px}
+.ses li{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:8px 12px;border-radius:10px;background:rgba(255,255,255,.06);font-size:15px;font-weight:600}
+.ses time{color:var(--mu);font-weight:700}
+.ses li.done{opacity:.5}
 .card{position:relative;background:linear-gradient(135deg,color-mix(in srgb,var(--c) 22%,var(--card)) 0,var(--card) 55%);border:1px solid var(--bd);border-radius:16px;padding:14px;margin-bottom:12px;overflow:hidden}
 .card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:linear-gradient(180deg,var(--c),var(--c2,var(--c)))}
 .crests{display:flex;flex:none}
@@ -151,8 +155,12 @@ function setUpd(j){
   el.className="upd"+(warn?" warn":"");
   el.textContent=msg;
 }
+// One spelling per club, so logos need one file each and the same match from two teams' pages merges into one card.
+const ALIAS={"tottenham":"Tottenham Hotspur","spurs":"Tottenham Hotspur","west ham":"West Ham United","inter":"Inter Milan","hacken":"Hacken"};
+const plain=n=>String(n).normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim();
+const canon=n=>ALIAS[plain(n).toLowerCase()]||n;
 function load(j,stale){
-  F=j.fixtures.map(f=>({t:f.t,iso:f.iso,d:new Date(f.iso),comp:f.comp,h:f.h,a:f.a,ch:f.ch||[],note:f.note||"",tbc:!!f.tbc,cc:f.cc||""})).filter(f=>T[f.t]);
+  F=j.fixtures.map(f=>({t:f.t,iso:f.iso,d:new Date(f.iso),comp:f.comp,h:canon(f.h),a:canon(f.a),ch:f.ch||[],note:f.note||"",tbc:!!f.tbc,cc:f.cc||""})).filter(f=>T[f.t]);
   document.getElementById("stale").textContent=stale?"Showing saved fixtures. Couldn’t load the latest.":"";
   setUpd(j);ready=true;lastSig="";render();
 }
@@ -196,9 +204,27 @@ const CHIP_ORDER=["f1","mc","li","en","aw","mu","cw","mw"];   // All, then F1 + 
 const names=f=>f.teams.map(k=>T[k].n.toUpperCase()).join(" · ");
 const cvars=f=>"--c:"+T[f.teams[0]].c+";--c2:"+T[f.teams[f.teams.length-1]].c;
 // One match followed through two teams (e.g. Arsenal v Chelsea) becomes a single card with both badges.
-function mergeDupes(list){
+// Formula 1: every session on the same day for the same Grand Prix becomes one card with a list of sessions.
+// The card follows the next session that hasn't finished; earlier ones that are over are dimmed.
+const sesHtml=f=>f.ses?'<ul class="ses">'+f.ses.map(s=>'<li'+(s.done?' class="done"':'')+'><span>'+esc(s.name)+'</span><time datetime="'+esc(s.iso)+'">'+(s.tbc?"Time TBC":clock(s))+'</time></li>').join("")+'</ul>':"";
+function f1Groups(list,now){
   const m=new Map();
-  list.forEach(f=>{
+  list.filter(f=>f.t==="f1").forEach(f=>{
+    const k=f.h+"|"+dayK(f.d);
+    if(!m.has(k))m.set(k,{base:f,ses:[]});
+    m.get(k).ses.push({name:String(f.comp).split(", ").slice(1).join(", ")||f.comp,d:f.d,iso:f.iso,tbc:f.tbc});
+  });
+  return [...m.values()].map(({base,ses})=>{
+    ses.sort((a,b)=>a.d-b.d);
+    const cur=ses.find(s=>status(s,now)!=="ft")||ses[ses.length-1];
+    ses.forEach(s=>{s.done=s.d<cur.d;});
+    const many=ses.length>1;
+    return Object.assign({},base,{teams:["f1"],ses:many?ses:null,d:cur.d,iso:cur.iso,tbc:cur.tbc,comp:many?"Formula 1":base.comp});
+  });
+}
+function mergeDupes(list,now){
+  const m=new Map();
+  list.filter(f=>f.t!=="f1").forEach(f=>{
     const k=f.iso+"|"+[f.h,f.a].map(s=>s.toLowerCase()).sort().join("|"),g=m.get(k);
     if(!g){m.set(k,Object.assign({},f,{teams:[f.t],ch:f.ch.slice()}));return;}
     if(!g.teams.includes(f.t))g.teams.push(f.t);
@@ -209,22 +235,22 @@ function mergeDupes(list){
   });
   const out=[...m.values()];
   out.forEach(g=>g.teams.sort((a,b)=>ORDER.indexOf(a)-ORDER.indexOf(b)));
-  return out;
+  return out.concat(f1Groups(list,now)).sort((a,b)=>a.d-b.d);
 }
 function hero(f,now){
   return '<section class="hero" style="'+cvars(f)+'" aria-label="Next match"><div class="hk">'+(status(f,now)==="live"?"LIVE NOW":"NEXT UP")+' · '+names(f)+'</div>'+
     '<div class="hrow"><div class="hcount">'+label(f,now)+'</div>'+matchCrests(f,52)+'</div>'+
     '<div class="hsub"><time datetime="'+esc(f.iso)+'">'+(f.tbc?"Time TBC":clock(f))+'</time> · '+esc(f.comp)+'</div>'+
-    '<div class="hvs">'+versus(f)+'</div><div class="ch">'+chanHtml(f)+'</div></section>';
+    '<div class="hvs">'+versus(f)+'</div>'+sesHtml(f)+'<div class="ch">'+chanHtml(f)+'</div></section>';
 }
 function render(){
   if(!ready)return;
   const now=new Date();
-  const all=mergeDupes(F.filter(f=>f.d>now-3*36e5&&(sel.size===0||sel.has(f.t))).sort((a,b)=>a.d-b.d));
+  const all=mergeDupes(F.filter(f=>f.d>now-3*36e5&&(sel.size===0||sel.has(f.t))).sort((a,b)=>a.d-b.d),now);
   heroF=all.find(f=>status(f,now)!=="ft")||null;
   shown=all.filter(f=>f!==heroF);
   // Rebuild the list only when something visible changes; otherwise just refresh the countdowns.
-  const sig="u|"+(heroF?heroF.teams.join()+heroF.iso+label(heroF,now)+status(heroF,now):"")+"|"+shown.map(f=>f.teams.join()+f.iso+label(f,now)+status(f,now)).join(";")+"|"+sel.size;
+  const sig="u|"+(heroF?heroF.teams.join()+heroF.iso+(heroF.ses?heroF.ses.length:"")+label(heroF,now)+status(heroF,now):"")+"|"+shown.map(f=>f.teams.join()+f.iso+(f.ses?f.ses.length:"")+label(f,now)+status(f,now)).join(";")+"|"+sel.size;
   if(sig===lastSig){
     listEl.querySelectorAll(".rel").forEach(el=>{el.innerHTML=relText(shown[+el.dataset.i],now);});
     return;
@@ -237,7 +263,7 @@ function render(){
     const head=mk!==last?'<h2 class="month">'+mk+'</h2>':"";last=mk;
     const note=f.ch.length&&f.note&&!/confirm/i.test(f.note)?'<div class="meta">'+esc(f.note)+'</div>':"";
     return head+'<article class="card" style="'+cvars(f)+'"><div class="top">'+matchCrests(f,40)+'<div class="who"><div class="tag">'+names(f)+'</div><div class="comp">'+esc(f.comp)+'</div></div><time class="when" datetime="'+esc(f.iso)+'"><b>'+label(f,now)+'</b><span>'+(f.tbc?"Time TBC":clock(f))+'</span></time></div>'+
-      '<div class="vs">'+versus(f)+'</div><div class="meta rel" data-i="'+i+'">'+relText(f,now)+'</div>'+note+'<div class="ch">'+chanHtml(f)+'</div></article>';
+      '<div class="vs">'+versus(f)+'</div>'+sesHtml(f)+'<div class="meta rel" data-i="'+i+'">'+relText(f,now)+'</div>'+note+'<div class="ch">'+chanHtml(f)+'</div></article>';
   }).join("");
 }
 function pressed(){document.querySelectorAll("#chips [data-k]").forEach(b=>{const k=b.dataset.k;
