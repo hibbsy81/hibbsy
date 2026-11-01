@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Countdown</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231E3A8A'/%3E%3Crect x='16' y='10' width='32' height='4' rx='2' fill='%23fff'/%3E%3Crect x='16' y='50' width='32' height='4' rx='2' fill='%23fff'/%3E%3Cpath d='M20 14H44C44 26 36 29 34 32C36 35 44 38 44 50H20C20 38 28 35 30 32C28 29 20 26 20 14Z' fill='%23DBEAFE'/%3E%3Cpath d='M24 17H40L33 27H31Z' fill='%23FBBF24'/%3E%3Crect x='31.2' y='29' width='1.6' height='12' fill='%23FBBF24'/%3E%3Cpath d='M24 49H40L32 40Z' fill='%23FBBF24'/%3E%3C/svg%3E">
+<style>
+:root{--bg:#F5F6FA;--card:#fff;--text:#14182B;--muted:#6B7184;--accent:#1E3A8A;--sand:#D97706;--border:#E1E4EE;--danger:#B42318;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#0F1220;--card:#181C30;--text:#EEF0F8;--muted:#9AA0B8;--accent:#93B4FF;--sand:#FBBF24;--border:#2A2F4A;--danger:#FF8A80}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#0F1220;--card:#181C30;--text:#EEF0F8;--muted:#9AA0B8;--accent:#93B4FF;--sand:#FBBF24;--border:#2A2F4A;--danger:#FF8A80}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.5}
+main{max-width:720px;margin:0 auto;padding:24px 16px 48px}
+header{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+h1{font-size:26px;margin:0;font-weight:600}
+form{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:10px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px}
+form label{display:flex;flex-direction:column;font-size:12px;color:var(--muted);gap:4px}
+input{font:inherit;font-size:15px;color:var(--text);background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 10px;min-width:0;width:100%}
+input:focus{outline:2px solid var(--accent);outline-offset:1px}
+button{font:inherit;cursor:pointer}
+.add{align-self:end;background:var(--accent);color:var(--bg);border:0;border-radius:8px;padding:10px 18px;font-weight:600}
+#err{color:var(--danger);font-size:13px;min-height:20px;margin:8px 4px 0}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-top:12px}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.name{font-size:18px;font-weight:600;overflow-wrap:anywhere}
+.when{font-size:13px;color:var(--muted)}
+.del{background:none;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:4px 10px;font-size:13px}
+.del:hover{color:var(--danger);border-color:var(--danger)}
+.units{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}
+.u{background:var(--bg);border-radius:10px;padding:10px 4px;text-align:center}
+.u b{display:block;font-size:28px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--accent)}
+.u span{font-size:12px;color:var(--muted)}
+.msg{margin-top:12px;font-size:16px;font-weight:600;color:var(--sand)}
+.past .name{color:var(--muted)}
+.empty{text-align:center;color:var(--muted);padding:40px 0}
+@media (max-width:600px){form{grid-template-columns:1fr 1fr}form label:first-child{grid-column:1/-1}.add{grid-column:1/-1}.u b{font-size:22px}}
+</style>
+</head>
+<body>
+<main>
+<header>
+<svg width="40" height="40" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#1E3A8A"/><rect x="16" y="10" width="32" height="4" rx="2" fill="#fff"/><rect x="16" y="50" width="32" height="4" rx="2" fill="#fff"/><path d="M20 14H44C44 26 36 29 34 32C36 35 44 38 44 50H20C20 38 28 35 30 32C28 29 20 26 20 14Z" fill="#DBEAFE"/><path d="M24 17H40L33 27H31Z" fill="#FBBF24"/><rect x="31.2" y="29" width="1.6" height="12" fill="#FBBF24"/><path d="M24 49H40L32 40Z" fill="#FBBF24"/></svg>
+<h1>Countdown</h1>
+</header>
+<form id="f">
+<label>Name<input id="n" maxlength="60" placeholder="Holiday, birthday…" autocomplete="off"></label>
+<label>Date<input id="d" type="date"></label>
+<label>Time (optional)<input id="t" type="time"></label>
+<button class="add" type="submit">Add</button>
+</form>
+<div id="err" role="alert"></div>
+<div id="list"></div>
+</main>
+<script>
+var KEY='countdowns.v1',items=[];
+try{items=JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){items=[]}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(items))}catch(e){}}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function pad(n){return String(n).padStart(2,'0')}
+function ts(it){return new Date(it.date+'T'+(it.time||'00:00')).getTime()}
+function fmt(it){var d=new Date(ts(it));var s=d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});return it.time?s+', '+it.time:s}
+function render(){
+var now=Date.now(),L=document.getElementById('list');
+if(!items.length){L.innerHTML='<div class="empty">No dates yet. Add one above to start counting down.</div>';return}
+var arr=items.map(function(it){return{it:it,t:ts(it)}});
+arr.sort(function(a,b){var ap=a.t<=now,bp=b.t<=now;if(ap!==bp)return ap?1:-1;return ap?b.t-a.t:a.t-b.t});
+L.innerHTML=arr.map(function(o){
+var diff=o.t-now,past=diff<=0,body;
+if(past){var days=Math.floor(-diff/864e5);body='<div class="msg">'+(days===0&&-diff<864e5&&new Date(o.t).toDateString()===new Date(now).toDateString()?'It’s here!':'Passed '+days+' day'+(days===1?'':'s')+' ago')+'</div>'}
+else{var s=Math.floor(diff/1000),d=Math.floor(s/86400),h=Math.floor(s%86400/3600),m=Math.floor(s%3600/60),sec=s%60;
+body='<div class="units"><div class="u"><b>'+d+'</b><span>days</span></div><div class="u"><b>'+pad(h)+'</b><span>hours</span></div><div class="u"><b>'+pad(m)+'</b><span>minutes</span></div><div class="u"><b>'+pad(sec)+'</b><span>seconds</span></div></div>'}
+return'<div class="card'+(past?' past':'')+'"><div class="top"><div><div class="name">'+esc(o.it.name)+'</div><div class="when">'+fmt(o.it)+'</div></div><button class="del" data-id="'+o.it.id+'" aria-label="Delete '+esc(o.it.name)+'">Delete</button></div>'+body+'</div>'}).join('')}
+document.getElementById('f').addEventListener('submit',function(e){
+e.preventDefault();
+var n=document.getElementById('n'),d=document.getElementById('d'),t=document.getElementById('t'),er=document.getElementById('err');
+if(!n.value.trim()){er.textContent='Give the countdown a name.';n.focus();return}
+if(!d.value){er.textContent='Pick a date.';d.focus();return}
+er.textContent='';
+items.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),name:n.value.trim(),date:d.value,time:t.value});
+save();n.value='';d.value='';t.value='';render();n.focus()});
+document.getElementById('list').addEventListener('click',function(e){
+var b=e.target.closest('.del');if(!b)return;
+items=items.filter(function(i){return i.id!==b.dataset.id});save();render()});
+render();setInterval(render,1000);
+</script>
+</body>
+</html>
