@@ -6,6 +6,13 @@
 <title>Countdown</title>
 <meta name="color-scheme" content="dark">
 <meta name="theme-color" content="#080e1a">
+<meta name="application-name" content="Countdown">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Countdown">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="countdown-manifest.webmanifest">
+<link rel="apple-touch-icon" href="countdown-apple-touch-icon.png">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232563EB'/%3E%3Cpath d='M20 14H44C44 26 36 29 34 32C36 35 44 38 44 50H20C20 38 28 35 30 32C28 29 20 26 20 14Z' fill='none' stroke='%23fff' stroke-width='3' stroke-linejoin='round'/%3E%3Cline x1='17' y1='12' x2='47' y2='12' stroke='%23fff' stroke-width='4' stroke-linecap='round'/%3E%3Cline x1='17' y1='52' x2='47' y2='52' stroke='%23fff' stroke-width='4' stroke-linecap='round'/%3E%3Cpath d='M26 48H38L32 40Z' fill='%23fff'/%3E%3Cpath d='M27 19H37L32 25Z' fill='%23fff'/%3E%3C/svg%3E">
 <style>
 :root{
@@ -99,6 +106,11 @@ input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(11
 .past .name,.past .msg{color:var(--muted)}
 .empty{padding:44px 0;text-align:center;color:var(--muted)}
 
+/* Installed web app: no burger menu, so the title needs no room for it */
+@media (display-mode:standalone){nav.menu{display:none}header{padding-right:0}}
+html.standalone nav.menu{display:none}
+html.standalone header{padding-right:0}
+
 @media (max-width:600px){
 	main{padding-left:max(14px,env(safe-area-inset-left,0px));padding-right:max(14px,env(safe-area-inset-right,0px))}
 	#openAdd{width:100%}
@@ -188,6 +200,11 @@ var it=items.filter(function(i){return i.id===b.dataset.id})[0];if(!it)return;
 pendingId=it.id;$('delName').textContent=it.name;$('ovDel').hidden=false;$('cancelDel').focus()});
 $('confirmDel').addEventListener('click',function(){
 items=items.filter(function(i){return i.id!==pendingId});save();closeDel();render()});
+
+/* Installed web app (iPhone home-screen app reports navigator.standalone) */
+if(window.navigator.standalone===true||(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)){document.documentElement.classList.add('standalone')}
+/* Offline support (only registers when served over https) */
+if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('countdown-sw.js').catch(function(){})})}
 
 render();setInterval(render,30000);
 </script>
