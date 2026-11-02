@@ -124,7 +124,7 @@ html.standalone header{padding-right:0}
 @media (max-width:600px){
 	#ovAdd{align-items:flex-start;padding-top:calc(env(safe-area-inset-top,0px) + 56px)}
 	main{padding-left:max(14px,env(safe-area-inset-left,0px));padding-right:max(14px,env(safe-area-inset-right,0px))}
-	.u{flex:1 1 0;min-width:0}
+	.u{flex:0 1 auto;min-width:110px}
 }
 </style>
 <script src="menu.js?v=17" defer></script>
@@ -180,8 +180,8 @@ var arr=items.map(function(it){var t=ts(it);return{it:it,t:t,cat:t>now?1:(new Da
 arr.sort(function(a,b){if(a.cat!==b.cat)return a.cat-b.cat;return a.cat===2?b.t-a.t:a.t-b.t});
 L.innerHTML=arr.map(function(o){
 var body,past=o.cat===2;
-if(o.cat===1){var s=Math.floor((o.t-now)/1000),d=Math.floor(s/86400),h=Math.floor(s%86400/3600);
-body='<div class="units"><div class="u"><b>'+d+'</b><span>'+(d===1?'day':'days')+'</span></div><div class="u"><b>'+h+'</b><span>'+(h===1?'hour':'hours')+'</span></div></div>'}
+if(o.cat===1){var d=Math.round((o.t-new Date(now).setHours(0,0,0,0))/864e5);
+body='<div class="units"><div class="u"><b>'+d+'</b><span>'+(d===1?'day':'days')+'</span></div></div>'}
 else if(o.cat===0){body='<div class="msg">It’s today!</div>'}
 else{var n=Math.floor((now-o.t)/864e5);body='<div class="msg">Passed '+n+' day'+(n===1?'':'s')+' ago</div>'}
 var cls=(past?' past':'')+(isXmas(o.it)?' xmas':(isBday(o.it)?' bday':(isPlane(o.it)?' plane':'')));
