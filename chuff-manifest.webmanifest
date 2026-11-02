@@ -1,6 +1,6 @@
 {
-  "name": "Countdown",
-  "short_name": "Countdown",
+  "name": "Chuff Chart",
+  "short_name": "Chuff Chart",
   "description": "Count down the days and hours to your events.",
   "start_url": "chuff.html",
   "scope": "./",

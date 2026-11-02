@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<title>Countdown</title>
+<title>Chuff Chart</title>
 <meta name="color-scheme" content="dark">
 <meta name="theme-color" content="#080e1a">
-<meta name="application-name" content="Countdown">
+<meta name="application-name" content="Chuff Chart">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Countdown">
+<meta name="apple-mobile-web-app-title" content="Chuff Chart">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="manifest" href="chuff-manifest.webmanifest">
 <link rel="apple-touch-icon" href="chuff-apple-touch-icon.png">
@@ -97,6 +97,7 @@ input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(11
 	background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'%3E%3Cg opacity='.26'%3E%3Crect x='6' y='68' width='68' height='6' rx='3' fill='%23CBD5E1'/%3E%3Crect x='12' y='46' width='56' height='22' rx='5' fill='%23F472B6'/%3E%3Crect x='12' y='46' width='56' height='7' rx='3.5' fill='%23FBCFE8'/%3E%3Crect x='22' y='30' width='36' height='16' rx='5' fill='%23F9A8D4'/%3E%3Crect x='22' y='30' width='36' height='6' rx='3' fill='%23FBCFE8'/%3E%3Crect x='31' y='16' width='4' height='14' rx='1.5' fill='%2393C5FD'/%3E%3Crect x='45' y='16' width='4' height='14' rx='1.5' fill='%2393C5FD'/%3E%3Cellipse cx='33' cy='11' rx='3.5' ry='5.5' fill='%23FBBF24'/%3E%3Cellipse cx='47' cy='11' rx='3.5' ry='5.5' fill='%23FBBF24'/%3E%3C/g%3E%3C/svg%3E");
 	background-repeat:no-repeat;background-position:right 10px center;background-size:auto 88%;
 }
+.card.plane{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cg opacity='.2' fill='%23BFDBFE' transform='translate(32 32) rotate(35) scale(.82) translate(-32 -32)'%3E%3Cpath d='M32 4C35 4 36 10 36 16V50L32 58L28 50V16C28 10 29 4 32 4Z'/%3E%3Cpolygon points='36,24 60,40 60,45 36,38'/%3E%3Cpolygon points='28,24 4,40 4,45 28,38'/%3E%3Cpolygon points='36,48 46,56 46,59 36,55'/%3E%3Cpolygon points='28,48 18,56 18,59 28,55'/%3E%3C/g%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 6px center;background-size:auto 100%}
 .card.bday .u{background:rgba(0,0,0,.22)}
 .card.bday .u b{color:#f9a8d4}
 .top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;min-width:0}
@@ -116,6 +117,8 @@ input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(11
 /* Installed web app: no burger menu, so the title needs no room for it */
 @media (display-mode:standalone){nav.menu{display:none}header{padding-right:0}}
 html.standalone nav.menu{display:none}
+@media (display-mode:standalone){.fab{bottom:max(14px,calc(env(safe-area-inset-bottom,0px) - 10px))}}
+html.standalone .fab{bottom:max(14px,calc(env(safe-area-inset-bottom,0px) - 10px))}
 html.standalone header{padding-right:0}
 
 @media (max-width:600px){
@@ -130,7 +133,7 @@ html.standalone header{padding-right:0}
 <main>
 <header>
 <svg width="40" height="40" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#2563EB"/><rect x="13" y="15" width="38" height="36" rx="6" fill="none" stroke="#fff" stroke-width="3"/><line x1="13" y1="27" x2="51" y2="27" stroke="#fff" stroke-width="3"/><line x1="22" y1="10" x2="22" y2="19" stroke="#fff" stroke-width="4" stroke-linecap="round"/><line x1="42" y1="10" x2="42" y2="19" stroke="#fff" stroke-width="4" stroke-linecap="round"/><circle cx="23" cy="35" r="2.2" fill="#fff"/><circle cx="32" cy="35" r="2.2" fill="#fff"/><circle cx="41" cy="35" r="2.2" fill="#fff"/><circle cx="23" cy="43" r="2.2" fill="#fff"/><circle cx="32" cy="43" r="2.2" fill="#fff"/><circle cx="41" cy="43" r="3.6" fill="#fff"/></svg>
-<h1>Countdown</h1>
+<h1>Chuff Chart</h1>
 </header>
 <button class="fab" id="openAdd" type="button" aria-label="Add countdown"></button>
 <div id="list"></div>
@@ -168,6 +171,7 @@ function ts(it){return new Date(it.date+'T00:00').getTime()}
 function fmt(it){return new Date(ts(it)).toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}
 function isXmas(it){return /christmas|xmas/i.test(it.name)||/-12-25$/.test(it.date)}
 function isBday(it){return /birthday|b-?day/i.test(it.name)}
+function isPlane(it){return /british\s*airways/i.test(it.name)}
 function render(){
 var now=Date.now(),L=$('list');
 if(!items.length){L.innerHTML='<div class="empty">No dates yet. Tap the + button to start.</div>';return}
@@ -180,7 +184,7 @@ if(o.cat===1){var s=Math.floor((o.t-now)/1000),d=Math.floor(s/86400),h=Math.floo
 body='<div class="units"><div class="u"><b>'+d+'</b><span>'+(d===1?'day':'days')+'</span></div><div class="u"><b>'+h+'</b><span>'+(h===1?'hour':'hours')+'</span></div></div>'}
 else if(o.cat===0){body='<div class="msg">It’s today!</div>'}
 else{var n=Math.floor((now-o.t)/864e5);body='<div class="msg">Passed '+n+' day'+(n===1?'':'s')+' ago</div>'}
-var cls=(past?' past':'')+(isXmas(o.it)?' xmas':(isBday(o.it)?' bday':''));
+var cls=(past?' past':'')+(isXmas(o.it)?' xmas':(isBday(o.it)?' bday':(isPlane(o.it)?' plane':'')));
 return'<div class="card'+cls+'"><div class="top"><div><div class="name">'+esc(o.it.name)+'</div><div class="when">'+fmt(o.it)+'</div></div><button class="x" type="button" data-id="'+o.it.id+'" aria-label="Remove '+esc(o.it.name)+'">×</button></div>'+body+'</div>'}).join('')}
 
 function openAdd(){$('err').textContent='';$('ovAdd').hidden=false;$('n').focus()}
