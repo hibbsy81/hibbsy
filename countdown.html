@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Numbers Round</title>
+<link rel="icon" href="countdown-favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=Share+Tech+Mono&display=swap">
+<link rel="stylesheet" href="countdown.css">
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>Numbers Round</h1>
+    <p class="tagline">Six tiles, one target, thirty seconds.</p>
+  </header>
+
+  <section class="panel setup" id="setup" aria-label="Choose the numbers">
+    <div class="grow">
+      <p class="label" id="seg-label">Large numbers</p>
+      <div class="seg" role="group" aria-labelledby="seg-label" id="seg"></div>
+      <p class="hint">Large: 25, 50, 75, 100. Small: 1 to 10, two of each.</p>
+    </div>
+    <button class="btn primary" id="deal" type="button">Deal new numbers</button>
+  </section>
+
+  <section class="panel board" id="board" aria-label="Game board">
+    <div class="readout">
+      <div class="led" id="led" role="img" aria-label="Target not set">
+        <span class="led-label">Target</span>
+        <div class="led-num" aria-hidden="true"><span class="ghost">888</span><span class="val" id="target">---</span></div>
+      </div>
+      <div class="clock" id="clock" role="timer" aria-label="Time left">
+        <svg viewBox="0 0 100 100" aria-hidden="true">
+          <circle class="track" cx="50" cy="50" r="44"></circle>
+          <circle class="arc" id="arc" cx="50" cy="50" r="44" transform="rotate(-90 50 50)"></circle>
+        </svg>
+        <span class="secs" id="secs">30</span>
+      </div>
+    </div>
+
+    <div class="tiles" id="tiles"></div>
+
+    <div class="ops" id="ops" role="group" aria-label="Operators">
+      <button class="op" type="button" data-op="+" aria-label="Add" aria-keyshortcuts="+">+</button>
+      <button class="op" type="button" data-op="-" aria-label="Subtract" aria-keyshortcuts="-">&minus;</button>
+      <button class="op" type="button" data-op="*" aria-label="Multiply" aria-keyshortcuts="*">&times;</button>
+      <button class="op" type="button" data-op="/" aria-label="Divide" aria-keyshortcuts="/">&divide;</button>
+    </div>
+
+    <div class="actions">
+      <button class="btn" type="button" id="undo">Undo</button>
+      <button class="btn" type="button" id="reset">Start over</button>
+      <button class="btn primary main" type="button" id="main">Start the clock</button>
+    </div>
+
+    <div class="work">
+      <div class="work-head">
+        <p class="label">Working</p>
+        <span class="closest" id="closest">Closest: none</span>
+      </div>
+      <ol class="log" id="log"></ol>
+      <p class="msg" id="msg" role="status"></p>
+    </div>
+  </section>
+
+  <section class="panel result" id="result" aria-label="Round result" hidden></section>
+
+  <details class="rules">
+    <summary>Rules and keys</summary>
+    <ul>
+      <li>Combine any two tiles with + &minus; &times; &divide;. The answer replaces them and can be used again.</li>
+      <li>Every step must give a positive whole number. Each tile can be used once.</li>
+      <li>When the clock stops you can keep entering your working. Press Submit when you are done.</li>
+      <li>Score 10 points for the exact target, 7 points within 5, and 5 points within 10.</li>
+      <li>Keys: <kbd>1</kbd> to <kbd>6</kbd> pick a tile, <kbd>+</kbd> <kbd>-</kbd> <kbd>*</kbd> <kbd>/</kbd> pick an operator, <kbd>Backspace</kbd> undoes, <kbd>Enter</kbd> starts the clock or declares.</li>
+    </ul>
+  </details>
+
+  <footer class="foot">
+    <span id="tally">No rounds played yet</span>
+    <button class="btn quiet" type="button" id="clear">Clear tally</button>
+  </footer>
+</div>
+<script src="countdown.js"></script>
+</body>
+</html>
