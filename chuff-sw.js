@@ -1,9 +1,9 @@
-/* Countdown service worker.
+/* Chuff service worker.
    Only touches the countdown app's own files, so the rest of the site (index, para, sports, cards...) is never cached or intercepted.
    Network first, so updates show straight away when online; falls back to the saved copy offline.
    Bump CACHE to force every device to refresh its saved files. */
-var CACHE = 'countdown-v1';
-var FILES = ['countdown.html', 'menu.js', 'menu.css', 'countdown-manifest.webmanifest', 'countdown-icon-192.png', 'countdown-icon-512.png', 'countdown-icon-maskable-512.png', 'countdown-apple-touch-icon.png'];
+var CACHE = 'chuff-v1';
+var FILES = ['chuff.html', 'menu.js', 'menu.css', 'chuff-manifest.webmanifest', 'chuff-icon-192.png', 'chuff-icon-512.png', 'chuff-icon-maskable-512.png', 'chuff-apple-touch-icon.png'];
 
 self.addEventListener('install', function (e) {
   e.waitUntil(caches.open(CACHE).then(function (c) {
