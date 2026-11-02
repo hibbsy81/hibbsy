@@ -25,7 +25,7 @@
 	--border:rgba(148,170,210,.17);
 	--danger:#ff8c75;
 	--menu-ink:#eaf0fa;
-	--menu-accent:#4ade80;
+	--menu-accent:#6ea8ff;
 	--menu-glass:rgba(24,32,52,.78);
 	--menu-line:rgba(255,255,255,.10);
 	--menu-hover:rgba(255,255,255,.07);
@@ -95,9 +95,12 @@ input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(11
 .card.xmas .u{background:rgba(0,0,0,.22)}
 .card.xmas .u b{color:#86efac}
 .card.bday{
+	background-color:rgba(122,30,78,.64);border-color:rgba(244,114,182,.34);
 	background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'%3E%3Cg opacity='.26'%3E%3Crect x='6' y='68' width='68' height='6' rx='3' fill='%23CBD5E1'/%3E%3Crect x='12' y='46' width='56' height='22' rx='5' fill='%23F472B6'/%3E%3Crect x='12' y='46' width='56' height='7' rx='3.5' fill='%23FBCFE8'/%3E%3Crect x='22' y='30' width='36' height='16' rx='5' fill='%23F9A8D4'/%3E%3Crect x='22' y='30' width='36' height='6' rx='3' fill='%23FBCFE8'/%3E%3Crect x='31' y='16' width='4' height='14' rx='1.5' fill='%2393C5FD'/%3E%3Crect x='45' y='16' width='4' height='14' rx='1.5' fill='%2393C5FD'/%3E%3Cellipse cx='33' cy='11' rx='3.5' ry='5.5' fill='%23FBBF24'/%3E%3Cellipse cx='47' cy='11' rx='3.5' ry='5.5' fill='%23FBBF24'/%3E%3C/g%3E%3C/svg%3E");
 	background-repeat:no-repeat;background-position:right 10px center;background-size:auto 88%;
 }
+.card.bday .u{background:rgba(0,0,0,.22)}
+.card.bday .u b{color:#f9a8d4}
 .top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;min-width:0}
 .top>div:first-child{min-width:0}
 .name{font-size:18px;font-weight:600;overflow-wrap:anywhere}
@@ -139,7 +142,7 @@ html.standalone header{padding-right:0}
 <h2 id="addT">New countdown</h2>
 <form id="f" autocomplete="off">
 <div class="fields">
-<label>Name<input id="n" name="event-title" maxlength="60" autocomplete="off" autocorrect="off" spellcheck="false" data-lpignore="true"></label>
+<label>Event<input id="n" type="text" name="cd-event-label" maxlength="60" inputmode="text" enterkeyhint="done" autocomplete="off" aria-autocomplete="none" autocorrect="off" autocapitalize="sentences" spellcheck="false" data-lpignore="true" data-1p-ignore data-form-type="other"></label>
 <label>Date<input id="d" type="date"></label>
 </div>
 <div id="err" role="alert"></div>
