@@ -1,6 +1,6 @@
 /* Shared hamburger menu.
    Add it to any page with one line (in <head> or before </body>):
-       <script src="menu.js?v=16" defer></script>
+       <script src="menu.js?v=19" defer></script>
    Bump the ?v= number whenever menu.js or menu.css changes.
    To add or rename a link, edit the `items` list below. */
 (function () {
@@ -11,10 +11,9 @@
   var items = [
     { label: 'Home',             href: 'index.html' },
     { label: 'DZ Wind Forecast', href: 'para.html' },
-    { label: 'Sports Fixtures', href: 'sports.html' },
-   { label: 'Hearts Scorecard', href: 'cards.html' },
-       { label: 'Countdown', href: 'countdown.html' },
-      { label: 'Chuff Chart', href: 'chuff.html' },
+    { label: 'Sports Fixtures',  href: 'sports.html' },
+    { label: 'Hearts Scorecard', href: 'cards.html' },
+    { label: 'Countdown Numbers', href: 'countdown.html' },
     { label: 'Webmail',          href: 'https://webmail.hibbs.org.uk/' }
   ];
 

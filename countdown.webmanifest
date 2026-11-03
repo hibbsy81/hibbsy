@@ -1,6 +1,6 @@
 {
-  "name": "Numbers Round",
-  "short_name": "Numbers",
+  "name": "Countdown Numbers",
+  "short_name": "Countdown",
   "description": "A six-tile, thirty-second numbers game.",
   "start_url": "./countdown.html",
   "scope": "./",

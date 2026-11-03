@@ -24,7 +24,7 @@
   // init | choose | dealing | ready | playing | timeup | over
   // timeup: the clock has stopped but the player can still enter their working, then submit.
   var phase = 'init';
-  var bigCount = 2;
+  var bigCount = 0;
   var tiles = [null, null, null, null, null, null];
   var startNums = [];
   var target = 0;
@@ -385,7 +385,8 @@
   }
 
   // ---------- new game ----------
-  // Restart from scratch: stop the clock, wipe the round, the tally and the large-number choice, deal afresh.
+  // Restart from scratch: stop the clock, wipe the round, the tally and the large-number choice (back to 0).
+  // The board is left empty with the target at ---, and the player deals when ready.
   function disarmNew() { newArmed = false; clearTimeout(newTimer); }
   function newGame() {
     if (phase === 'dealing') return;
@@ -400,11 +401,11 @@
     clearInterval(timerId);
     tally = { rounds: 0, points: 0 };
     saveTally();
-    bigCount = 2;
-    phase = 'init';
+    bigCount = 0;
+    phase = 'choose';
     resetRound();
+    renderAll();
     renderTally();
-    deal(true);
     window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
   }
 
