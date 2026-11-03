@@ -160,7 +160,7 @@
     if (errorMsg) { msgEl.textContent = errorMsg; msgEl.className = 'msg err'; return; }
     msgEl.className = 'msg';
     var t = '';
-    if (phase === 'choose') t = 'Choose how many large numbers, then deal.';
+    if (phase === 'choose' || phase === 'init') t = 'Choose how many large numbers, then deal.';
     else if (phase === 'ready') t = 'Check the numbers, then start the clock.';
     else if (phase === 'dealing') t = 'Dealing.';
     else if (phase === 'playing') t = sel === null ? 'Pick a number.' : op === null ? 'Now pick an operator.' : 'Now pick the second number.';
@@ -173,7 +173,7 @@
   function renderControls() {
     var live = active();
     document.body.setAttribute('data-phase', phase);
-    setupEl.hidden = !(phase === 'ready' || phase === 'dealing' || phase === 'choose');
+    setupEl.hidden = !(phase === 'init' || phase === 'ready' || phase === 'dealing' || phase === 'choose');
     segLabel.textContent = phase === 'choose' ? 'Large numbers for this round' : 'Large numbers';
     dealBtn.textContent = phase === 'choose' ? 'Deal numbers' : 'Deal new numbers';
     dealBtn.disabled = phase === 'dealing';
@@ -189,7 +189,7 @@
     });
     undoBtn.disabled = !live || !undoStack.length;
     resetBtn.disabled = !live || !undoStack.length;
-    mainBtn.hidden = phase === 'over' || phase === 'choose';
+    mainBtn.hidden = phase === 'over' || phase === 'choose' || phase === 'init';
     mainBtn.disabled = phase === 'dealing';
     newBtn.disabled = phase === 'dealing';
     newBtn.textContent = newArmed ? 'Tap again to restart' : 'New game';
@@ -402,7 +402,7 @@
     tally = { rounds: 0, points: 0 };
     saveTally();
     bigCount = 0;
-    phase = 'choose';
+    phase = 'init';
     resetRound();
     renderAll();
     renderTally();
@@ -505,8 +505,9 @@
     else if (k === 'Escape') { sel = null; op = null; errorMsg = ''; renderAll(); }
   });
 
+  // The page opens with an empty board and the target at ---; nothing is dealt until Deal new numbers is pressed.
+  renderAll();
   renderTally();
-  deal(true);
 
   if (window.navigator.standalone === true) document.documentElement.classList.add('app');
 
