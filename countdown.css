@@ -24,6 +24,13 @@
   --font-display: 'Barlow Condensed', 'Arial Narrow', 'Helvetica Neue', sans-serif;
   --font-body: 'Barlow', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-led: 'Share Tech Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  /* Hibbs menu (menu.js / menu.css): colours follow this page's theme */
+  --menu-ink: var(--ink);
+  --menu-accent: var(--amber);
+  --menu-glass: color-mix(in srgb, var(--panel) 82%, transparent);
+  --menu-line: color-mix(in srgb, var(--ink) 10%, transparent);
+  --menu-hover: color-mix(in srgb, var(--ink) 7%, transparent);
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
@@ -74,7 +81,7 @@ body {
 .wrap > * { min-width: 0; }
 [hidden] { display: none !important; }
 
-header.top { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 2px 16px; }
+header.top { padding-right: 58px; /* clear of the menu button */ display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 2px 16px; }
 h1 {
   margin: 0;
   font: 700 clamp(2rem, 8vw, 2.8rem)/1 var(--font-display);
@@ -213,6 +220,13 @@ button:focus-visible, summary:focus-visible { outline: 3px solid var(--amber); o
 .solver p { margin: 6px 0 0; }
 .result .again { margin-top: 16px; }
 
+/* Installed web app: no site menu, so the title needs no room for the button */
+.app nav.menu { display: none !important; }
+.app header.top { padding-right: 0; }
+@media (display-mode: standalone) { nav.menu { display: none !important; } header.top { padding-right: 0; } }
+
+.foot-btns { display: flex; align-items: center; gap: 4px 12px; }
+.btn.quiet.danger { color: var(--bad); }
 footer.foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 16px; color: var(--muted); font-size: 0.9rem; }
 details.rules { color: var(--muted); font-size: 0.92rem; }
 details.rules summary { cursor: pointer; font-weight: 600; color: var(--ink); width: fit-content; }

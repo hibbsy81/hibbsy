@@ -14,6 +14,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=Share+Tech+Mono&display=swap">
 <link rel="stylesheet" href="countdown.css">
+<script>/* Installed web app: mark the page so the site menu can be hidden. */(function(){try{if(navigator.standalone||(window.matchMedia&&matchMedia("(display-mode: standalone)").matches))document.documentElement.classList.add("app");}catch(e){}})();</script>
+<script src="menu.js?v=18" defer></script>
 </head>
 <body>
 <div class="wrap">
@@ -57,7 +59,7 @@
 
     <div class="actions">
       <button class="btn" type="button" id="undo">Undo</button>
-      <button class="btn" type="button" id="reset">Start over</button>
+      <button class="btn" type="button" id="reset">Clear working</button>
       <button class="btn primary main" type="button" id="main">Start the clock</button>
     </div>
 
@@ -86,7 +88,10 @@
 
   <footer class="foot">
     <span id="tally">No rounds played yet</span>
-    <button class="btn quiet" type="button" id="clear">Clear tally</button>
+    <span class="foot-btns">
+      <button class="btn quiet" type="button" id="clear">Clear tally</button>
+      <button class="btn quiet danger" type="button" id="newgame">New game</button>
+    </span>
   </footer>
 </div>
 <script src="countdown.js"></script>

@@ -1,6 +1,6 @@
 // Offline support for countdown.html. Only the game's own files and its Google Fonts are handled;
 // every other request in this folder (for example index.html) goes straight to the network.
-var VERSION = 'countdown-v1';
+var VERSION = 'countdown-v2';
 var CORE = [
   'countdown.html',
   'countdown.css',
@@ -10,7 +10,9 @@ var CORE = [
   'countdown-icon-192.png',
   'countdown-icon-512.png',
   'countdown-icon-maskable-512.png',
-  'countdown-apple-touch-icon.png'
+  'countdown-apple-touch-icon.png',
+  'menu.js',
+  'menu.css'
 ];
 var FONT_HOSTS = ['fonts.googleapis.com', 'fonts.gstatic.com'];
 var BASE = new URL('./', self.location).href;
@@ -19,7 +21,10 @@ var CORE_URLS = CORE.map(function (p) { return new URL(p, BASE).href; });
 self.addEventListener('install', function (e) {
   e.waitUntil(
     caches.open(VERSION)
-      .then(function (c) { return c.addAll(CORE); })
+      .then(function (c) {
+        // one missing file (for example menu.css) must not stop the install
+        return Promise.all(CORE.map(function (f) { return c.add(f).catch(function () {}); }));
+      })
       .then(function () { return self.skipWaiting(); })
   );
 });

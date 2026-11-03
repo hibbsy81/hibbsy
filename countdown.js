@@ -14,7 +14,7 @@
   var closestEl = $('closest'), targetEl = $('target'), ledEl = $('led');
   var arc = $('arc'), secsEl = $('secs'), clockEl = $('clock');
   var undoBtn = $('undo'), resetBtn = $('reset'), mainBtn = $('main');
-  var resultEl = $('result'), tallyEl = $('tally'), clearBtn = $('clear');
+  var resultEl = $('result'), tallyEl = $('tally'), clearBtn = $('clear'), newBtn = $('newgame');
   var opEls = Array.prototype.slice.call(opsBox.querySelectorAll('.op'));
 
   var CIRC = 2 * Math.PI * 44;
@@ -35,6 +35,7 @@
   var buzzer = null;
   var errorMsg = '';
   var tally = loadTally();
+  var newArmed = false, newTimer = null;   // New game asks for a second tap when there is something to lose
 
   function active() { return phase === 'playing' || phase === 'timeup'; }
 
@@ -190,6 +191,8 @@
     resetBtn.disabled = !live || !undoStack.length;
     mainBtn.hidden = phase === 'over' || phase === 'choose';
     mainBtn.disabled = phase === 'dealing';
+    newBtn.disabled = phase === 'dealing';
+    newBtn.textContent = newArmed ? 'Tap again to restart' : 'New game';
     mainBtn.textContent = phase === 'playing' ? 'Declare' : phase === 'timeup' ? 'Submit' : 'Start the clock';
   }
   function renderTally() {
@@ -381,6 +384,30 @@
     restore(first);
   }
 
+  // ---------- new game ----------
+  // Restart from scratch: stop the clock, wipe the round, the tally and the large-number choice, deal afresh.
+  function disarmNew() { newArmed = false; clearTimeout(newTimer); }
+  function newGame() {
+    if (phase === 'dealing') return;
+    var atStake = tally.rounds > 0 || active() || phase === 'over';
+    if (atStake && !newArmed) {
+      newArmed = true;
+      renderControls();
+      newTimer = setTimeout(function () { disarmNew(); renderControls(); }, 4000);
+      return;
+    }
+    disarmNew();
+    clearInterval(timerId);
+    tally = { rounds: 0, points: 0 };
+    saveTally();
+    bigCount = 2;
+    phase = 'init';
+    resetRound();
+    renderTally();
+    deal(true);
+    window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
+  }
+
   // ---------- finishing ----------
   function finish(reason) {
     if (!active()) return;
@@ -457,6 +484,7 @@
     else if (active()) finish('declared');
   });
   dealBtn.addEventListener('click', function () { deal(false); });
+  newBtn.addEventListener('click', newGame);
   clearBtn.addEventListener('click', function () { tally = { rounds: 0, points: 0 }; saveTally(); renderTally(); });
 
   document.addEventListener('keydown', function (e) {
@@ -478,6 +506,8 @@
 
   renderTally();
   deal(true);
+
+  if (window.navigator.standalone === true) document.documentElement.classList.add('app');
 
   if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
     window.addEventListener('load', function () {
