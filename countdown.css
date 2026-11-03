@@ -81,8 +81,8 @@
 }
 
 * { box-sizing: border-box; }
-/* No double-tap zoom, and no accidental text selection from fast tapping */
-html, body, button, summary { touch-action: manipulation; }
+/* No pinch zoom or double-tap zoom (scrolling still works), and no accidental text selection from fast tapping */
+html, body, button, summary { touch-action: pan-x pan-y; }
 button, summary, .tile { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
 body {
   margin: 0;
@@ -152,8 +152,14 @@ button:focus-visible, summary:focus-visible { outline: 3px solid var(--amber); o
 }
 
 /* setup */
-.setup { display: flex; flex-wrap: wrap; align-items: end; gap: 12px 20px; }
-.setup .grow { flex: 1 1 260px; min-width: 0; display: grid; gap: 8px; }
+.setup { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 20px; }
+.setup .grow { flex: 0 1 auto; min-width: 0; display: grid; gap: 8px; }
+/* Deal button: fills the rest of the row, centred vertically in the card (wraps to a full-width row when space is tight) */
+#deal { flex: 1 1 220px; align-self: center; height: 56px; font-size: 1.05rem; }
+@media (max-width: 639px) {
+  .setup .grow { flex: 1 1 100%; }
+  #deal { flex: 1 1 100%; }
+}
 .seg { display: inline-flex; gap: 4px; padding: 4px; width: fit-content; background: var(--bg); border: 1px solid var(--line); border-radius: 999px; }
 .seg button {
   min-width: 48px; height: 44px; border: 0; border-radius: 999px; background: transparent; cursor: pointer;
@@ -238,7 +244,13 @@ button:focus-visible, summary:focus-visible { outline: 3px solid var(--amber); o
 .actions .main { margin-left: auto; min-width: 168px; }
 
 .work-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 16px; }
-.closest { font-weight: 600; font-variant-numeric: tabular-nums; }
+.closest { font-weight: 700; font-variant-numeric: tabular-nums; color: var(--amber); }
+
+/* Start the clock is green (other states of the main button stay blue) */
+body[data-phase="ready"] .btn.primary.main {
+  background: linear-gradient(180deg, #34c27a, #1f9d57);
+  box-shadow: 0 8px 20px rgba(31, 157, 87, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
 .log, .steps { margin: 8px 0 0; padding-left: 1.7em; font-size: 1.05rem; font-variant-numeric: tabular-nums; }
 .log { min-height: 3.2em; }
 .log li, .steps li { padding: 1px 0; overflow-wrap: anywhere; }

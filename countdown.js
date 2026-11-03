@@ -126,6 +126,10 @@
       b.setAttribute('aria-pressed', sel === i ? 'true' : 'false');
     }
   }
+  // No pinch zoom (older iPhones need this on top of the CSS)
+  ['gesturestart', 'gesturechange', 'gestureend'].forEach(function (n) {
+    document.addEventListener(n, function (e) { e.preventDefault(); });
+  });
   function renderWork() {
     logEl.innerHTML = '';
     if (!steps.length) {
@@ -142,9 +146,10 @@
         logEl.appendChild(li);
       });
     }
+    // "x away" only appears once the first line of working has been entered
     var c = closestTile();
-    if (c === null) closestEl.textContent = 'Closest: none';
-    else closestEl.textContent = c.diff === 0 ? 'Exact: ' + c.v : 'Closest: ' + c.v + ', ' + c.diff + ' away';
+    closestEl.hidden = !steps.length || c === null;
+    if (!closestEl.hidden) closestEl.textContent = c.diff === 0 ? 'Exact' : c.diff + ' away';
   }
   function closestTile() {
     if (!target) return null;
