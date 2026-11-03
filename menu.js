@@ -13,7 +13,7 @@
     { label: 'DZ Wind Forecast', href: 'para.html' },
     { label: 'Sports Fixtures',  href: 'sports.html' },
     { label: 'Hearts Scorecard', href: 'cards.html' },
-    { label: 'Countdown Numbers', href: 'countdown.html' },
+    { label: 'Countdown', href: 'countdown.html' },
     { label: 'Chuff Chart',      href: 'chuff.html' },
     { label: 'Webmail',          href: 'https://webmail.hibbs.org.uk/' }
   ];
