@@ -21,6 +21,7 @@
   --led-ghost: #1a1a14;
   --led-dim: #8596a5;
   --led-glow: rgba(255, 178, 36, 0.4);
+  --font-title: 'Bricolage Grotesque', 'Avenir Next', 'Segoe UI', system-ui, sans-serif;
   --font-display: 'Barlow Condensed', 'Arial Narrow', 'Helvetica Neue', sans-serif;
   --font-body: 'Barlow', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-led: 'Share Tech Mono', ui-monospace, 'SF Mono', Menlo, monospace;
@@ -84,9 +85,8 @@ body {
 header.top { padding-right: 58px; /* clear of the menu button */ display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 2px 16px; }
 h1 {
   margin: 0;
-  font: 700 clamp(2rem, 8vw, 2.8rem)/1 var(--font-display);
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
+  font: 800 clamp(1.7rem, 7vw, 2.4rem)/1.05 var(--font-title);
+  letter-spacing: -0.02em;
   text-wrap: balance;
 }
 .tagline { margin: 0; color: var(--muted); font-size: 0.95rem; }
