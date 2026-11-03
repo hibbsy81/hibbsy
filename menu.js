@@ -1,6 +1,6 @@
 /* Shared hamburger menu.
    Add it to any page with one line (in <head> or before </body>):
-       <script src="menu.js?v=19" defer></script>
+       <script src="menu.js?v=20" defer></script>
    Bump the ?v= number whenever menu.js or menu.css changes.
    To add or rename a link, edit the `items` list below. */
 (function () {
@@ -14,16 +14,16 @@
     { label: 'Sports Fixtures',  href: 'sports.html' },
     { label: 'Hearts Scorecard', href: 'cards.html' },
     { label: 'Countdown Numbers', href: 'countdown.html' },
-         { label: 'Chuff Chart', href: 'chuff.html' },
+    { label: 'Chuff Chart',      href: 'chuff.html' },
     { label: 'Webmail',          href: 'https://webmail.hibbs.org.uk/' }
   ];
 
   var here = location.pathname.split('/').pop() || 'index.html';
 
-  var links = items.map(function (it) {
+  var links = items.map(function (it, i) {
     var external = /^https?:/.test(it.href);
     var current = !external && it.href === here;
-    return '<li><a href="' + it.href + '"' +
+    return '<li style="--i:' + i + '"><a href="' + it.href + '"' +
            (current ? ' aria-current="page"' : '') + '>' + it.label + '</a></li>';
   }).join('');
 
