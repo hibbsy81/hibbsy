@@ -1,0 +1,16 @@
+{
+  "name": "Numbers Round",
+  "short_name": "Numbers",
+  "description": "A six-tile, thirty-second numbers game.",
+  "start_url": "./countdown.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#e7edf2",
+  "theme_color": "#1b4b7a",
+  "icons": [
+    { "src": "countdown-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "countdown-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "countdown-icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "countdown-favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
