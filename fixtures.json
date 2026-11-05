@@ -1,44 +1,44 @@
 {
- "updated": "5 Nov 2026, 14:45",
- "updated_iso": "2026-11-05T14:45:30.606639+00:00",
+ "updated": "5 Nov 2026, 23:41",
+ "updated_iso": "2026-11-05T23:41:16.554762+00:00",
  "health": {
   "mc": {
-   "last_ok_iso": "2026-11-05T14:45:30.606639+00:00",
+   "last_ok_iso": "2026-11-05T23:41:16.554762+00:00",
    "from": "man-city-on-tv.html",
    "count": 15
   },
   "mw": {
-   "last_ok_iso": "2026-11-05T14:45:30.606639+00:00",
+   "last_ok_iso": "2026-11-05T23:41:16.554762+00:00",
    "from": "man-city-women-on-tv.html",
    "count": 8
   },
   "aw": {
-   "last_ok_iso": "2026-11-05T14:45:30.606639+00:00",
+   "last_ok_iso": "2026-11-05T23:41:16.554762+00:00",
    "from": "arsenal-women-on-tv.html",
    "count": 8
   },
   "mu": {
-   "last_ok_iso": "2026-11-05T14:45:30.606639+00:00",
+   "last_ok_iso": "2026-11-05T23:41:16.554762+00:00",
    "from": "man-utd-women-on-tv.html",
    "count": 5
   },
   "cw": {
-   "last_ok_iso": "2026-11-05T14:45:30.606639+00:00",
+   "last_ok_iso": "2026-11-05T23:41:16.554762+00:00",
    "from": "chelsea-women-on-tv.html",
    "count": 8
   },
   "li": {
-   "last_ok_iso": "2026-11-05T14:45:30.606639+00:00",
+   "last_ok_iso": "2026-11-05T23:41:16.554762+00:00",
    "from": "england-women-on-tv.html",
    "count": 2
   },
   "en": {
-   "last_ok_iso": "2026-11-05T14:45:30.606639+00:00",
+   "last_ok_iso": "2026-11-05T23:41:16.554762+00:00",
    "from": "england-on-tv.html",
    "count": 2
   },
   "f1": {
-   "last_ok_iso": "2026-11-05T14:45:30.606639+00:00",
+   "last_ok_iso": "2026-11-05T23:41:16.554762+00:00",
    "from": "api.jolpi.ca",
    "count": 8
   }
@@ -277,6 +277,8 @@
    "h": "Arsenal",
    "a": "Lyon",
    "ch": [
+    "BBC Three",
+    "BBC iPlayer",
     "Disney+"
    ],
    "note": "",
@@ -506,8 +508,10 @@
    "comp": "UEFA Champions League League Phase",
    "h": "Barcelona",
    "a": "Man City",
-   "ch": [],
-   "note": "Channel to be confirmed",
+   "ch": [
+    "Amazon Prime Video"
+   ],
+   "note": "",
    "tbc": false
   },
   {
