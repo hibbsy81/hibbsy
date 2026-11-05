@@ -39,16 +39,12 @@ h1{font-family:"Bricolage Grotesque","Inter",-apple-system,BlinkMacSystemFont,"S
 .crest img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;padding:12%;background:#fff}
 .crest.has span{display:none}
 .crest img.flag{padding:0;object-fit:cover}
-/* Women's / men's: a faint pink or blue glow in the card's top-right corner, plus a small label */
-.card.gw::after,.card.gm::after,.hero.gw::after,.hero.gm::after{content:"";position:absolute;right:-50px;top:-50px;width:230px;height:230px;border-radius:50%;pointer-events:none;background:radial-gradient(closest-side,var(--gl),transparent)}
+/* Women's / men's: a faint pink or blue glow in the card's bottom-right corner */
+.card.gw::after,.card.gm::after,.hero.gw::after,.hero.gm::after{content:"";position:absolute;right:-50px;bottom:-50px;width:230px;height:230px;border-radius:50%;pointer-events:none;background:radial-gradient(closest-side,var(--gl),transparent)}
 .card.gw{--gl:rgba(255,120,190,.22)}
 .card.gm{--gl:rgba(90,160,255,.22)}
 .hero.gw{--gl:rgba(255,120,190,.28)}
 .hero.gm{--gl:rgba(90,160,255,.28)}
-.tag:has(.sx),.hk:has(.sx){display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px}
-.sx{display:inline-block;padding:1px 7px;border-radius:999px;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;vertical-align:1px;border:1px solid}
-.sx.w{color:#ffb3d9;background:rgba(255,120,190,.13);border-color:rgba(255,120,190,.3)}
-.sx.m{color:#a9ccff;background:rgba(90,160,255,.13);border-color:rgba(90,160,255,.3)}
 .ses{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:6px}
 .ses li{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:8px 12px;border-radius:10px;background:rgba(255,255,255,.06);font-size:15px;font-weight:600}
 .ses time{color:var(--mu);font-weight:700}
@@ -215,7 +211,6 @@ const keysOf=k=>GROUPS[k]?GROUPS[k].k:[k];
 const CHIP_ORDER=["f1","mc","li","en","aw","mu","cw","mw"];   // All, then F1 + the non-WSL teams, then the four WSL teams
 const WOMEN=["aw","mu","cw","mw","li"],MEN=["mc","en"];   // Formula 1 gets neither
 const gender=f=>f.teams.every(k=>WOMEN.includes(k))?"w":f.teams.every(k=>MEN.includes(k))?"m":"";
-const pill=f=>{const g=gender(f);return g?' <span class="sx '+g+'">'+(g==="w"?"Women’s":"Men’s")+'</span>':"";};
 const names=f=>f.teams.map(k=>T[k].n.toUpperCase()).join(" · ");
 const cvars=f=>"--c:"+T[f.teams[0]].c+";--c2:"+T[f.teams[f.teams.length-1]].c;
 // One match followed through two teams (e.g. Arsenal v Chelsea) becomes a single card with both badges.
@@ -253,7 +248,7 @@ function mergeDupes(list,now){
   return out.concat(f1Groups(list,now)).sort((a,b)=>a.d-b.d);
 }
 function hero(f,now){
-  return '<section class="hero'+(gender(f)?' g'+gender(f):'')+'" style="'+cvars(f)+'" aria-label="Next match"><div class="hk">'+(status(f,now)==="live"?"LIVE NOW":"NEXT UP")+' · '+names(f)+pill(f)+'</div>'+
+  return '<section class="hero'+(gender(f)?' g'+gender(f):'')+'" style="'+cvars(f)+'" aria-label="Next match"><div class="hk">'+(status(f,now)==="live"?"LIVE NOW":"NEXT UP")+' · '+names(f)+'</div>'+
     '<div class="hrow"><div class="hcount">'+label(f,now)+'</div>'+matchCrests(f,52)+'</div>'+
     '<div class="hsub"><time datetime="'+esc(f.iso)+'">'+(f.tbc?"Time TBC":clock(f))+'</time> · '+esc(f.comp)+'</div>'+
     '<div class="hvs">'+versus(f)+'</div>'+sesHtml(f)+'<div class="ch">'+chanHtml(f)+'</div></section>';
@@ -277,7 +272,7 @@ function render(){
     const mk=fd({month:"long",year:"numeric"}).format(f.d);
     const head=mk!==last?'<h2 class="month">'+mk+'</h2>':"";last=mk;
     const note=f.ch.length&&f.note&&!/confirm/i.test(f.note)?'<div class="meta">'+esc(f.note)+'</div>':"";
-    return head+'<article class="card'+(gender(f)?' g'+gender(f):'')+'" style="'+cvars(f)+'"><div class="top">'+matchCrests(f,40)+'<div class="who"><div class="tag">'+names(f)+pill(f)+'</div><div class="comp">'+esc(f.comp)+'</div></div><time class="when" datetime="'+esc(f.iso)+'"><b>'+label(f,now)+'</b><span>'+(f.tbc?"Time TBC":clock(f))+'</span></time></div>'+
+    return head+'<article class="card'+(gender(f)?' g'+gender(f):'')+'" style="'+cvars(f)+'"><div class="top">'+matchCrests(f,40)+'<div class="who"><div class="tag">'+names(f)+'</div><div class="comp">'+esc(f.comp)+'</div></div><time class="when" datetime="'+esc(f.iso)+'"><b>'+label(f,now)+'</b><span>'+(f.tbc?"Time TBC":clock(f))+'</span></time></div>'+
       '<div class="vs">'+versus(f)+'</div>'+sesHtml(f)+'<div class="meta rel" data-i="'+i+'">'+relText(f,now)+'</div>'+note+'<div class="ch">'+chanHtml(f)+'</div></article>';
   }).join("");
 }
