@@ -39,12 +39,14 @@ h1{font-family:"Bricolage Grotesque","Inter",-apple-system,BlinkMacSystemFont,"S
 .crest img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;padding:12%;background:#fff}
 .crest.has span{display:none}
 .crest img.flag{padding:0;object-fit:cover}
-/* Women's / men's: a faint pink or blue glow in the card's bottom-right corner */
-.card.gw::after,.card.gm::after,.hero.gw::after,.hero.gm::after{content:"";position:absolute;right:-50px;bottom:-50px;width:230px;height:230px;border-radius:50%;pointer-events:none;background:radial-gradient(closest-side,var(--gl),transparent)}
+/* Women's / men's / F1: a faint pink, blue or green glow in the card's bottom-right corner */
+.card.gw::after,.card.gm::after,.card.gf::after,.hero.gw::after,.hero.gm::after,.hero.gf::after{content:"";position:absolute;right:-50px;bottom:-50px;width:230px;height:230px;border-radius:50%;pointer-events:none;background:radial-gradient(closest-side,var(--gl),transparent)}
 .card.gw{--gl:rgba(255,120,190,.22)}
 .card.gm{--gl:rgba(90,160,255,.22)}
+.card.gf{--gl:rgba(70,220,130,.22)}
 .hero.gw{--gl:rgba(255,120,190,.28)}
 .hero.gm{--gl:rgba(90,160,255,.28)}
+.hero.gf{--gl:rgba(70,220,130,.28)}
 .ses{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:6px}
 .ses li{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:8px 12px;border-radius:10px;background:rgba(255,255,255,.06);font-size:15px;font-weight:600}
 .ses time{color:var(--mu);font-weight:700}
@@ -209,8 +211,8 @@ const ORDER=Object.keys(T);
 const GROUPS={nat:{n:"National",k:["li","en"]},wsl:{n:"WSL",k:["aw","mu","cw","mw"]}};   // phone-only buttons that select several teams
 const keysOf=k=>GROUPS[k]?GROUPS[k].k:[k];
 const CHIP_ORDER=["f1","mc","li","en","aw","mu","cw","mw"];   // All, then F1 + the non-WSL teams, then the four WSL teams
-const WOMEN=["aw","mu","cw","mw","li"],MEN=["mc","en"];   // Formula 1 gets neither
-const gender=f=>f.teams.every(k=>WOMEN.includes(k))?"w":f.teams.every(k=>MEN.includes(k))?"m":"";
+const WOMEN=["aw","mu","cw","mw","li"],MEN=["mc","en"];   // Formula 1 gets its own green glow
+const gender=f=>f.teams.every(k=>k==="f1")?"f":f.teams.every(k=>WOMEN.includes(k))?"w":f.teams.every(k=>MEN.includes(k))?"m":"";
 const names=f=>f.teams.map(k=>T[k].n.toUpperCase()).join(" · ");
 const cvars=f=>"--c:"+T[f.teams[0]].c+";--c2:"+T[f.teams[f.teams.length-1]].c;
 // One match followed through two teams (e.g. Arsenal v Chelsea) becomes a single card with both badges.
