@@ -163,6 +163,18 @@ input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(11
 .card.f1{background-color:rgba(6,78,45,.62);border-color:rgba(74,222,128,.45);box-shadow:0 8px 24px rgba(0,0,0,.22),0 0 28px rgba(34,197,94,.34),inset 0 1px 0 rgba(255,255,255,.05);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cg opacity='.22' fill='%23fff' transform='rotate%28-8 32 32%29'%3E%3Crect x='6' y='10' width='3' height='48' rx='1.5'/%3E%3Crect x='9' y='14' width='10' height='10'/%3E%3Crect x='9' y='34' width='10' height='10'/%3E%3Crect x='18' y='24' width='10' height='10'/%3E%3Crect x='18' y='44' width='10' height='10'/%3E%3Crect x='28' y='14' width='10' height='10'/%3E%3Crect x='28' y='34' width='10' height='10'/%3E%3Crect x='38' y='24' width='10' height='10'/%3E%3Crect x='38' y='44' width='10' height='10'/%3E%3Crect x='48' y='14' width='10' height='10'/%3E%3Crect x='48' y='34' width='10' height='10'/%3E%3C/g%3E%3C/svg%3E"),radial-gradient(420px 170px at 100% 0%,rgba(74,222,128,.30),transparent 70%),radial-gradient(300px 140px at 0% 100%,rgba(34,197,94,.16),transparent 70%);background-repeat:no-repeat;background-position:right 12px center,0 0,0 0;background-size:auto 84%,auto,auto}
 .card.f1 .u{background:rgba(0,0,0,.22)}
 .card.f1 .u b{color:#86efac}
+.card>.tools{position:absolute;top:10px;right:10px;z-index:2;display:none;gap:6px}
+.card>.tools .tool{height:34px;min-width:34px;padding:0;display:grid;place-items:center;color:var(--menu-ink);background:var(--menu-glass);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border:1px solid var(--menu-line);border-radius:17px;box-shadow:0 2px 8px rgba(0,0,0,.25);transition:border-color .15s,background-color .15s,transform .2s}
+.tool svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.tool:hover{border-color:var(--accent)}
+.tool:active{transform:scale(.92)}
+.tool:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.tool.dl.confirm{padding:0 12px;font-size:13px;font-weight:650;color:#2a0c07;background:linear-gradient(180deg,#ffa28e,#f0674c);border-color:transparent}
+@media (hover:hover) and (pointer:fine){
+	.card>.tools{display:flex;opacity:0;transition:opacity .15s}
+	.card:hover>.tools,.card:focus-within>.tools,.card>.tools.on{opacity:1}
+	.card .top{padding-right:84px}
+}
 .top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;min-width:0}
 .top>div:first-child{min-width:0}
 .name{font-size:18px;font-weight:600;overflow-wrap:anywhere}
@@ -216,7 +228,7 @@ html.standalone header{padding-right:0}
 
 
 <script>
-var KEY='countdowns.v1',items=[],openId=null,openSide=0,editingId=null,drag=null,W=104;
+var KEY='countdowns.v1',items=[],openId=null,openSide=0,editingId=null,confirmId=null,confirmT=null,drag=null,W=104;
 try{items=JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){items=[]}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(items))}catch(e){}}
 function $(id){return document.getElementById(id)}
@@ -239,7 +251,7 @@ body='<div class="units"><div class="u"><b>'+d+'</b><span>'+(d===1?'day':'days')
 else if(o.cat===0){body='<div class="msg">It’s today!</div>'}
 else{var n=Math.floor((now-o.t)/864e5);body='<div class="msg">Passed '+n+' day'+(n===1?'':'s')+' ago</div>'}
 var th=theme(o.it);var cls=(past?' past':'')+(th?' '+th:' full');
-return'<div class="swipe'+(o.it.id===openId?(openSide>0?' open-r':' open-l'):'')+'" data-id="'+o.it.id+'"><button class="edit-act" type="button" data-id="'+o.it.id+'" aria-label="Edit '+esc(o.it.name)+'">Edit</button><button class="del-act" type="button" data-id="'+o.it.id+'" aria-label="Delete '+esc(o.it.name)+'">Delete</button><div class="card'+cls+'" tabindex="0"><div class="top"><div><div class="name">'+esc(o.it.name)+'</div><div class="when">'+fmt(o.it)+'</div></div></div>'+body+'</div></div>'}).join('')+'<div class="hint">Swipe right to edit, left to delete</div>'}
+return'<div class="swipe'+(o.it.id===openId?(openSide>0?' open-r':' open-l'):'')+'" data-id="'+o.it.id+'"><button class="edit-act" type="button" data-id="'+o.it.id+'" aria-label="Edit '+esc(o.it.name)+'">Edit</button><button class="del-act" type="button" data-id="'+o.it.id+'" aria-label="Delete '+esc(o.it.name)+'">Delete</button><div class="card'+cls+'" tabindex="0"><div class="tools'+(o.it.id===confirmId?' on':'')+'"><button class="tool ed" type="button" data-id="'+o.it.id+'" aria-label="Edit '+esc(o.it.name)+'" title="Edit"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg></button><button class="tool dl'+(o.it.id===confirmId?' confirm':'')+'" type="button" data-id="'+o.it.id+'" aria-label="Delete '+esc(o.it.name)+'" title="Delete">'+(o.it.id===confirmId?'Delete?':'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>')+'</button></div><div class="top"><div><div class="name">'+esc(o.it.name)+'</div><div class="when">'+fmt(o.it)+'</div></div></div>'+body+'</div></div>'}).join('')+'<div class="hint">Swipe right to edit, left to delete</div>'}
 
 function openAdd(){editingId=null;$('addT').textContent='New countdown';$('saveBtn').textContent='Add';$('err').textContent='';$('ovAdd').hidden=false;$('n').focus()}
 function openEdit(id){var it=items.filter(function(i){return i.id===id})[0];if(!it)return;editingId=id;$('addT').textContent='Edit countdown';$('saveBtn').textContent='Save';$('err').textContent='';$('n').value=it.name;$('d').value=it.date;$('ovAdd').hidden=false;$('d').focus()}
@@ -258,13 +270,15 @@ if(editingId){items.forEach(function(i){if(i.id===editingId){i.name=n.value.trim
 else items.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),name:n.value.trim(),date:d.value});
 openId=null;openSide=0;save();n.value='';d.value='';$('ovAdd').hidden=true;render()});
 
+function clearConfirm(quiet){clearTimeout(confirmT);if(confirmId){confirmId=null;if(!quiet)render()}}
+document.addEventListener('click',function(e){if(confirmId&&!e.target.closest('.tool.dl'))clearConfirm()});
 /* Swipe a card left to reveal Delete */
 function swipeEl(id){return document.querySelector('.swipe[data-id="'+id+'"]')}
 function setOpen(sw,side){side=side===true?-1:(side||0);sw.classList.remove('drag','open-l','open-r');sw.querySelector('.card').style.transform='';sw.style.removeProperty('--pl');sw.style.removeProperty('--pr');if(side){sw.classList.add(side<0?'open-l':'open-r');openId=sw.dataset.id;openSide=side}else if(openId===sw.dataset.id){openId=null;openSide=0}}
 function closeOpen(except){if(!openId||(except&&except.dataset.id===openId))return;var o=swipeEl(openId);if(o)setOpen(o,0);else{openId=null;openSide=0}}
 $('list').addEventListener('pointerdown',function(e){
 var sw=e.target.closest('.swipe');
-if(!sw||e.target.closest('.del-act,.edit-act'))return;
+if(!sw||e.target.closest('.del-act,.edit-act,.tools'))return;
 if(e.pointerType==='mouse'&&e.button!==0)return;
 closeOpen(sw);
 drag={sw:sw,card:sw.querySelector('.card'),x0:e.clientX,y0:e.clientY,base:sw.classList.contains('open-l')?-W:(sw.classList.contains('open-r')?W:0),lock:null,x:null}});
@@ -290,6 +304,12 @@ if(e.key==='Delete'||e.key==='Backspace'){e.preventDefault();closeOpen(sw);setOp
 else if(e.key==='Enter'){e.preventDefault();openEdit(sw.dataset.id)}
 else if(e.key==='Escape')setOpen(sw,0)});
 $('list').addEventListener('click',function(e){
+var tb=e.target.closest('.tool');
+if(tb){var tid=tb.dataset.id;
+if(tb.classList.contains('ed')){clearConfirm();openEdit(tid)}
+else if(confirmId===tid){clearConfirm(true);items=items.filter(function(i){return i.id!==tid});openId=null;openSide=0;save();render()}
+else{clearTimeout(confirmT);confirmId=tid;confirmT=setTimeout(clearConfirm,3500);render()}
+return}
 var eb=e.target.closest('.edit-act');
 if(eb){var id=eb.dataset.id,sw=swipeEl(id);if(sw)setOpen(sw,0);openEdit(id);return}
 var b=e.target.closest('.del-act');if(!b)return;
