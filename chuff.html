@@ -157,6 +157,7 @@ input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(11
 .card.egg .u b{color:#fde047}
 .card.bday .u{background:rgba(0,0,0,.22)}
 .card.bday .u b{color:#f9a8d4}
+.card.cal{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cg opacity='.2' fill='%23BFDBFE' stroke='%23BFDBFE' stroke-width='3'%3E%3Crect x='9' y='13' width='46' height='42' rx='7' fill='none'/%3E%3Cline x1='9' y1='26' x2='55' y2='26'/%3E%3Cline x1='21' y1='7' x2='21' y2='18' stroke-width='4' stroke-linecap='round'/%3E%3Cline x1='43' y1='7' x2='43' y2='18' stroke-width='4' stroke-linecap='round'/%3E%3Cg stroke='none'%3E%3Ccircle cx='22' cy='35' r='2.6'/%3E%3Ccircle cx='32' cy='35' r='2.6'/%3E%3Ccircle cx='42' cy='35' r='2.6'/%3E%3Ccircle cx='22' cy='45' r='2.6'/%3E%3Ccircle cx='32' cy='45' r='2.6'/%3E%3Ccircle cx='42' cy='45' r='4.2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;background-size:auto 92%}
 .card.raf{background-color:rgba(23,45,110,.66);border-color:rgba(147,197,253,.36);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cg opacity='.5'%3E%3Ccircle cx='32' cy='32' r='30' fill='%232B4DB8'/%3E%3Ccircle cx='32' cy='32' r='20' fill='%23fff'/%3E%3Ccircle cx='32' cy='32' r='10' fill='%23CF142B'/%3E%3C/g%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;background-size:auto 92%}
 .card.raf .u{background:rgba(0,0,0,.22)}
 .card.raf .u b{color:#bfdbfe}
@@ -184,6 +185,7 @@ input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(11
 .u{min-width:88px;padding:10px 14px;text-align:center;background:rgba(255,255,255,.045);border-radius:12px}
 .u b{display:block;font-size:30px;line-height:1.2;font-weight:650;letter-spacing:-.01em;font-variant-numeric:tabular-nums;color:var(--accent)}
 .u span{font-size:12px;color:var(--muted)}
+.u.tm b{font-size:24px;line-height:1.5}
 .msg{margin-top:14px;font-size:17px;font-weight:650;color:#fbbf24}
 .past .name,.past .msg{color:var(--muted)}
 .empty{padding:44px 0;text-align:center;color:var(--muted)}
@@ -248,10 +250,10 @@ arr.sort(function(a,b){if(a.cat!==b.cat)return a.cat-b.cat;return a.cat===2?b.t-
 L.innerHTML=arr.map(function(o){
 var body,past=o.cat===2;
 if(o.cat===1){var d=Math.round((o.t-new Date(now).setHours(0,0,0,0))/864e5);
-body='<div class="units"><div class="u"><b>'+d+'</b><span>'+(d===1?'day':'days')+'</span></div></div>'}
+body=d===1?'<div class="units"><div class="u tm"><b>Tomorrow</b></div></div>':'<div class="units"><div class="u"><b>'+d+'</b><span>days</span></div></div>'}
 else if(o.cat===0){body='<div class="msg">It’s today!</div>'}
 else{var n=Math.floor((now-o.t)/864e5);body='<div class="msg">Passed '+n+' day'+(n===1?'':'s')+' ago</div>'}
-var th=theme(o.it);var cls=(past?' past':'')+(th?' '+th:' full');
+var th=theme(o.it);var cls=(past?' past':'')+(th?' '+th:' cal');
 return'<div class="swipe'+(o.it.id===openId?(openSide>0?' open-r':' open-l'):'')+'" data-id="'+o.it.id+'"><button class="edit-act" type="button" data-id="'+o.it.id+'" aria-label="Edit '+esc(o.it.name)+'">Edit</button><button class="del-act" type="button" data-id="'+o.it.id+'" aria-label="Delete '+esc(o.it.name)+'">Delete</button><div class="card'+cls+'" tabindex="0"><div class="tools'+(o.it.id===confirmId?' on':'')+'"><button class="tool ed" type="button" data-id="'+o.it.id+'" aria-label="Edit '+esc(o.it.name)+'" title="Edit"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg></button><button class="tool dl'+(o.it.id===confirmId?' confirm':'')+'" type="button" data-id="'+o.it.id+'" aria-label="Delete '+esc(o.it.name)+'" title="Delete">'+(o.it.id===confirmId?'Delete':'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>')+'</button></div><div class="top"><div><div class="name">'+esc(o.it.name)+'</div><div class="when">'+fmt(o.it)+'</div></div></div>'+body+'</div></div>'}).join('')+'<div class="hint">Swipe right to edit, left to delete</div>'}
 
 function openAdd(){editingId=null;$('addT').textContent='New countdown';$('saveBtn').textContent='Add';$('err').textContent='';$('ovAdd').hidden=false;$('n').focus()}
