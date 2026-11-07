@@ -1,99 +1,49 @@
 {
- "updated": "7 Nov 2026, 13:13",
- "updated_iso": "2026-11-07T13:13:37.934696+00:00",
+ "updated": "7 Nov 2026, 21:57",
+ "updated_iso": "2026-11-07T21:57:36.209943+00:00",
  "health": {
   "mc": {
-   "last_ok_iso": "2026-11-07T13:13:37.934696+00:00",
+   "last_ok_iso": "2026-11-07T21:57:36.209943+00:00",
    "from": "man-city-on-tv.html",
-   "count": 15
+   "count": 14
   },
   "mw": {
-   "last_ok_iso": "2026-11-07T13:13:37.934696+00:00",
+   "last_ok_iso": "2026-11-07T21:57:36.209943+00:00",
    "from": "man-city-women-on-tv.html",
-   "count": 8
+   "count": 7
   },
   "aw": {
-   "last_ok_iso": "2026-11-07T13:13:37.934696+00:00",
+   "last_ok_iso": "2026-11-07T21:57:36.209943+00:00",
    "from": "arsenal-women-on-tv.html",
    "count": 8
   },
   "mu": {
-   "last_ok_iso": "2026-11-07T13:13:37.934696+00:00",
+   "last_ok_iso": "2026-11-07T21:57:36.209943+00:00",
    "from": "man-utd-women-on-tv.html",
    "count": 5
   },
   "cw": {
-   "last_ok_iso": "2026-11-07T13:13:37.934696+00:00",
+   "last_ok_iso": "2026-11-07T21:57:36.209943+00:00",
    "from": "chelsea-women-on-tv.html",
-   "count": 8
+   "count": 7
   },
   "li": {
-   "last_ok_iso": "2026-11-07T13:13:37.934696+00:00",
+   "last_ok_iso": "2026-11-07T21:57:36.209943+00:00",
    "from": "england-women-on-tv.html",
    "count": 2
   },
   "en": {
-   "last_ok_iso": "2026-11-07T13:13:37.934696+00:00",
+   "last_ok_iso": "2026-11-07T21:57:36.209943+00:00",
    "from": "england-on-tv.html",
    "count": 2
   },
   "f1": {
-   "last_ok_iso": "2026-11-07T13:13:37.934696+00:00",
+   "last_ok_iso": "2026-11-07T21:57:36.209943+00:00",
    "from": "api.jolpi.ca",
-   "count": 8
+   "count": 7
   }
  },
  "fixtures": [
-  {
-   "t": "mw",
-   "iso": "2026-11-07T12:45:00+00:00",
-   "comp": "Women's Super League",
-   "h": "Man City",
-   "a": "West Ham United",
-   "ch": [
-    "Sky Sports Mix"
-   ],
-   "note": "",
-   "tbc": false
-  },
-  {
-   "t": "cw",
-   "iso": "2026-11-07T12:45:00+00:00",
-   "comp": "Women's Super League",
-   "h": "Chelsea",
-   "a": "Everton",
-   "ch": [
-    "Sky Sports Premier League"
-   ],
-   "note": "",
-   "tbc": false
-  },
-  {
-   "t": "mc",
-   "iso": "2026-11-07T17:30:00+00:00",
-   "comp": "Premier League",
-   "h": "Nottingham Forest",
-   "a": "Man City",
-   "ch": [
-    "Sky Sports Main Event",
-    "Sky Sports Premier League"
-   ],
-   "note": "",
-   "tbc": false
-  },
-  {
-   "t": "f1",
-   "iso": "2026-11-07T18:00:00+00:00",
-   "comp": "Formula 1, Qualifying",
-   "h": "Brazilian Grand Prix",
-   "a": "",
-   "cc": "br",
-   "ch": [
-    "Sky Sports F1"
-   ],
-   "note": "",
-   "tbc": false
-  },
   {
    "t": "aw",
    "iso": "2026-11-08T12:00:00+00:00",
