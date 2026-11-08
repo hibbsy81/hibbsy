@@ -13,87 +13,158 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Bricolage+Grotesque:wght@800&family=Figtree:wght@400;500;600;700&family=Share+Tech+Mono&display=swap">
-<link rel="stylesheet" href="countdown.css">
+<link rel="stylesheet" href="countdown.css?v=2">
 <script>/* Installed web app: mark the page so the site menu can be hidden. */(function(){try{if(navigator.standalone||(window.matchMedia&&matchMedia("(display-mode: standalone)").matches))document.documentElement.classList.add("app");}catch(e){}})();</script>
 <script src="menu.js?v=19" defer></script>
 </head>
-<body>
+<body data-mode="numbers">
 <div class="wrap">
   <header class="top">
-    <h1>Countdown Numbers</h1>
-    <p class="tagline">Six tiles, one target, thirty seconds.</p>
+    <h1 id="title">Countdown Numbers</h1>
+    <p class="tagline" id="tagline">Six tiles, one target, thirty seconds.</p>
   </header>
 
-  <section class="panel setup" id="setup" aria-label="Choose the numbers">
-    <div class="grow">
-      <p class="label" id="seg-label">Large numbers</p>
-      <div class="seg" role="group" aria-labelledby="seg-label" id="seg"></div>
-      <p class="hint">Large: 25, 50, 75, 100. Small: 1 to 10, two of each.</p>
-    </div>
-    <button class="btn primary" id="deal" type="button">Deal new numbers</button>
-  </section>
+  <div class="seg modes" id="modes" role="group" aria-label="Game">
+    <button type="button" data-mode="numbers" aria-pressed="true">Numbers</button>
+    <button type="button" data-mode="letters" aria-pressed="false">Letters</button>
+  </div>
 
-  <section class="panel board" id="board" aria-label="Game board">
-    <div class="readout">
-      <div class="led" id="led" role="img" aria-label="Target not set">
-        <span class="led-label">Target</span>
-        <div class="led-num" aria-hidden="true"><span class="ghost">888</span><span class="val" id="target">---</span></div>
+  <!-- ===================== NUMBERS ===================== -->
+  <div class="mode" id="mode-numbers">
+    <section class="panel setup" id="setup" aria-label="Choose the numbers">
+      <div class="grow">
+        <p class="label" id="seg-label">Large numbers</p>
+        <div class="seg" role="group" aria-labelledby="seg-label" id="seg"></div>
+        <p class="hint">Large: 25, 50, 75, 100. Small: 1 to 10, two of each.</p>
       </div>
-      <div class="clock" id="clock" role="timer" aria-label="Time left">
-        <svg viewBox="0 0 100 100" aria-hidden="true">
-          <circle class="track" cx="50" cy="50" r="44"></circle>
-          <circle class="arc" id="arc" cx="50" cy="50" r="44" transform="rotate(-90 50 50)"></circle>
-        </svg>
-        <span class="secs" id="secs">30</span>
+      <button class="btn primary" id="deal" type="button">Deal new numbers</button>
+    </section>
+
+    <section class="panel board" id="board" aria-label="Game board">
+      <div class="readout">
+        <div class="led" id="led" role="img" aria-label="Target not set">
+          <span class="led-label">Target</span>
+          <div class="led-num" aria-hidden="true"><span class="ghost">888</span><span class="val" id="target">---</span></div>
+        </div>
+        <div class="clock" id="clock" role="timer" aria-label="Time left">
+          <svg viewBox="0 0 100 100" aria-hidden="true">
+            <circle class="track" cx="50" cy="50" r="44"></circle>
+            <circle class="arc" id="arc" cx="50" cy="50" r="44" transform="rotate(-90 50 50)"></circle>
+          </svg>
+          <span class="secs" id="secs">30</span>
+        </div>
       </div>
-    </div>
 
-    <div class="tiles" id="tiles"></div>
+      <div class="tiles" id="tiles"></div>
 
-    <div class="ops" id="ops" role="group" aria-label="Operators">
-      <button class="op" type="button" data-op="+" aria-label="Add" aria-keyshortcuts="+">+</button>
-      <button class="op" type="button" data-op="-" aria-label="Subtract" aria-keyshortcuts="-">&minus;</button>
-      <button class="op" type="button" data-op="*" aria-label="Multiply" aria-keyshortcuts="*">&times;</button>
-      <button class="op" type="button" data-op="/" aria-label="Divide" aria-keyshortcuts="/">&divide;</button>
-    </div>
-
-    <div class="actions">
-      <button class="btn" type="button" id="undo">Undo</button>
-      <button class="btn" type="button" id="reset">Clear working</button>
-      <button class="btn primary main" type="button" id="main">Start the clock</button>
-    </div>
-
-    <div class="work">
-      <div class="work-head">
-        <p class="label">Working</p>
-        <span class="closest" id="closest" hidden></span>
+      <div class="ops" id="ops" role="group" aria-label="Operators">
+        <button class="op" type="button" data-op="+" aria-label="Add" aria-keyshortcuts="+">+</button>
+        <button class="op" type="button" data-op="-" aria-label="Subtract" aria-keyshortcuts="-">&minus;</button>
+        <button class="op" type="button" data-op="*" aria-label="Multiply" aria-keyshortcuts="*">&times;</button>
+        <button class="op" type="button" data-op="/" aria-label="Divide" aria-keyshortcuts="/">&divide;</button>
       </div>
-      <ol class="log" id="log"></ol>
-      <p class="msg" id="msg" role="status"></p>
-    </div>
-  </section>
 
-  <section class="panel result" id="result" aria-label="Round result" hidden></section>
+      <div class="actions">
+        <button class="btn" type="button" id="undo">Undo</button>
+        <button class="btn" type="button" id="reset">Clear working</button>
+        <button class="btn primary main" type="button" id="main">Start the clock</button>
+      </div>
 
-  <details class="rules">
-    <summary>Rules and keys</summary>
-    <ul>
-      <li>Combine any two tiles with + &minus; &times; &divide;. The answer replaces them and can be used again.</li>
-      <li>Every step must give a positive whole number. Each tile can be used once.</li>
-      <li>When the clock stops you can keep entering your working. Press Submit when you are done.</li>
-      <li>Score 10 points for the exact target, 7 points within 5, and 5 points within 10.</li>
-      <li>Keys: <kbd>1</kbd> to <kbd>6</kbd> pick a tile, <kbd>+</kbd> <kbd>-</kbd> <kbd>*</kbd> <kbd>/</kbd> pick an operator, <kbd>Backspace</kbd> undoes, <kbd>Enter</kbd> starts the clock or declares.</li>
-    </ul>
-  </details>
+      <div class="work">
+        <div class="work-head">
+          <p class="label">Working</p>
+          <span class="closest" id="closest" hidden></span>
+        </div>
+        <ol class="log" id="log"></ol>
+        <p class="msg" id="msg" role="status"></p>
+      </div>
+    </section>
 
-  <footer class="foot">
-    <span id="tally">No rounds played yet</span>
-    <span class="foot-btns">
-      <button class="btn soft" type="button" id="clear">Clear tally</button>
-      <button class="btn soft danger" type="button" id="newgame">New game</button>
-    </span>
-  </footer>
+    <section class="panel result" id="result" aria-label="Round result" hidden></section>
+
+    <details class="rules">
+      <summary>Rules and keys</summary>
+      <ul>
+        <li>Combine any two tiles with + &minus; &times; &divide;. The answer replaces them and can be used again.</li>
+        <li>Every step must give a positive whole number. Each tile can be used once.</li>
+        <li>When the clock stops you can keep entering your working. Press Submit when you are done.</li>
+        <li>Score 10 points for the exact target, 7 points within 5, and 5 points within 10.</li>
+        <li>Keys: <kbd>1</kbd> to <kbd>6</kbd> pick a tile, <kbd>+</kbd> <kbd>-</kbd> <kbd>*</kbd> <kbd>/</kbd> pick an operator, <kbd>Backspace</kbd> undoes, <kbd>Enter</kbd> starts the clock or declares.</li>
+      </ul>
+    </details>
+
+    <footer class="foot">
+      <span id="tally">No rounds played yet</span>
+      <span class="foot-btns">
+        <button class="btn soft" type="button" id="clear">Clear tally</button>
+        <button class="btn soft danger" type="button" id="newgame">New game</button>
+      </span>
+    </footer>
+  </div>
+
+  <!-- ===================== LETTERS ===================== -->
+  <div class="mode" id="mode-letters" hidden>
+    <section class="panel setup" id="lsetup" aria-label="Choose the letters">
+      <div class="grow">
+        <p class="label" id="lpick-label">Choose nine letters</p>
+        <div class="pickrow" role="group" aria-labelledby="lpick-label">
+          <button class="btn" type="button" id="lvowel" aria-keyshortcuts="V">Vowel</button>
+          <button class="btn" type="button" id="lcons" aria-keyshortcuts="C">Consonant</button>
+        </div>
+        <p class="hint" id="lhint">At least 3 vowels and 4 consonants.</p>
+      </div>
+      <button class="btn primary" id="lrand" type="button">Deal all nine at random</button>
+    </section>
+
+    <section class="panel board" id="lboard" aria-label="Game board">
+      <div class="readout">
+        <div class="led word" id="lled" role="img" aria-label="Your word: empty">
+          <span class="led-label" id="lledlabel">Your word</span>
+          <div class="led-num" aria-hidden="true"><span class="ghost">888888888</span><span class="val" id="lword"></span></div>
+        </div>
+        <div class="clock" id="lclock" role="timer" aria-label="Time left">
+          <svg viewBox="0 0 100 100" aria-hidden="true">
+            <circle class="track" cx="50" cy="50" r="44"></circle>
+            <circle class="arc" id="larc" cx="50" cy="50" r="44" transform="rotate(-90 50 50)"></circle>
+          </svg>
+          <span class="secs" id="lsecs">30</span>
+        </div>
+      </div>
+
+      <div class="tiles nine" id="ltiles"></div>
+
+      <div class="actions">
+        <button class="btn" type="button" id="ldel">Delete</button>
+        <button class="btn" type="button" id="lclr">Clear word</button>
+        <button class="btn primary main" type="button" id="lmain">Start the clock</button>
+      </div>
+
+      <p class="msg" id="lmsg" role="status"></p>
+    </section>
+
+    <section class="panel result" id="lresult" aria-label="Round result" hidden></section>
+
+    <details class="rules">
+      <summary>Rules and keys</summary>
+      <ul>
+        <li>Pick nine letters, then make the longest word you can from them before the clock runs out. Each tile can be used once.</li>
+        <li>When the clock stops you can keep building your word. Press Submit when you are done.</li>
+        <li>One point per letter. A nine-letter word scores 18.</li>
+        <li>Words are checked against a British English word list, so very rare words may be refused.</li>
+        <li>Keys: <kbd>V</kbd> and <kbd>C</kbd> pick a vowel or consonant while dealing. In the round, type letters to build your word, <kbd>Backspace</kbd> deletes, <kbd>Enter</kbd> starts the clock or submits.</li>
+      </ul>
+    </details>
+
+    <footer class="foot">
+      <span id="ltally">No rounds played yet</span>
+      <span class="foot-btns">
+        <button class="btn soft" type="button" id="lclear">Clear tally</button>
+        <button class="btn soft danger" type="button" id="lnewgame">New game</button>
+      </span>
+    </footer>
+  </div>
 </div>
-<script src="countdown.js"></script>
+<script src="countdown.js?v=2"></script>
+<script src="countdown-letters.js?v=1"></script>
 </body>
 </html>

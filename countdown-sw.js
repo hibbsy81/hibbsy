@@ -1,10 +1,12 @@
-// Offline support for countdown.html. Only the game's own files and its Google Fonts are handled;
+// Offline support for countdown.html (Numbers and Letters). Only the game's own files and its Google Fonts are handled;
 // every other request in this folder (for example index.html) goes straight to the network.
-var VERSION = 'countdown-v6';
+var VERSION = 'countdown-v7';
 var CORE = [
   'countdown.html',
   'countdown.css',
   'countdown.js',
+  'countdown-letters.js',
+  'countdown-words.txt',
   'countdown-favicon.svg',
   'countdown.webmanifest',
   'countdown-icon-192.png',

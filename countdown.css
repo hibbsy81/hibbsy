@@ -155,10 +155,10 @@ button:focus-visible, summary:focus-visible { outline: 3px solid var(--amber); o
 .setup { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 20px; }
 .setup .grow { flex: 0 1 auto; min-width: 0; display: grid; gap: 8px; }
 /* Deal button: fills the rest of the row, centred vertically in the card (wraps to a full-width row when space is tight) */
-#deal { flex: 1 1 220px; align-self: center; height: 56px; font-size: 1.05rem; }
+#deal, #lrand { flex: 1 1 220px; align-self: center; height: 56px; font-size: 1.05rem; }
 @media (max-width: 639px) {
   .setup .grow { flex: 1 1 100%; }
-  #deal { flex: 1 1 100%; }
+  #deal, #lrand { flex: 1 1 100%; }
 }
 .seg { display: inline-flex; gap: 4px; padding: 4px; width: fit-content; background: var(--bg); border: 1px solid var(--line); border-radius: 999px; }
 .seg button {
@@ -247,7 +247,8 @@ button:focus-visible, summary:focus-visible { outline: 3px solid var(--amber); o
 .closest { font-weight: 700; font-variant-numeric: tabular-nums; color: var(--amber); }
 
 /* Start the clock is green (other states of the main button stay blue) */
-body[data-phase="ready"] .btn.primary.main {
+body[data-phase="ready"] #main,
+body[data-lphase="ready"] #lmain {
   background: linear-gradient(180deg, #34c27a, #1f9d57);
   box-shadow: 0 8px 20px rgba(31, 157, 87, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
@@ -292,3 +293,20 @@ kbd { font: 600 0.82em var(--font-body); border: 1px solid var(--line); border-b
   .clock .secs { font-size: 1.7rem; }
   .actions .main { flex: 1 1 100%; margin-left: 0; }
 }
+
+/* ---- One page, two games: the Numbers / Letters switch and the Letters game ---- */
+.mode { display: grid; gap: 18px; }
+.mode > * { min-width: 0; }
+.seg.modes button { padding: 0 20px; font-size: 1.3rem; letter-spacing: 0.02em; }
+.seg.modes button:disabled { cursor: not-allowed; opacity: 0.45; }
+.pickrow { display: flex; flex-wrap: wrap; gap: 8px; }
+.pickrow .btn { min-width: 128px; }
+
+.led.word .led-num { font-size: clamp(1.4rem, 6.4vw, 2.9rem); letter-spacing: 0.08em; overflow: hidden; align-content: center; white-space: nowrap; }
+.tiles.nine { grid-template-columns: repeat(9, minmax(0, 1fr)); gap: 5px; }
+.tiles.nine .tile { --fs: clamp(1.25rem, 6.6vw, 2.6rem); border-radius: 10px; text-transform: uppercase; }
+.tile.used { opacity: 0.28; transform: none; box-shadow: none; }
+
+.words { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; margin: 8px 0 0; padding: 0; }
+.words li { padding: 4px 12px; border-radius: 999px; background: var(--bg); font: 700 1.25rem/1.2 var(--font-display); letter-spacing: 0.04em; text-transform: uppercase; }
+.words li.nine { background: var(--amber); color: #1c1503; }

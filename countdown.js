@@ -495,6 +495,7 @@
 
   document.addEventListener('keydown', function (e) {
     if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (document.body.getAttribute('data-mode') === 'letters') return;   // the Letters game is showing
     var k = e.key;
     var onButton = e.target && e.target.closest && e.target.closest('button, summary');
     if (k === 'Enter' && !onButton) {
