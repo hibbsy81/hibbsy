@@ -1,73 +1,49 @@
 {
- "updated": "10 Nov 2026, 14:59",
- "updated_iso": "2026-11-10T14:59:30.576659+00:00",
+ "updated": "10 Nov 2026, 23:28",
+ "updated_iso": "2026-11-10T23:28:42.321846+00:00",
  "health": {
   "mc": {
-   "last_ok_iso": "2026-11-10T14:59:30.576659+00:00",
+   "last_ok_iso": "2026-11-10T23:28:42.321846+00:00",
    "from": "man-city-on-tv.html",
    "count": 14
   },
   "mw": {
-   "last_ok_iso": "2026-11-10T14:59:30.576659+00:00",
+   "last_ok_iso": "2026-11-10T23:28:42.321846+00:00",
    "from": "man-city-women-on-tv.html",
-   "count": 7
+   "count": 6
   },
   "aw": {
-   "last_ok_iso": "2026-11-10T14:59:30.576659+00:00",
+   "last_ok_iso": "2026-11-10T23:28:42.321846+00:00",
    "from": "arsenal-women-on-tv.html",
    "count": 7
   },
   "mu": {
-   "last_ok_iso": "2026-11-10T14:59:30.576659+00:00",
+   "last_ok_iso": "2026-11-10T23:28:42.321846+00:00",
    "from": "man-utd-women-on-tv.html",
    "count": 4
   },
   "cw": {
-   "last_ok_iso": "2026-11-10T14:59:30.576659+00:00",
+   "last_ok_iso": "2026-11-10T23:28:42.321846+00:00",
    "from": "chelsea-women-on-tv.html",
-   "count": 7
+   "count": 6
   },
   "li": {
-   "last_ok_iso": "2026-11-10T14:59:30.576659+00:00",
+   "last_ok_iso": "2026-11-10T23:28:42.321846+00:00",
    "from": "england-women-on-tv.html",
    "count": 2
   },
   "en": {
-   "last_ok_iso": "2026-11-10T14:59:30.576659+00:00",
+   "last_ok_iso": "2026-11-10T23:28:42.321846+00:00",
    "from": "england-on-tv.html",
    "count": 2
   },
   "f1": {
-   "last_ok_iso": "2026-11-10T14:59:30.576659+00:00",
+   "last_ok_iso": "2026-11-10T23:28:42.321846+00:00",
    "from": "api.jolpi.ca",
    "count": 6
   }
  },
  "fixtures": [
-  {
-   "t": "cw",
-   "iso": "2026-11-10T17:45:00+00:00",
-   "comp": "Women's Champions League League Phase",
-   "h": "Hacken",
-   "a": "Chelsea",
-   "ch": [
-    "Disney+"
-   ],
-   "note": "",
-   "tbc": false
-  },
-  {
-   "t": "mw",
-   "iso": "2026-11-10T20:00:00+00:00",
-   "comp": "Women's Champions League League Phase",
-   "h": "Inter Milan",
-   "a": "Man City",
-   "ch": [
-    "Disney+"
-   ],
-   "note": "",
-   "tbc": false
-  },
   {
    "t": "aw",
    "iso": "2026-11-12T17:45:00+00:00",
@@ -100,7 +76,8 @@
    "h": "Man Utd",
    "a": "Crystal Palace",
    "ch": [
-    "Sky Sports Premier League"
+    "Sky Sports Premier League",
+    "Sky Sports Mix"
    ],
    "note": "",
    "tbc": false
