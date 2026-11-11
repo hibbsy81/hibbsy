@@ -1,25 +1,25 @@
 /* Layout: one centred column. A dark LED target and a 30 second ring sit above a rail of six tile slots,
    then the operator keys, the working log and, once the round ends, the result card with the solver's answer. */
 :root {
-  color-scheme: light;
-  --bg: #eef2f7;
-  --glow: rgba(70, 140, 210, 0.20);
-  --panel: #ffffff;
-  --ink: #0f2335;
-  --muted: #5d7183;
-  --line: rgba(15, 35, 53, 0.12);
+  color-scheme: dark;
+  --bg: #070f17;
+  --glow: rgba(90, 162, 220, 0.16);
+  --panel: #0f1e2b;
+  --ink: #e6eff6;
+  --muted: #8ea3b4;
+  --line: rgba(255, 255, 255, 0.09);
   --tile: #2a6aa3;
-  --tile-hi: #3f86c4;
-  --tile-sh: rgba(27, 75, 122, 0.32);
-  --tile-big: #0f8f82;
-  --tile-big-hi: #25b0a0;
-  --tile-big-sh: rgba(12, 110, 100, 0.32);
+  --tile-hi: #4a97d6;
+  --tile-sh: rgba(0, 0, 0, 0.45);
+  --tile-big: #10857a;
+  --tile-big-hi: #26b3a3;
+  --tile-big-sh: rgba(0, 0, 0, 0.45);
   --tile-ink: #ffffff;
-  --amber: #e29400;
-  --good: #12794b;
-  --bad: #c0402a;
-  --ring: #2a6aa3;
-  --shadow: 0 1px 2px rgba(15, 35, 53, 0.06), 0 14px 34px rgba(15, 35, 53, 0.09);
+  --amber: #ffb224;
+  --good: #3fc98b;
+  --bad: #ff7b63;
+  --ring: #5aa2dc;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 14px 34px rgba(0, 0, 0, 0.35);
   --led-bg: #07131d;
   --led: #ffb224;
   --led-ghost: #17202a;
@@ -36,48 +36,6 @@
   --menu-glass: color-mix(in srgb, var(--panel) 82%, transparent);
   --menu-line: color-mix(in srgb, var(--ink) 10%, transparent);
   --menu-hover: color-mix(in srgb, var(--ink) 7%, transparent);
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #070f17;
-    --glow: rgba(90, 162, 220, 0.16);
-    --panel: #0f1e2b;
-    --ink: #e6eff6;
-    --muted: #8ea3b4;
-    --line: rgba(255, 255, 255, 0.09);
-    --tile: #2a6aa3;
-    --tile-hi: #4a97d6;
-    --tile-sh: rgba(0, 0, 0, 0.45);
-    --tile-big: #10857a;
-    --tile-big-hi: #26b3a3;
-    --tile-big-sh: rgba(0, 0, 0, 0.45);
-    --amber: #ffb224;
-    --good: #3fc98b;
-    --bad: #ff7b63;
-    --ring: #5aa2dc;
-    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 14px 34px rgba(0, 0, 0, 0.35);
-    color-scheme: dark;
-  }
-}
-:root[data-theme="dark"] {
-  --bg: #070f17;
-  --glow: rgba(90, 162, 220, 0.16);
-  --panel: #0f1e2b;
-  --ink: #e6eff6;
-  --muted: #8ea3b4;
-  --line: rgba(255, 255, 255, 0.09);
-  --tile: #2a6aa3;
-  --tile-hi: #4a97d6;
-  --tile-sh: rgba(0, 0, 0, 0.45);
-  --tile-big: #10857a;
-  --tile-big-hi: #26b3a3;
-  --tile-big-sh: rgba(0, 0, 0, 0.45);
-  --amber: #ffb224;
-  --good: #3fc98b;
-  --bad: #ff7b63;
-  --ring: #5aa2dc;
-  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 14px 34px rgba(0, 0, 0, 0.35);
-  color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
