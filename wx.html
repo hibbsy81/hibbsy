@@ -56,16 +56,8 @@ h1{font:600 20px var(--disp);margin:0;min-height:46px;display:flex;align-items:c
 .VFR{color:var(--VFR)}.MVFR{color:var(--MVFR)}.IFR{color:var(--IFR)}.LIFR{color:var(--LIFR)}
 
 .obs{display:flex;flex-wrap:wrap;gap:4px 20px;align-items:center;margin-top:14px;padding:11px 16px;background:var(--card);border:1px solid var(--bd);border-radius:14px;font-size:14px;color:var(--mu)}.obs em{font:600 13px var(--disp);letter-spacing:.06em;text-transform:uppercase;font-style:normal;width:100%}.obs b{color:var(--ink);font:600 17px var(--disp);display:inline-flex;align-items:center;gap:4px}.obs b.VFR{color:var(--VFR)}.obs b.MVFR{color:var(--MVFR)}.obs b.IFR{color:var(--IFR)}.obs b.LIFR{color:var(--LIFR)}
-.taf{background:var(--card);border:1px solid var(--bd);border-radius:18px;margin-top:14px;overflow:hidden}
-.th{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:12px 16px;border-bottom:1px solid var(--bd);color:var(--mu);font-size:14px}.th b{font:700 20px var(--disp);color:var(--ink)}
-.tp{display:grid;grid-template-columns:150px 1fr auto;gap:4px 14px;align-items:center;padding:10px 16px 10px 12px;border-left:6px solid var(--cat);border-bottom:1px solid var(--bd)}
-.tp.tmp{border-left-style:dashed;background:var(--soft)}
-.tp .tt{font:600 15px var(--disp)}.tp .tt small{display:block;font:500 12px "Barlow";color:var(--mu);letter-spacing:.04em;text-transform:uppercase}
-.tp .tx{font-size:14.5px}.tp .tx i{font-style:normal;color:var(--mu)}
-.pill{font:700 14px var(--disp);color:#fff;background:var(--cat);padding:2px 12px;border-radius:999px}
-.traw{padding:12px 16px;font:13px/1.9 ui-monospace,Menlo,Consolas,monospace;overflow-wrap:anywhere}
-.traw span{padding:2px 5px;border-radius:5px;background:color-mix(in srgb,var(--cat) 16%,transparent);border-bottom:2px solid var(--cat);margin-right:3px;-webkit-box-decoration-break:clone;box-decoration-break:clone}
-@media (max-width:600px){.tp{grid-template-columns:1fr auto}.tp .tx{grid-column:1/-1}}
+.traw span{font-weight:600}
+.strip{position:relative}.days{position:relative}.col.dayst{border-left:2px solid var(--mu)}
 .card{background:var(--card);border:1px solid var(--bd);border-radius:18px;margin-top:14px;overflow:hidden}
 .strip{overflow-x:auto;scrollbar-width:thin}
 .row{display:flex;width:max-content;min-width:100%}
@@ -111,9 +103,8 @@ pre{white-space:pre-wrap;overflow-wrap:anywhere;font:13px/1.5 ui-monospace,Menlo
 <div class="obs" id="obs" hidden></div>
 <section class="card"><div class="strip" id="strip"></div></section>
 <nav class="days" id="days" aria-label="Day"></nav>
-<section class="taf" id="taf" hidden></section>
-<details id="raw"><summary>Raw METAR</summary><pre id="rawT"></pre></details>
-<p class="note">The hourly strip is model data (Open-Meteo) with cloud base estimated from temperature and dewpoint, so ceilings are marked &ldquo;~&rdquo;. The TAF row and the TAF section below are the airfield&rsquo;s official forecast, coloured by flight category (dashed = temporary or probable). ForeFlight&rsquo;s Daily view uses private Weather Company data, so no free source will match it exactly. Always check the official METAR, TAF and NOTAMs before flight.</p>
+<details id="raw" open><summary>Raw METAR and TAF</summary><pre id="rawM"></pre><pre class="traw" id="rawT"></pre></details>
+<p class="note">The hourly strip is model data (Open-Meteo) with cloud base estimated from temperature and dewpoint, so ceilings are marked &ldquo;~&rdquo;. The TAF row and the raw TAF at the bottom are the airfield&rsquo;s official forecast, coloured by flight category. ForeFlight&rsquo;s Daily view uses private Weather Company data, so no free source will match it exactly. Always check the official METAR, TAF and NOTAMs before flight.</p>
 </div>
 </main>
 <script>
@@ -209,12 +200,12 @@ function hero(){var h=S.hours[S.sel],d=dayOf(h.date),e=h.ceil==null?"":"~",
  '<div class="mini"><span><b>'+Math.round(h.temp)+"\u00B0C</b> / dew "+Math.round(h.dew)+"\u00B0 / "+Math.round(h.rh)+"%</span><span>QNH <b>"+Math.round(h.qnh)+"</b></span><span>Lowest cloud <b>"+(h.low?h.low.n+" "+fc(h.low.b):"Clear")+"</b></span>"+
  (d?"<span>Sun <b>"+d.sr.slice(11,16).replace(":","")+" / "+d.ss.slice(11,16).replace(":","")+"Z</b></span>":"")+"<span>TAF <b class=\""+(h.taf?h.taf.cat:"")+"\">"+(h.taf?h.taf.cat:"n/a")+"</b></span></div>"}
 
-function strip(center){var h0=S.hours[S.sel],d=dayOf(h0.date),el=$("strip"),keep=el.scrollLeft;
- var lab='<div class="labels"><div class="c t">'+dShort(h0.date).toUpperCase()+'</div><div class="c i"></div><div class="c">Ceiling</div><div class="c">Visibility</div><div class="c w">Wind kt</div><div class="c">Temp</div><div class="c">Rain</div><div class="c s">TAF</div></div>';
- var cols=d.hours.map(function(h){var i=S.hours.indexOf(h),sun="";
+function strip(){var el=$("strip");
+ var lab='<div class="labels"><div class="c t" id="dl"></div><div class="c i"></div><div class="c">Ceiling</div><div class="c">Visibility</div><div class="c w">Wind kt</div><div class="c">Temp</div><div class="c">Rain</div><div class="c s">TAF</div></div>';
+ var cols=S.hours.map(function(h,i){var d=dayOf(h.date)||{},sun="";if(h.hh==0)sun="<small>"+dShort(h.date).toUpperCase()+"</small>";else
   if(d.sr&&+d.sr.slice(11,13)==h.hh)sun="<small>\u2191"+d.sr.slice(11,16).replace(":","")+"</small>";
   else if(d.ss&&+d.ss.slice(11,13)==h.hh)sun="<small>\u2193"+d.ss.slice(11,16).replace(":","")+"</small>";
-  return'<div class="col'+(i==S.sel?" sel":"")+'" data-i="'+i+'" style="--cat:var(--b-'+h.cat+')" role="button" tabindex="0" aria-label="'+pad(h.hh)+"00Z "+h.cat+'">'+
+  return'<div class="col'+(i==S.sel?" sel":"")+(h.hh==0?" dayst":"")+'" data-i="'+i+'" style="--cat:var(--b-'+h.cat+')" role="button" tabindex="0" aria-label="'+pad(h.hh)+"00Z "+h.cat+'">'+
   '<div class="c t">'+pad(h.hh)+"00Z"+sun+"</div><div class=\"c i\">"+icon(h.code,h.day,32)+"</div>"+
   '<div class="c '+catOf(h.ceil,null)+'">'+(h.ceil==null?"":"~")+fc(h.ceil)+"</div>"+
   '<div class="c '+catOf(null,h.vis)+'">'+fv(h.vis)+"</div>"+
@@ -222,10 +213,9 @@ function strip(center){var h0=S.hours[S.sel],d=dayOf(h0.date),el=$("strip"),keep
   '<div class="c">'+Math.round(h.temp)+"\u00B0</div>"+
   '<div class="c'+(h.pop>=30?" MVFR":"")+'">'+(h.pop==null?"\u2013":h.pop+"%")+'<div class="bar"><i style="width:'+(h.pop||0)+'%"></i></div></div>'+
   '<div class="c s">'+(h.taf?'<b class="'+h.taf.cat+'">'+h.taf.cat+"</b>":"\u2013")+"</div></div>"}).join("");
- el.innerHTML='<div class="row">'+lab+cols+"</div>";
- if(center){var s=el.querySelector(".sel");if(s)el.scrollLeft=s.offsetLeft-el.clientWidth/2+s.offsetWidth/2}else el.scrollLeft=keep}
+ el.innerHTML='<div class="row">'+lab+cols+"</div>"}
 
-function days(){var c=S.hours[S.sel].date;
+function days(){var c=S.vd;
  $("days").innerHTML=S.days.map(function(d){var m=d.hours.filter(function(h){return h.hh==12})[0]||d.hours[0];
   return'<button class="dt'+(d.date==c?" sel":"")+'" type="button" data-d="'+d.date+'" aria-pressed="'+(d.date==c)+'"><span>'+dShort(d.date)+"</span>"+icon(m.code,true,32)+
   "<em>"+Math.round(d.max)+"\u00B0 / "+Math.round(d.min)+"\u00B0</em><span class=\"mb\">"+d.hours.map(function(h){return'<i class="k-'+h.cat+'"></i>'}).join("")+"</span></button>"}).join("")}
@@ -239,31 +229,29 @@ function obs(m){var el=$("obs");if(!m){el.hidden=true;return}
  el.innerHTML='<em>Observed now (METAR)</em>'+i(ct,"category",ct)+i(fc(ce),"ceiling",catOf(ce,null))+i(fv(km),"visibility",catOf(null,km))+
  i(arrow(m.wdir)+(m.wdir==null||m.wdir=="VRB"?"VRB":String(m.wdir).padStart(3,"0")+"\u00B0")+" "+(m.wspd==null?"\u2013":m.wspd+(m.wgst?"-"+m.wgst:""))+" kt","wind")+
  (m.temp==null?"":i(Math.round(m.temp)+"\u00B0C","temp"))+(q==null?"":i(Math.round(q),"QNH"))}
-function zt(v){var d=new Date(ms(v));return d.toLocaleDateString("en-GB",{weekday:"short",timeZone:"UTC"})+" "+pad(d.getUTCHours())+"Z"}
-function tafView(t){var el=$("taf");
- if(!t||!t.fcsts||!t.fcsts.length){el.hidden=true;return}
- var run={},R=t.fcsts.map(function(f){var tmp=f.fcstChange=="TEMPO"||!!f.probability,e=Object.assign({},run);
+function tafView(t,id){var el=$("rawT");
+ if(!t||!t.rawTAF){el.textContent="No TAF available for "+id;return}
+ var run={},cats=(t.fcsts||[]).map(function(f){var tmp=f.fcstChange=="TEMPO"||!!f.probability,e=Object.assign({},run);
   if(f.visib!=null)e.vis=f.visib;
-  if(f.wspd!=null){e.spd=f.wspd;e.dir=f.wdir;e.gst=f.wgst}
   if(f.clouds&&(f.clouds.length||(!tmp&&f.fcstChange!="BECMG")))e.cl=f.clouds;
   if(!tmp)run=Object.assign({},e);
   var vk=e.vis==null?null:(/\+/.test(e.vis)||parseFloat(e.vis)>=6?10:parseFloat(e.vis)*1.609),
-  cc=(e.cl||[]).filter(function(c){return/BKN|OVC|OVX|VV/.test(c.cover)&&c.base!=null}).sort(function(a,b){return a.base-b.base})[0],
-  cat=catOf(cc?cc.base:null,vk),
-  ty=f.probability?"PROB"+f.probability+(f.fcstChange=="TEMPO"?" tempo":""):({FM:"From",BECMG:"Becoming",TEMPO:"Temporary"}[f.fcstChange]||"Initial"),
-  w=e.spd==null?"":(e.dir==null||e.dir=="VRB"?"VRB":String(e.dir).padStart(3,"0")+"\u00B0")+" "+e.spd+(e.gst?"G"+e.gst:"")+" kt",
-  c=e.cl?(e.cl.length?e.cl.map(function(x){return x.cover+(x.base!=null?" "+Math.round(x.base).toLocaleString("en-GB")+"\u2032":"")}).join(", "):"No significant cloud"):"",
-  x=[w,vk==null?"":"vis "+fv(vk),c,f.wxString?esc(f.wxString):""].filter(Boolean).join(" \u00B7 ");
-  return{cat:cat,html:'<div class="tp'+(tmp?" tmp":"")+'" style="--cat:var(--b-'+cat+')"><div class="tt">'+zt(f.timeFrom)+" \u2192 "+zt(f.timeTo)+"<small>"+ty+'</small></div><div class="tx">'+x+'</div><span class="pill">'+cat+"</span></div>"}});
- var raw=String(t.rawTAF||""),ch=raw.split(/(?<!PROB\d\d)\s+(?=FM\d{6}\b|BECMG\b|TEMPO\b|PROB\d\d\b)/),
- rh=ch.length==R.length?ch.map(function(c,i){return'<span style="--cat:var(--b-'+R[i].cat+')">'+esc(c)+"</span>"}).join(" "):esc(raw);
- el.hidden=false;
- el.innerHTML='<div class="th"><b>TAF</b><span>'+zt(t.validTimeFrom)+" \u2192 "+zt(t.validTimeTo)+"</span></div>"+R.map(function(r){return r.html}).join("")+'<div class="traw">'+rh+"</div>"}
-function all(center){hero();strip(center);days()}
-$("strip").addEventListener("click",function(e){var c=e.target.closest(".col");if(c){S.sel=+c.dataset.i;all(false)}});
-$("strip").addEventListener("keydown",function(e){if(e.key!="Enter"&&e.key!=" ")return;var c=e.target.closest(".col");if(c){e.preventDefault();S.sel=+c.dataset.i;all(false)}});
+  cc=(e.cl||[]).filter(function(c){return/BKN|OVC|OVX|VV/.test(c.cover)&&c.base!=null}).sort(function(a,b){return a.base-b.base})[0];
+  return catOf(cc?cc.base:null,vk)});
+ var raw=String(t.rawTAF),ch=raw.split(/(?<!PROB\d\d)\s+(?=FM\d{6}\b|BECMG\b|TEMPO\b|PROB\d\d\b)/);
+ el.innerHTML=ch.length==cats.length?ch.map(function(c,i){return'<span style="color:var(--'+cats[i]+')">'+esc(c)+"</span>"}).join("\n"):esc(raw)}
+var CW=72;
+function tabs(){days();var nav=$("days"),b=nav.querySelector(".sel");if(b)nav.scrollLeft=b.offsetLeft-nav.clientWidth/2+b.offsetWidth/2}
+function vis(){var el=$("strip"),k=Math.max(0,Math.min(S.hours.length-1,Math.round(el.scrollLeft/CW))),d=S.hours[k].date;
+ $("dl").textContent=dShort(d).toUpperCase();if(d!=S.vd){S.vd=d;tabs()}}
+function all(){hero();strip();var el=$("strip"),c=el.querySelector(".sel");if(c)el.scrollLeft=c.offsetLeft-el.clientWidth/2+c.offsetWidth/2;S.vd=null;vis()}
+function pick(i){var el=$("strip"),o=el.querySelector(".col.sel"),n=el.querySelector('.col[data-i="'+i+'"]');if(o)o.classList.remove("sel");if(n)n.classList.add("sel");S.sel=i;hero()}
+$("strip").addEventListener("click",function(e){var c=e.target.closest(".col");if(c)pick(+c.dataset.i)});
+$("strip").addEventListener("keydown",function(e){if(e.key!="Enter"&&e.key!=" ")return;var c=e.target.closest(".col");if(c){e.preventDefault();pick(+c.dataset.i)}});
+var tick=0;$("strip").addEventListener("scroll",function(){if(tick||!S)return;tick=requestAnimationFrame(function(){tick=0;vis()})},{passive:true});
 $("days").addEventListener("click",function(e){var b=e.target.closest(".dt");if(!b)return;var d=dayOf(b.dataset.d),now=new Date().toISOString().slice(0,13)+":00";
- var p=d.hours.filter(function(h){return h.t==now})[0]||d.hours.filter(function(h){return h.hh==12})[0]||d.hours[0];S.sel=S.hours.indexOf(p);all(true)});
+ var p=d.hours.filter(function(h){return h.t==now})[0]||d.hours.filter(function(h){return h.hh==12})[0]||d.hours[0];
+ pick(S.hours.indexOf(p));S.vd=d.date;tabs();$("strip").scrollTo({left:S.hours.indexOf(d.hours[0])*CW,behavior:"smooth"})});
 
 var msg=function(t,err){var m=$("msg");m.textContent=t||"";m.className="msg"+(err?" err":"")};
 function recents(){$("recent").innerHTML=ls("wx-recent",[]).map(function(c){return'<button type="button" data-c="'+esc(c)+'">'+esc(c)+"</button>"}).join("")}
@@ -281,7 +269,7 @@ function load(id){id=String(id||"").toUpperCase().trim();
    cur=id;loaded=Date.now();$("tI").textContent=id;
    $("tN").textContent=a.name.replace(/\b([A-Z])([A-Z]+)/g,function(m,x,y){return x+y.toLowerCase()});
    $("age").textContent=r[1]&&r[1].obsTime?"METAR "+ago(Date.now()-r[1].obsTime*(r[1].obsTime<1e11?1000:1)):"";obs(r[1]);
-   $("rawT").textContent=r[1]&&r[1].rawOb||"No METAR available for "+id;tafView(r[2]);
+   $("rawM").textContent=r[1]&&r[1].rawOb||"No METAR available for "+id;tafView(r[2],id);
    document.title=id+" weather";$("app").hidden=false;all(true);msg("");
    var rc=ls("wx-recent",[]).filter(function(c){return c!=id});rc.unshift(id);lss("wx-recent",rc.slice(0,6));lss("wx-last",id);recents();
    try{history.replaceState(null,"","#"+id)}catch(e){}})})
