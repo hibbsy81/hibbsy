@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#10263b">
+  <title>Aviation Weather</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark">✈</span><span>AVIATION WEATHER</span></div>
+    <div class="header-note">Worldwide airport conditions</div>
+  </header>
+
+  <main class="page">
+    <section class="search-panel">
+      <div>
+        <p class="eyebrow">AIRPORT WEATHER LOOKUP</p>
+        <h1>Airport weather</h1>
+        <p class="subhead">Enter a four-letter ICAO identifier to retrieve observations and forecasts.</p>
+      </div>
+      <form id="search-form" class="search-form">
+        <label for="icao-input">ICAO</label>
+        <div class="search-row">
+          <input id="icao-input" name="icao" value="CYHZ" maxlength="4" minlength="4"
+                 pattern="[A-Za-z]{4}" autocomplete="off" spellcheck="false" required>
+          <button id="search-button" type="submit">Get weather <span aria-hidden="true">→</span></button>
+        </div>
+        <div class="quick-codes">
+          <span>Try:</span>
+          <button type="button" data-code="EGLL">EGLL</button>
+          <button type="button" data-code="CYHZ">CYHZ</button>
+          <button type="button" data-code="KJFK">KJFK</button>
+          <button type="button" data-code="OMDB">OMDB</button>
+        </div>
+      </form>
+    </section>
+
+    <div id="status" class="status" role="status" aria-live="polite">Enter an ICAO code to load weather.</div>
+
+    <section id="results" hidden>
+      <div class="airport-heading">
+        <div>
+          <p class="eyebrow">SELECTED AIRPORT</p>
+          <h2 id="airport-title">CYHZ</h2>
+          <p id="airport-meta" class="muted"></p>
+        </div>
+        <div class="updated"><span class="live-dot"></span><span id="updated-label">Awaiting data</span></div>
+      </div>
+
+      <div class="section-heading"><div><p class="eyebrow">LATEST OBSERVATION</p><h3>Current conditions</h3></div><span id="metar-time" class="muted"></span></div>
+      <div class="weather-grid">
+        <article class="metric-card category-card"><span class="metric-label">Flight category</span><strong id="flight-category" class="metric-value">—</strong><span id="weather-description" class="metric-foot">—</span></article>
+        <article class="metric-card"><span class="metric-label">Ceiling</span><strong id="ceiling" class="metric-value">—</strong><span class="metric-foot">feet AGL</span></article>
+        <article class="metric-card"><span class="metric-label">Visibility</span><strong id="visibility" class="metric-value">—</strong><span class="metric-foot">statute miles</span></article>
+        <article class="metric-card"><span class="metric-label">Temperature</span><strong id="temperature" class="metric-value">—</strong><span class="metric-foot">°C / °F</span></article>
+        <article class="metric-card"><span class="metric-label">Dewpoint / humidity</span><strong id="dewpoint" class="metric-value">—</strong><span id="humidity" class="metric-foot">—</span></article>
+        <article class="metric-card"><span class="metric-label">Wind</span><strong id="wind" class="metric-value">—</strong><span id="gust" class="metric-foot">Direction / speed / gusts —</span></article>
+        <article class="metric-card"><span class="metric-label">Altimeter / QNH</span><strong id="altimeter" class="metric-value">—</strong><span class="metric-foot">inHg / hPa</span></article>
+        <article class="metric-card"><span class="metric-label">Density altitude</span><strong id="density-altitude" class="metric-value">—</strong><span class="metric-foot">feet</span></article>
+        <article class="metric-card"><span class="metric-label">Precipitation probability</span><strong id="rain" class="metric-value">—</strong><span class="metric-foot">Forecast, current hour</span></article>
+      </div>
+
+      <div class="section-heading"><div><p class="eyebrow">AVIATION FORECAST</p><h3>TAF</h3></div><span id="taf-validity" class="muted"></span></div>
+      <article class="raw-card"><div class="raw-head"><span>Raw TAF</span><span id="taf-status" class="data-tag">—</span></div><pre id="taf-raw">No TAF loaded.</pre></article>
+
+      <div class="section-heading"><div><p class="eyebrow">MODEL FORECAST</p><h3>Hourly outlook</h3></div><span class="muted">Next 24 hours · UTC</span></div>
+      <div class="table-wrap"><table class="forecast-table"><thead><tr><th>Time</th><th>Conditions</th><th>Temp</th><th>Dewpoint</th><th>Wind</th><th>Gust</th><th>Visibility</th><th>Cloud</th><th>Rain</th></tr></thead><tbody id="hourly-body"></tbody></table></div>
+
+      <div class="section-heading"><div><p class="eyebrow">EXTENDED OUTLOOK</p><h3>Daily forecast</h3></div><span class="muted">Up to 10 days</span></div>
+      <div id="daily-grid" class="daily-grid"></div>
+
+      <div class="section-heading"><div><p class="eyebrow">SOURCE REPORT</p><h3>Raw METAR</h3></div><span id="metar-status" class="data-tag">—</span></div>
+      <article class="raw-card"><pre id="metar-raw">No METAR loaded.</pre></article>
+      <p class="disclaimer">Informational display only. Forecast model data is not an aviation forecast product. Always obtain and verify official current aviation weather, NOTAMs and operational briefing information from approved sources before flight. Values may be missing, delayed or unavailable.</p>
+    </section>
+    <footer>Weather sources: AviationWeather.gov and Open-Meteo · Wind speeds displayed in knots</footer>
+  </main>
+  <script src="weather.js"></script>
+</body>
+</html>
