@@ -4,10 +4,19 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
-<meta name="theme-color" content="#0f1a24">
+<meta name="theme-color" content="#10263b">
+<link rel="manifest" href="wx.webmanifest">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Airfield Wx">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="description" content="Airfield weather: enter an ICAO for cloud base, wind, visibility, chance of rain and flight category, hour by hour.">
-<link rel="icon" href="favicon.svg?v=2" type="image/svg+xml" sizes="any">
+<link rel="icon" href="wx-favicon.ico?v=1" sizes="48x48">
+<link rel="icon" href="wx-favicon.svg?v=1" type="image/svg+xml" sizes="any">
+<link rel="icon" href="wx-favicon-32.png?v=1" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="wx-apple-touch-icon.png?v=1">
 <title>Airfield Weather</title>
+<script>(function(){try{if(navigator.standalone||(window.matchMedia&&matchMedia("(display-mode: standalone)").matches))document.documentElement.classList.add("app")}catch(e){}})();</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Semi+Condensed:wght@500;600;700&display=swap">
@@ -26,6 +35,8 @@ main{max-width:960px;margin:0 auto;padding:calc(16px + env(safe-area-inset-top,0
 button,input{font:inherit;color:inherit}button{cursor:pointer}
 :focus-visible{outline:3px solid var(--MVFR);outline-offset:2px}
 [hidden]{display:none!important}
+.app nav.menu{display:none!important}.app h1{padding-right:0}
+@media (display-mode:standalone){nav.menu{display:none!important}h1{padding-right:0}}
 h1{font:600 20px var(--disp);margin:0;min-height:46px;display:flex;align-items:center;padding-right:64px;color:var(--mu)}
 .search{display:flex;gap:8px}
 .search input{flex:1;min-width:0;height:52px;padding:0 16px;border-radius:12px;border:1px solid var(--bd);background:var(--card);font:700 26px var(--disp);letter-spacing:.14em;text-transform:uppercase}
@@ -63,10 +74,11 @@ h1{font:600 20px var(--disp);margin:0;min-height:46px;display:flex;align-items:c
 .row{display:flex;width:max-content;min-width:100%}
 .labels{position:sticky;left:0;z-index:2;flex:none;width:64px;background:var(--card);border-right:1px solid var(--bd);padding-top:5px}
 .labels .c{justify-content:center;align-items:flex-start;padding-left:10px;color:var(--mu);font-size:12px;font-weight:500}
+.labels .c.t{justify-content:flex-start;padding-top:10px}
 .col{flex:none;width:72px;border-top:5px solid var(--cat);cursor:pointer;border-right:1px solid var(--bd);-webkit-tap-highlight-color:transparent}
 .col.sel{background:var(--sel);color:var(--on-sel)}
 .c{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;height:44px;line-height:1.15;gap:2px}
-.c.t{height:48px;font:600 16px var(--disp)}.c.t small{font:400 11px "Barlow";color:var(--mu)}
+.c.t{height:48px;justify-content:flex-start;padding-top:8px;gap:0;font:600 16px/20px var(--disp)}.c.t small{display:block;min-height:14px;font:400 11px/14px "Barlow";color:var(--mu)}
 .c.i{height:42px}.c.w{height:48px;font-size:15px}.c.s{height:30px;font-size:11px;color:var(--mu)}.c.s b{font:700 13px var(--disp)}
 .c .ar{width:15px;height:15px}
 .col.sel .t small,.col.sel .s{color:inherit;opacity:.7}
@@ -206,7 +218,7 @@ function strip(){var el=$("strip");
   if(d.sr&&+d.sr.slice(11,13)==h.hh)sun="<small>\u2191"+d.sr.slice(11,16).replace(":","")+"</small>";
   else if(d.ss&&+d.ss.slice(11,13)==h.hh)sun="<small>\u2193"+d.ss.slice(11,16).replace(":","")+"</small>";
   return'<div class="col'+(i==S.sel?" sel":"")+(h.hh==0?" dayst":"")+'" data-i="'+i+'" style="--cat:var(--b-'+h.cat+')" role="button" tabindex="0" aria-label="'+pad(h.hh)+"00Z "+h.cat+'">'+
-  '<div class="c t">'+pad(h.hh)+"00Z"+sun+"</div><div class=\"c i\">"+icon(h.code,h.day,32)+"</div>"+
+  '<div class="c t">'+pad(h.hh)+"00Z"+(sun||"<small>&nbsp;</small>")+"</div><div class=\"c i\">"+icon(h.code,h.day,32)+"</div>"+
   '<div class="c '+catOf(h.ceil,null)+'">'+(h.ceil==null?"":"~")+fc(h.ceil)+"</div>"+
   '<div class="c '+catOf(null,h.vis)+'">'+fv(h.vis)+"</div>"+
   '<div class="c w">'+arrow(h.dir)+"<span>"+(h.dir==null?"VRB":String(Math.round(h.dir)%360).padStart(3,"0")+"\u00B0")+"<br>"+Math.round(h.spd)+"-"+Math.max(Math.round(h.spd),Math.round(h.gst||h.spd))+"</span></div>"+
@@ -278,6 +290,7 @@ function load(id){id=String(id||"").toUpperCase().trim();
 $("form").addEventListener("submit",function(e){e.preventDefault();load($("icao").value)});
 $("icao").addEventListener("input",function(){this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,"")});
 document.addEventListener("visibilitychange",function(){if(!document.hidden&&cur&&Date.now()-loaded>9e5)load(cur)});
+if("serviceWorker" in navigator&&/^https?:$/.test(location.protocol))addEventListener("load",function(){navigator.serviceWorker.register("wx-sw.js",{scope:"./wx.html"}).catch(function(){})});
 recents();var st=location.hash.replace("#","").toUpperCase()||ls("wx-last","");if(st)load(st);
 })();
 </script>
