@@ -2,7 +2,7 @@
  * Configure WORKER_URL after deploying worker.js to Cloudflare.
  * Example: https://aviation-weather-api.your-subdomain.workers.dev
  */
-const WORKER_URL = "https://YOUR-WORKER-NAME.YOUR-SUBDOMAIN.workers.dev";
+const WORKER_URL = "https://aviation-weather-api.mike-69f.workers.dev/";
 const $ = (id) => document.getElementById(id);
 const form = $("search-form");
 const input = $("icao-input");
