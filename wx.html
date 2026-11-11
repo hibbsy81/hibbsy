@@ -55,6 +55,7 @@ h1{font:600 20px var(--disp);margin:0;min-height:46px;display:flex;align-items:c
 .ar{width:22px;height:22px;fill:currentColor;flex:none}
 .VFR{color:var(--VFR)}.MVFR{color:var(--MVFR)}.IFR{color:var(--IFR)}.LIFR{color:var(--LIFR)}
 
+.obs{display:flex;flex-wrap:wrap;gap:4px 20px;align-items:center;margin-top:14px;padding:11px 16px;background:var(--card);border:1px solid var(--bd);border-radius:14px;font-size:14px;color:var(--mu)}.obs em{font:600 13px var(--disp);letter-spacing:.06em;text-transform:uppercase;font-style:normal;width:100%}.obs b{color:var(--ink);font:600 17px var(--disp);display:inline-flex;align-items:center;gap:4px}.obs b.VFR{color:var(--VFR)}.obs b.MVFR{color:var(--MVFR)}.obs b.IFR{color:var(--IFR)}.obs b.LIFR{color:var(--LIFR)}
 .card{background:var(--card);border:1px solid var(--bd);border-radius:18px;margin-top:14px;overflow:hidden}
 .strip{overflow-x:auto;scrollbar-width:thin}
 .row{display:flex;width:max-content;min-width:100%}
@@ -97,6 +98,7 @@ pre{white-space:pre-wrap;overflow-wrap:anywhere;font:13px/1.5 ui-monospace,Menlo
 <div id="app" hidden>
 <div class="st"><div><b id="tI"></b><span id="tN"></span></div><div class="age" id="age"></div><div class="seg" id="seg" role="group" aria-label="Forecast source"><button type="button" data-s="model">Model</button><button type="button" data-s="taf">TAF</button></div></div>
 <section class="hero" id="hero"></section>
+<div class="obs" id="obs" hidden></div>
 <section class="card"><div class="strip" id="strip"></div></section>
 <nav class="days" id="days" aria-label="Day"></nav>
 <details id="raw"><summary>Raw METAR and TAF</summary><pre id="rawT"></pre></details>
@@ -167,16 +169,13 @@ var ago=function(ms){var m=Math.max(0,Math.round(ms/6e4));return m<60?m+"m ago":
 var dayOf=function(d){return S.days.filter(function(x){return x.date==d})[0]};
 
 /* ---------- data ---------- */
-function airport(id){var c=ls("wx-ap-"+id,null);if(c)return Promise.resolve(c);
- var save=function(a){lss("wx-ap-"+id,a);return a};
- return fetch("https://aviationweather.gov/api/data/airport?ids="+id+"&format=json").then(function(r){if(!r.ok)throw 0;return r.json()})
- .then(function(j){var a=j&&j[0];if(!a||a.lat==null)throw 0;return save({name:a.name||id,lat:+a.lat,lon:+a.lon})})
- .catch(function(){return fetch("https://raw.githubusercontent.com/mwgg/Airports/master/airports.json").then(function(r){return r.json()})
-  .then(function(j){var a=j[id];return a?save({name:a.name,lat:a.lat,lon:a.lon}):null}).catch(function(){return null})})}
+var WORKER="https://aviation-weather-api.mike-69f.workers.dev";
+function fetchAll(id){return fetch(WORKER+"/?icao="+encodeURIComponent(id)).then(function(r){
+ if(r.status==404)throw new Error("No weather data found for "+id+". Check the code and try again.");
+ if(!r.ok)throw new Error("The weather source didn\u2019t respond. Try again in a moment.");return r.json()})}
 function forecast(a){var hv="temperature_2m,dew_point_2m,relative_humidity_2m,pressure_msl,wind_speed_10m,wind_direction_10m,wind_gusts_10m,visibility,precipitation_probability,weather_code,cloud_cover_low,cloud_cover_mid,is_day";
  return fetch("https://api.open-meteo.com/v1/forecast?latitude="+a.lat+"&longitude="+a.lon+"&hourly="+hv+"&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset&wind_speed_unit=kn&timezone=GMT&forecast_days=10")
  .then(function(r){if(!r.ok)throw new Error("The forecast service returned an error. Try again in a moment.");return r.json()})}
-var awc=function(p,id){return fetch("https://aviationweather.gov/api/data/"+p+"?ids="+id+"&format=json").then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(j){return Array.isArray(j)&&j[0]||null}).catch(function(){return null})};
 
 function build(om,taf){var H=om.hourly,hours=[];
  H.time.forEach(function(t,i){if(H.temperature_2m[i]==null)return;
@@ -222,10 +221,19 @@ function days(){var c=S.hours[S.sel].date;
   return'<button class="dt'+(d.date==c?" sel":"")+'" type="button" data-d="'+d.date+'" aria-pressed="'+(d.date==c)+'"><span>'+dShort(d.date)+"</span>"+icon(m.code,true,32)+
   "<em>"+Math.round(d.max)+"\u00B0 / "+Math.round(d.min)+"\u00B0</em><span class=\"mb\">"+d.hours.map(function(h){return'<i class="k-'+h.cat+'"></i>'}).join("")+"</span></button>"}).join("")}
 
+function obs(m){var el=$("obs");if(!m){el.hidden=true;return}
+ var cl=(m.clouds||[]).filter(function(c){return/BKN|OVC|VV/.test(c.cover)&&c.base!=null}).map(function(c){return c.base}),ce=cl.length?Math.min.apply(null,cl):null,
+ sm=m.visib==null?null:(/\+/.test(m.visib)?10:parseFloat(m.visib)),km=sm==null?null:(/\+/.test(m.visib)?10:sm*1.609),
+ ct=m.fltCat||catOf(ce,km),q=m.altim==null?null:(m.altim>50?m.altim:m.altim*33.8639),
+ i=function(v,k,x){return"<span><b class=\""+(x||"")+"\">"+v+"</b> "+k+"</span>"};
+ el.hidden=false;
+ el.innerHTML='<em>Observed now (METAR)</em>'+i(ct,"category",ct)+i(fc(ce),"ceiling",catOf(ce,null))+i(fv(km),"visibility",catOf(null,km))+
+ i(arrow(m.wdir)+(m.wdir==null||m.wdir=="VRB"?"VRB":String(m.wdir).padStart(3,"0")+"\u00B0")+" "+(m.wspd==null?"\u2013":m.wspd+(m.wgst?"-"+m.wgst:""))+" kt","wind")+
+ (m.temp==null?"":i(Math.round(m.temp)+"\u00B0C","temp"))+(q==null?"":i(Math.round(q),"QNH"))}
 function seg(){document.querySelectorAll("#seg button").forEach(function(b){b.setAttribute("aria-pressed",b.dataset.s==SRC)})}
 $("seg").addEventListener("click",function(e){var b=e.target.closest("button");if(!b||!S||b.dataset.s==SRC)return;
  SRC=b.dataset.s;lss("wx-src",SRC);var t=S.hours[S.sel].t,d=build(S.om,S.taf);S.hours=d.hours;S.days=d.days;
- S.sel=0;S.hours.forEach(function(h,i){if(h.t==t)S.sel=i});seg();all(false)});
+ S.sel=0;S.hours.forEach(function(h,i){if(h.t==t)S.sel=i});seg();msg(SRC=="taf"&&!S.taf?"No TAF could be loaded for this airfield, so the hours below are still model data.":"",SRC=="taf"&&!S.taf);all(false)});
 function all(center){hero();strip(center);days()}
 $("strip").addEventListener("click",function(e){var c=e.target.closest(".col");if(c){S.sel=+c.dataset.i;all(false)}});
 $("strip").addEventListener("keydown",function(e){if(e.key!="Enter"&&e.key!=" ")return;var c=e.target.closest(".col");if(c){e.preventDefault();S.sel=+c.dataset.i;all(false)}});
@@ -239,14 +247,16 @@ $("recent").addEventListener("click",function(e){var b=e.target.closest("button"
 function load(id){id=String(id||"").toUpperCase().trim();
  if(!/^[A-Z0-9]{4}$/.test(id)){msg("Enter a four-letter ICAO code, for example EGVN.",true);return}
  $("icao").value=id;msg("Loading "+id+"\u2026");$("go").disabled=true;
- airport(id).then(function(a){if(!a)throw new Error("Couldn\u2019t find an airfield with the code "+id+". Check the code and try again.");
-  return Promise.all([forecast(a),awc("metar",id),awc("taf",id)]).then(function(r){
+ fetchAll(id).then(function(p){var m=p.metar&&p.metar[0]||null,t=p.taf&&p.taf[0]||null,sx=p.station&&p.station[0]||m||t;
+  if(!sx||sx.lat==null)throw new Error("No location found for "+id+".");
+  var a={name:sx.site||sx.name||id,lat:+sx.lat,lon:+sx.lon};
+  return forecast(a).then(function(om){var r=[om,m,t];
    var d=build(r[0],r[2]);if(!d.hours.length)throw new Error("No forecast data came back for "+id+".");
    S=d;S.om=r[0];S.taf=r[2];seg();var now=new Date().toISOString().slice(0,13)+":00";S.sel=0;S.hours.forEach(function(h,i){if(h.t<=now)S.sel=i});
    cur=id;loaded=Date.now();$("tI").textContent=id;
    $("tN").textContent=a.name.replace(/\b([A-Z])([A-Z]+)/g,function(m,x,y){return x+y.toLowerCase()});
-   $("age").textContent=r[1]&&r[1].obsTime?"METAR "+ago(Date.now()-r[1].obsTime*1000):"";
-   $("rawT").textContent=(r[1]&&r[1].rawOb||"No METAR available")+"\n\n"+(r[2]&&r[2].rawTAF||"No TAF available");
+   $("age").textContent=r[1]&&r[1].obsTime?"METAR "+ago(Date.now()-r[1].obsTime*(r[1].obsTime<1e11?1000:1)):"";obs(r[1]);
+   $("rawT").textContent=(r[1]&&r[1].rawOb||"METAR could not be loaded for "+id)+"\n\n"+(r[2]&&r[2].rawTAF||"TAF could not be loaded for "+id+" (the airfield may not issue one)");
    document.title=id+" weather";$("app").hidden=false;all(true);msg("");
    var rc=ls("wx-recent",[]).filter(function(c){return c!=id});rc.unshift(id);lss("wx-recent",rc.slice(0,6));lss("wx-last",id);recents();
    try{history.replaceState(null,"","#"+id)}catch(e){}})})
