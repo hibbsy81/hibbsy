@@ -1,74 +1,49 @@
 {
- "updated": "12 Nov 2026, 15:23",
- "updated_iso": "2026-11-12T15:23:49.583819+00:00",
+ "updated": "12 Nov 2026, 23:41",
+ "updated_iso": "2026-11-12T23:41:46.988189+00:00",
  "health": {
   "mc": {
-   "last_ok_iso": "2026-11-12T15:23:49.583819+00:00",
+   "last_ok_iso": "2026-11-12T23:41:46.988189+00:00",
    "from": "man-city-on-tv.html",
    "count": 14
   },
   "mw": {
-   "last_ok_iso": "2026-11-12T15:23:49.583819+00:00",
+   "last_ok_iso": "2026-11-12T23:41:46.988189+00:00",
    "from": "man-city-women-on-tv.html",
    "count": 6
   },
   "aw": {
-   "last_ok_iso": "2026-11-12T15:23:49.583819+00:00",
+   "last_ok_iso": "2026-11-12T23:41:46.988189+00:00",
    "from": "arsenal-women-on-tv.html",
-   "count": 7
+   "count": 6
   },
   "mu": {
-   "last_ok_iso": "2026-11-12T15:23:49.583819+00:00",
+   "last_ok_iso": "2026-11-12T23:41:46.988189+00:00",
    "from": "man-utd-women-on-tv.html",
    "count": 4
   },
   "cw": {
-   "last_ok_iso": "2026-11-12T15:23:49.583819+00:00",
+   "last_ok_iso": "2026-11-12T23:41:46.988189+00:00",
    "from": "chelsea-women-on-tv.html",
    "count": 6
   },
   "li": {
-   "last_ok_iso": "2026-11-12T15:23:49.583819+00:00",
+   "last_ok_iso": "2026-11-12T23:41:46.988189+00:00",
    "from": "england-women-on-tv.html",
    "count": 2
   },
   "en": {
-   "last_ok_iso": "2026-11-12T15:23:49.583819+00:00",
+   "last_ok_iso": "2026-11-12T23:41:46.988189+00:00",
    "from": "england-on-tv.html",
-   "count": 2
+   "count": 1
   },
   "f1": {
-   "last_ok_iso": "2026-11-12T15:23:49.583819+00:00",
+   "last_ok_iso": "2026-11-12T23:41:46.988189+00:00",
    "from": "api.jolpi.ca",
    "count": 6
   }
  },
  "fixtures": [
-  {
-   "t": "aw",
-   "iso": "2026-11-12T17:45:00+00:00",
-   "comp": "Women's Champions League League Phase",
-   "h": "Barcelona",
-   "a": "Arsenal",
-   "ch": [
-    "Disney+"
-   ],
-   "note": "",
-   "tbc": false
-  },
-  {
-   "t": "en",
-   "iso": "2026-11-12T19:45:00+00:00",
-   "comp": "UEFA Nations League Group Stage",
-   "h": "England",
-   "a": "Croatia",
-   "ch": [
-    "ITV1",
-    "ITVX"
-   ],
-   "note": "",
-   "tbc": false
-  },
   {
    "t": "mu",
    "iso": "2026-11-14T12:45:00+00:00",
