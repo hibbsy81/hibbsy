@@ -1,88 +1,49 @@
 {
- "updated": "14 Nov 2026, 13:38",
- "updated_iso": "2026-11-14T13:38:38.578556+00:00",
+ "updated": "14 Nov 2026, 22:31",
+ "updated_iso": "2026-11-14T22:31:43.658280+00:00",
  "health": {
   "mc": {
-   "last_ok_iso": "2026-11-14T13:38:38.578556+00:00",
+   "last_ok_iso": "2026-11-14T22:31:43.658280+00:00",
    "from": "man-city-on-tv.html",
    "count": 14
   },
   "mw": {
-   "last_ok_iso": "2026-11-14T13:38:38.578556+00:00",
+   "last_ok_iso": "2026-11-14T22:31:43.658280+00:00",
    "from": "man-city-women-on-tv.html",
-   "count": 6
+   "count": 5
   },
   "aw": {
-   "last_ok_iso": "2026-11-14T13:38:38.578556+00:00",
+   "last_ok_iso": "2026-11-14T22:31:43.658280+00:00",
    "from": "arsenal-women-on-tv.html",
    "count": 6
   },
   "mu": {
-   "last_ok_iso": "2026-11-14T13:38:38.578556+00:00",
+   "last_ok_iso": "2026-11-14T22:31:43.658280+00:00",
    "from": "man-utd-women-on-tv.html",
-   "count": 4
+   "count": 3
   },
   "cw": {
-   "last_ok_iso": "2026-11-14T13:38:38.578556+00:00",
+   "last_ok_iso": "2026-11-14T22:31:43.658280+00:00",
    "from": "chelsea-women-on-tv.html",
-   "count": 6
+   "count": 5
   },
   "li": {
-   "last_ok_iso": "2026-11-14T13:38:38.578556+00:00",
+   "last_ok_iso": "2026-11-14T22:31:43.658280+00:00",
    "from": "england-women-on-tv.html",
    "count": 2
   },
   "en": {
-   "last_ok_iso": "2026-11-14T13:38:38.578556+00:00",
+   "last_ok_iso": "2026-11-14T22:31:43.658280+00:00",
    "from": "england-on-tv.html",
    "count": 1
   },
   "f1": {
-   "last_ok_iso": "2026-11-14T13:38:38.578556+00:00",
+   "last_ok_iso": "2026-11-14T22:31:43.658280+00:00",
    "from": "api.jolpi.ca",
    "count": 6
   }
  },
  "fixtures": [
-  {
-   "t": "mu",
-   "iso": "2026-11-14T12:45:00+00:00",
-   "comp": "Women's Super League",
-   "h": "Man Utd",
-   "a": "Crystal Palace",
-   "ch": [
-    "Sky Sports Premier League",
-    "Sky Sports Mix"
-   ],
-   "note": "",
-   "tbc": false
-  },
-  {
-   "t": "mw",
-   "iso": "2026-11-14T13:30:00+00:00",
-   "comp": "Women's Super League",
-   "h": "Chelsea",
-   "a": "Man City",
-   "ch": [
-    "BBC One",
-    "BBC iPlayer"
-   ],
-   "note": "",
-   "tbc": false
-  },
-  {
-   "t": "cw",
-   "iso": "2026-11-14T13:30:00+00:00",
-   "comp": "Women's Super League",
-   "h": "Chelsea",
-   "a": "Man City",
-   "ch": [
-    "BBC One",
-    "BBC iPlayer"
-   ],
-   "note": "",
-   "tbc": false
-  },
   {
    "t": "aw",
    "iso": "2026-11-15T16:30:00+00:00",
