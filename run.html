@@ -48,6 +48,12 @@ button:not(.p):hover,input:hover{border-color:var(--accent);background:color-mix
 button:active{transform:translateY(1px)}
 input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 28%,transparent),0 0 22px color-mix(in srgb,var(--accent) 30%,transparent)}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.sbox{position:relative;flex:1 1 200px;min-width:0;display:flex}
+.sbox input{flex:1;padding-right:46px}
+input[type=search]::-webkit-search-cancel-button,input[type=search]::-webkit-search-decoration{-webkit-appearance:none;display:none}
+.sbox .clr,.sbox .clr:hover{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:34px;height:34px;min-height:0;padding:0;border:0;border-radius:50%;display:grid;place-items:center;background:color-mix(in srgb,var(--ink) 14%,transparent);color:var(--mu);box-shadow:none}
+.sbox .clr:hover{color:var(--ink);background:color-mix(in srgb,var(--accent) 30%,transparent)}
+.sbox .clr:active{transform:translateY(-50%) scale(.92)}
 .res{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:2px}
 .res button{width:100%;text-align:left;border:0;background:transparent;box-shadow:none;min-height:42px;font-weight:500;border-radius:10px}
 .res button:hover,.res button:focus-visible{background:color-mix(in srgb,var(--accent) 14%,transparent);box-shadow:none;border:0}
@@ -97,7 +103,7 @@ nav.menu{top:calc(24px + env(safe-area-inset-top,0px));right:calc(30px + env(saf
 
 <section class="card">
   <div class="row">
-    <input id="q" type="search" placeholder="Search for a place" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="search" aria-label="Place">
+    <div class="sbox"><input id="q" type="search" placeholder="Search for a place" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="search" aria-label="Place"><button class="clr" id="clr" type="button" aria-label="Clear place" hidden><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" fill="none"/></svg></button></div>
     <button class="p" id="gps" type="button">Use my location</button>
   </div>
   <ul class="res" id="res" hidden></ul>
@@ -237,7 +243,7 @@ function drawWx(w,tz){
 function setPlace(p,keep){
  place=p;try{localStorage.setItem("rl-place",JSON.stringify(p));}catch(e){}
  if(!keep||!$("date").value)$("date").value=todayIn(p.tz);
- $("q").value=p.name;msg("");render();
+ $("q").value=p.name;syncClr();msg("");render();
 }
 
 /* Search as you type */
@@ -257,8 +263,10 @@ async function search(q){
   msg("");list();
  }catch(e){if(my===seq)msg("Couldn\u2019t search just now. Check your connection.");}
 }
+function syncClr(){$("clr").hidden=!$("q").value;}
+$("clr").onclick=()=>{clearTimeout(timer);seq++;$("q").value="";results=[];$("res").hidden=true;syncClr();$("q").focus();};
 $("q").addEventListener("input",()=>{
- clearTimeout(timer);const q=$("q").value.trim();
+ syncClr();clearTimeout(timer);const q=$("q").value.trim();
  if(q.length<2){seq++;$("res").hidden=true;return;}
  timer=setTimeout(()=>search(q),250);
 });
