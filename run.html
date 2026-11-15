@@ -2,7 +2,7 @@
 <html lang="en-GB">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Run Light</title>
 <meta name="description" content="Is it light enough to run? First light, last light, sunrise and sunset for any place.">
 <meta name="color-scheme" content="light dark">
@@ -24,7 +24,8 @@
 --menu-ink:var(--ink);--menu-accent:var(--accent);--menu-glass:rgba(255,255,255,.85);--menu-line:rgba(29,43,58,.12);--menu-hover:rgba(29,43,58,.06)}
 @media (prefers-color-scheme:dark){:root{--bg:#0e151e;--glow:rgba(240,180,83,.2);--card:#17212e;--ink:#F3EEE6;--mu:#9aa3ad;--line:rgba(255,255,255,.10);--accent:#F0B453;--track:#9c3b22;--night:#0f1626;--twi:#c9803c;--day:#d9b94c;
 --menu-glass:rgba(23,33,46,.82);--menu-line:rgba(255,255,255,.12);--menu-hover:rgba(255,255,255,.08)}}
-*{box-sizing:border-box;touch-action:manipulation}[hidden]{display:none!important}
+*{box-sizing:border-box;touch-action:manipulation}
+html,body{touch-action:pan-x pan-y}[hidden]{display:none!important}
 #out{display:grid;grid-template-columns:minmax(0,1fr);gap:14px}
 body{margin:0;min-height:100dvh;background:var(--bg) radial-gradient(ellipse 90% 55% at 50% 0,var(--glow),transparent 70%) no-repeat;color:var(--ink);font:15px/1.5 "Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;-webkit-font-smoothing:antialiased;
 padding:calc(16px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(40px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
@@ -125,11 +126,6 @@ nav.menu{top:calc(24px + env(safe-area-inset-top,0px));right:calc(30px + env(saf
     <div id="wxBody"></div>
   </div>
 
-  <div class="card wrap">
-    <div class="lbl" style="margin-bottom:6px">Next 7 days</div>
-    <table><thead><tr><th>Day</th><th>First</th><th>Rise</th><th>Set</th><th>Last</th><th>Window</th></tr></thead><tbody id="week"></tbody></table>
-  </div>
-  <p class="hint" style="text-align:center">The window runs from first light to last light (civil twilight, sun 6° below the horizon): bright enough to run without a head torch.</p>
 </section>
 </main>
 
@@ -189,10 +185,6 @@ function render(){
   else $("now").textContent="";
  }
  drawWx(w,tz);
- let rows="";
- for(let i=0;i<7;i++){const dt=new Date(Date.UTC(y,m-1,d+i)),q=day(dt.getUTCFullYear(),dt.getUTCMonth()+1,dt.getUTCDate(),place.lat,place.lon);
-  rows+=`<tr><td>${new Intl.DateTimeFormat("en-GB",{weekday:"short",day:"numeric",month:"short",timeZone:"UTC"}).format(dt)}</td><td>${show(q.c,"rise",tz)}</td><td>${show(q.s,"rise",tz)}</td><td>${show(q.s,"set",tz)}</td><td>${show(q.c,"set",tz)}</td><td>${q.c.st?"–":dur(q.c.set-q.c.rise)}</td></tr>`;}
- $("week").innerHTML=rows;
 }
 /* Weather (Open-Meteo): temperature, rain, wind for the hours inside the window */
 const WC={0:["\u2600\ufe0f","Clear"],1:["\ud83c\udf24\ufe0f","Mostly clear"],2:["\u26c5","Partly cloudy"],3:["\u2601\ufe0f","Overcast"],45:["\ud83c\udf2b\ufe0f","Fog"],48:["\ud83c\udf2b\ufe0f","Fog"],
