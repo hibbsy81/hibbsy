@@ -56,6 +56,12 @@ input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px color-m
 .lbl{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--mu)}
 .big{font:italic 800 clamp(32px,9.5vw,46px)/1.05 var(--disp);letter-spacing:.01em;margin:6px 0 2px;font-variant-numeric:tabular-nums}
 .mu{color:var(--mu);font-size:13px}
+.dnav{display:grid;grid-template-columns:46px 1fr 46px auto;gap:8px;margin-bottom:14px}
+.dnav>button{padding:0;font-size:24px;line-height:1}
+.dnav>#today{padding:0 14px;font-size:14px;line-height:1.5}
+.dpick{position:relative;display:flex;align-items:center;justify-content:center;min-height:46px;padding:0 12px;border-radius:12px;border:1px solid var(--line);background:color-mix(in srgb,var(--ink) 6%,transparent);font-weight:600;text-align:center;cursor:pointer;transition:border-color .15s,background-color .15s,box-shadow .2s}
+.dpick:hover,.dpick:focus-within{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,transparent);box-shadow:0 0 18px color-mix(in srgb,var(--accent) 28%,transparent)}
+.dpick input{position:absolute;inset:0;width:100%;height:100%;min-height:0;padding:0;opacity:0;cursor:pointer;border:0;box-shadow:none!important;background:none!important}
 .top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
 .sun{display:grid;gap:10px;text-align:right;flex:none}
 .sun b{display:block;font-size:19px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.2}
@@ -68,6 +74,14 @@ table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font
 th,td{padding:7px 4px;text-align:right;border-bottom:1px solid var(--line)}th:first-child,td:first-child{text-align:left}
 th{font-size:11px;color:var(--mu);text-transform:uppercase;letter-spacing:.04em}tr:last-child td{border:0}
 .wrap{overflow-x:auto}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:10px 0 12px}
+.stats b{display:block;font-size:18px;font-weight:700;line-height:1.25;font-variant-numeric:tabular-nums}
+.stats small{display:block;font-size:12px;color:var(--mu)}
+.bestl{font-weight:600;margin:0 0 10px}
+.hrs{display:flex;gap:6px;overflow-x:auto;padding:2px 2px 8px;scrollbar-width:thin}
+.hr{flex:none;width:60px;text-align:center;padding:8px 4px;border-radius:12px;border:1px solid var(--line);background:color-mix(in srgb,var(--ink) 5%,transparent);font-variant-numeric:tabular-nums;font-size:13px;line-height:1.4}
+.hr .e{font-size:20px;line-height:1.5}.hr .t{font-weight:700;font-size:15px}.hr .m{color:var(--mu);font-size:11px}
+.hr.best{border-color:var(--accent);box-shadow:0 0 16px color-mix(in srgb,var(--accent) 35%,transparent)}
 @media (display-mode:standalone){nav.menu{display:none}}html.standalone nav.menu{display:none}
 nav.menu{top:calc(24px + env(safe-area-inset-top,0px));right:calc(30px + env(safe-area-inset-right,0px))}
 </style>
@@ -91,9 +105,11 @@ nav.menu{top:calc(24px + env(safe-area-inset-top,0px));right:calc(30px + env(saf
 
 <section id="out" hidden>
   <div class="card">
-    <div class="row" style="margin-bottom:8px">
-      <input type="date" id="date" aria-label="Date" style="flex:0 1 170px">
-      <button id="today" type="button">Today</button>
+    <div class="dnav">
+      <button id="prev" type="button" aria-label="Previous day">&#8249;</button>
+      <label class="dpick"><span id="dtxt"></span><input type="date" id="date" aria-label="Choose a date"></label>
+      <button id="next" type="button" aria-label="Next day">&#8250;</button>
+      <button id="today" type="button" hidden>Today</button>
     </div>
     <div class="top">
       <div><div class="lbl">Running window</div><div class="big" id="win"></div><div class="mu" id="len"></div></div>
@@ -102,6 +118,11 @@ nav.menu{top:calc(24px + env(safe-area-inset-top,0px));right:calc(30px + env(saf
     <div class="now" id="now"></div>
     <div class="bar" id="bar"></div>
     <div class="tick"><span>00</span><span>06</span><span>12</span><span>18</span><span>24</span></div>
+  </div>
+
+  <div class="card" id="wxCard" hidden>
+    <div class="lbl">Weather in your window</div>
+    <div id="wxBody"></div>
   </div>
 
   <div class="card wrap">
@@ -114,7 +135,7 @@ nav.menu{top:calc(24px + env(safe-area-inset-top,0px));right:calc(30px + env(saf
 
 <script>
 const $=id=>document.getElementById(id),R=Math.PI/180;
-let place=null,results=[],seq=0,timer;
+let place=null,results=[],seq=0,timer,wx=null,wxSig="";
 try{place=JSON.parse(localStorage.getItem("rl-place"));}catch(e){}
 
 /* NOAA solar position -> sun event times (UTC ms) */
@@ -149,6 +170,9 @@ function render(){
  const tz=place.tz,[y,m,d]=($("date").value||todayIn(tz)).split("-").map(Number);
  const r=day(y,m,d,place.lat,place.lon),w=r.c,bar=$("bar");
  $("out").hidden=false;
+ {const tp=todayIn(tz).split("-").map(Number),df=Math.round((Date.UTC(y,m-1,d)-Date.UTC(tp[0],tp[1]-1,tp[2]))/864e5);
+  $("dtxt").textContent=(df===0?"Today \u00b7 ":df===1?"Tomorrow \u00b7 ":df===-1?"Yesterday \u00b7 ":"")+new Intl.DateTimeFormat("en-GB",{weekday:"short",day:"numeric",month:"short",timeZone:"UTC"}).format(Date.UTC(y,m-1,d));
+  $("today").hidden=df===0;}
  $("sr").textContent=show(r.s,"rise",tz);$("ss").textContent=show(r.s,"set",tz);
  if(w.st){$("win").textContent=w.st==="all"?"Light all day":"No usable light";$("len").textContent="";$("now").textContent="";bar.style.display="none";}
  else{
@@ -164,10 +188,57 @@ function render(){
    const t=Date.now();$("now").textContent=t<w.rise?"Light in "+dur(w.rise-t):t<w.set?"Light now. "+dur(w.set-t)+" left.":"Dark now. Window has finished.";}
   else $("now").textContent="";
  }
+ drawWx(w,tz);
  let rows="";
  for(let i=0;i<7;i++){const dt=new Date(Date.UTC(y,m-1,d+i)),q=day(dt.getUTCFullYear(),dt.getUTCMonth()+1,dt.getUTCDate(),place.lat,place.lon);
   rows+=`<tr><td>${new Intl.DateTimeFormat("en-GB",{weekday:"short",day:"numeric",month:"short",timeZone:"UTC"}).format(dt)}</td><td>${show(q.c,"rise",tz)}</td><td>${show(q.s,"rise",tz)}</td><td>${show(q.s,"set",tz)}</td><td>${show(q.c,"set",tz)}</td><td>${q.c.st?"–":dur(q.c.set-q.c.rise)}</td></tr>`;}
  $("week").innerHTML=rows;
+}
+/* Weather (Open-Meteo): temperature, rain, wind for the hours inside the window */
+const WC={0:["\u2600\ufe0f","Clear"],1:["\ud83c\udf24\ufe0f","Mostly clear"],2:["\u26c5","Partly cloudy"],3:["\u2601\ufe0f","Overcast"],45:["\ud83c\udf2b\ufe0f","Fog"],48:["\ud83c\udf2b\ufe0f","Fog"],
+ 51:["\ud83c\udf26\ufe0f","Drizzle"],53:["\ud83c\udf26\ufe0f","Drizzle"],55:["\ud83c\udf27\ufe0f","Heavy drizzle"],56:["\ud83c\udf27\ufe0f","Freezing drizzle"],57:["\ud83c\udf27\ufe0f","Freezing drizzle"],
+ 61:["\ud83c\udf26\ufe0f","Light rain"],63:["\ud83c\udf27\ufe0f","Rain"],65:["\ud83c\udf27\ufe0f","Heavy rain"],66:["\ud83c\udf27\ufe0f","Freezing rain"],67:["\ud83c\udf27\ufe0f","Freezing rain"],
+ 71:["\ud83c\udf28\ufe0f","Light snow"],73:["\ud83c\udf28\ufe0f","Snow"],75:["\u2744\ufe0f","Heavy snow"],77:["\ud83c\udf28\ufe0f","Snow grains"],
+ 80:["\ud83c\udf26\ufe0f","Light showers"],81:["\ud83c\udf27\ufe0f","Showers"],82:["\ud83c\udf27\ufe0f","Heavy showers"],85:["\ud83c\udf28\ufe0f","Snow showers"],86:["\ud83c\udf28\ufe0f","Snow showers"],
+ 95:["\u26c8\ufe0f","Thunderstorm"],96:["\u26c8\ufe0f","Thunderstorm"],99:["\u26c8\ufe0f","Thunderstorm"]};
+const wkey=()=>place.lat.toFixed(3)+","+place.lon.toFixed(3)+","+place.tz;
+let wxBusy="";
+function loadWx(){
+ const key=wkey();
+ if(wxBusy===key||(wx&&wx.key===key&&Date.now()-wx.at<18e5))return;
+ wxBusy=key;
+ fetch("https://api.open-meteo.com/v1/forecast?latitude="+place.lat+"&longitude="+place.lon+"&hourly=temperature_2m,apparent_temperature,precipitation_probability,precipitation,weather_code,wind_speed_10m,wind_gusts_10m,is_day&wind_speed_unit=mph&past_days=1&forecast_days=16&timezone="+encodeURIComponent(place.tz))
+ .then(r=>{if(!r.ok)throw 0;return r.json();}).then(j=>{wx={key,at:Date.now(),j};}).catch(()=>{wx={key,at:Date.now(),err:true};})
+ .finally(()=>{wxBusy="";wxSig="";render();});
+}
+function drawWx(w,tz){
+ const card=$("wxCard"),body=$("wxBody");
+ if(w.st){card.hidden=true;return;}
+ card.hidden=false;
+ loadWx();
+ if(!wx||wx.key!==wkey()){wxSig="";body.innerHTML='<p class="hint">Loading weather\u2026</p>';return;}
+ if(wx.err){wxSig="";body.innerHTML='<p class="hint">Couldn\u2019t load the weather just now.</p>';return;}
+ const sig=wkey()+"|"+$("date").value+"|"+Math.round(w.rise/6e4)+"|"+wx.at;
+ if(sig===wxSig)return;wxSig=sig;
+ const H=wx.j.hourly,off=wx.j.utc_offset_seconds||0,hrs=[];
+ for(let i=0;i<H.time.length;i++){
+  const hh=+H.time[i].slice(11,13),[Y,M,D]=H.time[i].slice(0,10).split("-").map(Number),t=Date.UTC(Y,M-1,D,hh)-off*1e3;
+  if(t+36e5>w.rise&&t<w.set&&H.temperature_2m[i]!=null)hrs.push({lbl:H.time[i].slice(11,16),temp:H.temperature_2m[i],feel:H.apparent_temperature[i],pop:H.precipitation_probability[i]||0,pr:H.precipitation[i]||0,wind:H.wind_speed_10m[i],gust:H.wind_gusts_10m[i],code:H.weather_code[i],day:H.is_day[i]});
+ }
+ if(!hrs.length){body.innerHTML='<p class="hint">No forecast available for this date.</p>';return;}
+ const rd=Math.round,mn=k=>Math.min(...hrs.map(h=>h[k])),mx=k=>Math.max(...hrs.map(h=>h[k])),sum=k=>hrs.reduce((a,h)=>a+h[k],0);
+ const worst=hrs.reduce((a,h)=>h.code>a.code?h:a,hrs[0]);
+ const score=h=>h.pop*.6+h.pr*20+h.wind*1.2+Math.abs(h.feel-10)*2.5;
+ const best=hrs.reduce((a,h)=>score(h)<score(a)?h:a,hrs[0]);
+ const rng=(a,b)=>rd(a)===rd(b)?rd(a)+"\u00b0":rd(a)+"\u2013"+rd(b)+"\u00b0";
+ const ico=h=>h.code===0&&!h.day?"\ud83c\udf19":(WC[h.code]||["",""])[0];
+ body.innerHTML='<div class="stats">'+
+  '<div><b>'+rng(mn("temp"),mx("temp"))+'C</b><small>Feels '+rng(mn("feel"),mx("feel"))+'</small></div>'+
+  '<div><b>'+rd(mx("pop"))+'%</b><small>rain chance'+(sum("pr")>=.1?', '+sum("pr").toFixed(1)+' mm':'')+'</small></div>'+
+  '<div><b>'+rd(sum("wind")/hrs.length)+' mph</b><small>gusts '+rd(mx("gust"))+'</small></div></div>'+
+  '<p class="bestl">'+ico(worst)+' '+((WC[worst.code]||["","Mixed"])[1])+'. Best hour: '+best.lbl+' ('+rd(best.temp)+'\u00b0, '+best.pop+'% rain, '+rd(best.wind)+' mph)</p>'+
+  '<div class="hrs">'+hrs.map(h=>'<div class="hr'+(h===best?' best':'')+'"><div class="m">'+h.lbl+'</div><div class="e">'+ico(h)+'</div><div class="t">'+rd(h.temp)+'\u00b0</div><div class="m">'+h.pop+'%</div><div class="m">'+rd(h.wind)+' mph</div></div>').join("")+'</div>'+
+  '<p class="hint">Each hour: temperature, chance of rain, wind. Forecast by Open-Meteo.</p>';
 }
 function setPlace(p,keep){
  place=p;try{localStorage.setItem("rl-place",JSON.stringify(p));}catch(e){}
@@ -225,6 +296,9 @@ $("gps").onclick=()=>{
 };
 document.addEventListener("click",e=>{if(!e.target.closest(".card"))$("res").hidden=true;});
 $("date").onchange=render;
+function shift(n){if(!place)return;const[y,m,d]=($("date").value||todayIn(place.tz)).split("-").map(Number);$("date").value=new Date(Date.UTC(y,m-1,d+n)).toISOString().slice(0,10);render();}
+$("prev").onclick=()=>shift(-1);$("next").onclick=()=>shift(1);
+$("date").addEventListener("click",()=>{try{$("date").showPicker();}catch(e){}});
 $("today").onclick=()=>{if(place){$("date").value=todayIn(place.tz);render();}};
 setInterval(()=>{if(place&&$("date").value===todayIn(place.tz))render();},6e4);
 if(place)setPlace(place);
