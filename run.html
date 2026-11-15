@@ -294,10 +294,14 @@ $("gps").onclick=()=>{
  if(!navigator.geolocation){msg("Location isn\u2019t available in this browser.");return;}
  msg("");$("gps").textContent="Locating\u2026";
  navigator.geolocation.getCurrentPosition(async p=>{
-  $("gps").textContent="Use my location";$("res").hidden=true;seq++;
+  $("res").hidden=true;seq++;
   const la=p.coords.latitude,lo=p.coords.longitude,tz=Intl.DateTimeFormat().resolvedOptions().timeZone;
-  setPlace({name:"Finding place\u2026",lat:la,lon:lo,tz});
+  /* Show the new times straight away without touching the search box, so nothing flashes while the name is looked up */
+  place={name:place?place.name:"",lat:la,lon:lo,tz};
+  if(!$("date").value)$("date").value=todayIn(tz);
+  render();
   const n=await nearest(la,lo);
+  $("gps").textContent="Use my location";
   setPlace({name:n||"My location ("+la.toFixed(2)+", "+lo.toFixed(2)+")",lat:la,lon:lo,tz},true);
  },e=>{$("gps").textContent="Use my location";msg("Couldn\u2019t get your location: "+e.message);},{timeout:15000,maximumAge:6e5});
 };
