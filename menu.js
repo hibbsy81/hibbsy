@@ -15,6 +15,7 @@
     { label: 'Hearts Scorecard', href: 'cards.html' },
     { label: 'Countdown', href: 'countdown.html' },
     { label: 'Chuff Chart',      href: 'chuff.html' },
+        { label: 'Run Light',      href: 'run.html' },
     { label: 'Webmail',          href: 'https://webmail.hibbs.org.uk/' }
   ];
 
