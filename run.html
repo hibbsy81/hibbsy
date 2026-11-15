@@ -24,11 +24,11 @@
 --menu-ink:var(--ink);--menu-accent:var(--accent);--menu-glass:rgba(255,255,255,.85);--menu-line:rgba(29,43,58,.12);--menu-hover:rgba(29,43,58,.06)}
 @media (prefers-color-scheme:dark){:root{--bg:#0e151e;--glow:rgba(240,180,83,.2);--card:#17212e;--ink:#F3EEE6;--mu:#9aa3ad;--line:rgba(255,255,255,.10);--accent:#F0B453;--track:#9c3b22;--night:#0f1626;--twi:#c9803c;--day:#d9b94c;
 --menu-glass:rgba(23,33,46,.82);--menu-line:rgba(255,255,255,.12);--menu-hover:rgba(255,255,255,.08)}}
-*{box-sizing:border-box}[hidden]{display:none!important}
-#out{display:grid;gap:14px}
+*{box-sizing:border-box;touch-action:manipulation}[hidden]{display:none!important}
+#out{display:grid;grid-template-columns:minmax(0,1fr);gap:14px}
 body{margin:0;min-height:100dvh;background:var(--bg) radial-gradient(ellipse 90% 55% at 50% 0,var(--glow),transparent 70%) no-repeat;color:var(--ink);font:15px/1.5 "Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;-webkit-font-smoothing:antialiased;
 padding:calc(16px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(40px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
-main{max-width:560px;margin:0 auto;display:grid;gap:14px}
+main{max-width:560px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr);gap:14px}
 .hero{position:relative;overflow:hidden;display:flex;align-items:center;gap:14px;padding:18px 74px 32px 18px;border-radius:22px;background:linear-gradient(135deg,color-mix(in srgb,var(--track) 80%,#ff9a5a),var(--track));color:#fff;box-shadow:0 14px 40px color-mix(in srgb,var(--track) 45%,transparent),inset 0 1px 0 rgba(255,255,255,.25)}
 .hero::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(180deg,transparent 0 13px,rgba(255,255,255,.22) 13px 14px)}
 .hero::after{content:"";position:absolute;left:0;right:0;bottom:0;height:12px;background:repeating-conic-gradient(#fff 0 25%,#1d2b3a 0 50%) 0 0/12px 12px}
@@ -36,7 +36,7 @@ main{max-width:560px;margin:0 auto;display:grid;gap:14px}
 .logo{flex:none;width:54px;height:54px;border-radius:14px;box-shadow:0 4px 12px rgba(0,0,0,.3)}
 h1{margin:0;font:italic 800 40px/1 var(--disp);text-transform:uppercase;letter-spacing:.01em}
 .hero p{margin:3px 0 0;font-size:13px;opacity:.9}
-.card{background:color-mix(in srgb,var(--card) 80%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border:1px solid var(--line);border-left:4px solid var(--track);border-radius:18px;padding:14px;box-shadow:0 10px 30px rgba(0,0,0,.12),inset 0 1px 0 rgba(255,255,255,.08)}
+.card{min-width:0;background:color-mix(in srgb,var(--card) 80%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border:1px solid var(--line);border-left:4px solid var(--track);border-radius:18px;padding:14px;box-shadow:0 10px 30px rgba(0,0,0,.12),inset 0 1px 0 rgba(255,255,255,.08)}
 .row{display:flex;gap:8px;flex-wrap:wrap}
 input,button{font:inherit;color:inherit;min-height:46px;border-radius:12px;border:1px solid var(--line);background:color-mix(in srgb,var(--ink) 6%,transparent);padding:8px 12px;transition:border-color .15s,background-color .15s,box-shadow .2s,filter .15s,transform .1s}
 input{flex:1 1 200px;min-width:0;-webkit-appearance:none;appearance:none}
@@ -78,7 +78,7 @@ th{font-size:11px;color:var(--mu);text-transform:uppercase;letter-spacing:.04em}
 .stats b{display:block;font-size:18px;font-weight:700;line-height:1.25;font-variant-numeric:tabular-nums}
 .stats small{display:block;font-size:12px;color:var(--mu)}
 .bestl{font-weight:600;margin:0 0 10px}
-.hrs{display:flex;gap:6px;overflow-x:auto;padding:2px 2px 8px;scrollbar-width:thin}
+.hrs{display:flex;gap:6px;overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;padding:2px 2px 8px;scrollbar-width:thin}
 .hr{flex:none;width:60px;text-align:center;padding:8px 4px;border-radius:12px;border:1px solid var(--line);background:color-mix(in srgb,var(--ink) 5%,transparent);font-variant-numeric:tabular-nums;font-size:13px;line-height:1.4}
 .hr .e{font-size:20px;line-height:1.5}.hr .t{font-weight:700;font-size:15px}.hr .m{color:var(--mu);font-size:11px}
 .hr.best{border-color:var(--accent);box-shadow:0 0 16px color-mix(in srgb,var(--accent) 35%,transparent)}
@@ -207,7 +207,7 @@ function loadWx(){
  const key=wkey();
  if(wxBusy===key||(wx&&wx.key===key&&Date.now()-wx.at<18e5))return;
  wxBusy=key;
- fetch("https://api.open-meteo.com/v1/forecast?latitude="+place.lat+"&longitude="+place.lon+"&hourly=temperature_2m,apparent_temperature,precipitation_probability,precipitation,weather_code,wind_speed_10m,wind_gusts_10m,is_day&wind_speed_unit=mph&past_days=1&forecast_days=16&timezone="+encodeURIComponent(place.tz))
+ fetch("https://api.open-meteo.com/v1/forecast?latitude="+place.lat+"&longitude="+place.lon+"&hourly=temperature_2m,apparent_temperature,precipitation_probability,precipitation,weather_code,wind_speed_10m,wind_gusts_10m,is_day&wind_speed_unit=kn&past_days=1&forecast_days=16&timezone="+encodeURIComponent(place.tz))
  .then(r=>{if(!r.ok)throw 0;return r.json();}).then(j=>{wx={key,at:Date.now(),j};}).catch(()=>{wx={key,at:Date.now(),err:true};})
  .finally(()=>{wxBusy="";wxSig="";render();});
 }
@@ -228,17 +228,19 @@ function drawWx(w,tz){
  if(!hrs.length){body.innerHTML='<p class="hint">No forecast available for this date.</p>';return;}
  const rd=Math.round,mn=k=>Math.min(...hrs.map(h=>h[k])),mx=k=>Math.max(...hrs.map(h=>h[k])),sum=k=>hrs.reduce((a,h)=>a+h[k],0);
  const worst=hrs.reduce((a,h)=>h.code>a.code?h:a,hrs[0]);
- const score=h=>h.pop*.6+h.pr*20+h.wind*1.2+Math.abs(h.feel-10)*2.5;
+ const score=h=>h.pop*.6+h.pr*20+h.wind*1.4+Math.abs(h.feel-10)*2.5;
  const best=hrs.reduce((a,h)=>score(h)<score(a)?h:a,hrs[0]);
  const rng=(a,b)=>rd(a)===rd(b)?rd(a)+"\u00b0":rd(a)+"\u2013"+rd(b)+"\u00b0";
- const ico=h=>h.code===0&&!h.day?"\ud83c\udf19":(WC[h.code]||["",""])[0];
+ const MOON='<path d="M20.5 14.2A8.6 8.6 0 0 1 9.8 3.5a8.6 8.6 0 1 0 10.7 10.7z" fill="#f3e3a4"/>',CLOUD='<path d="M8 20.5a4 4 0 0 1-.3-8 5.2 5.2 0 0 1 9.9-1.1A4.6 4.6 0 0 1 17.5 20.5z" fill="#c4cfdc"/>';
+ const svg=b=>'<svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" style="vertical-align:middle">'+b+'</svg>';
+ const ico=h=>!h.day&&h.code<=1?svg(MOON+'<circle cx="19" cy="5" r="1.1" fill="#fff"/><circle cx="14.5" cy="2.8" r=".8" fill="#fff"/>'):!h.day&&h.code===2?svg('<g transform="translate(-3 -3) scale(.8)">'+MOON+'</g>'+CLOUD):(WC[h.code]||["",""])[0];
  body.innerHTML='<div class="stats">'+
   '<div><b>'+rng(mn("temp"),mx("temp"))+'C</b><small>Feels '+rng(mn("feel"),mx("feel"))+'</small></div>'+
   '<div><b>'+rd(mx("pop"))+'%</b><small>rain chance'+(sum("pr")>=.1?', '+sum("pr").toFixed(1)+' mm':'')+'</small></div>'+
-  '<div><b>'+rd(sum("wind")/hrs.length)+' mph</b><small>gusts '+rd(mx("gust"))+'</small></div></div>'+
-  '<p class="bestl">'+ico(worst)+' '+((WC[worst.code]||["","Mixed"])[1])+'. Best hour: '+best.lbl+' ('+rd(best.temp)+'\u00b0, '+best.pop+'% rain, '+rd(best.wind)+' mph)</p>'+
-  '<div class="hrs">'+hrs.map(h=>'<div class="hr'+(h===best?' best':'')+'"><div class="m">'+h.lbl+'</div><div class="e">'+ico(h)+'</div><div class="t">'+rd(h.temp)+'\u00b0</div><div class="m">'+h.pop+'%</div><div class="m">'+rd(h.wind)+' mph</div></div>').join("")+'</div>'+
-  '<p class="hint">Each hour: temperature, chance of rain, wind. Forecast by Open-Meteo.</p>';
+  '<div><b>'+rd(sum("wind")/hrs.length)+' kts</b><small>gusts '+rd(mx("gust"))+'</small></div></div>'+
+  '<p class="bestl">'+ico(worst)+' '+((WC[worst.code]||["","Mixed"])[1])+'. Best hour: '+best.lbl+' ('+rd(best.temp)+'\u00b0, '+best.pop+'% rain, '+rd(best.wind)+' kts)</p>'+
+  '<div class="hrs">'+hrs.map(h=>'<div class="hr'+(h===best?' best':'')+'"><div class="m">'+h.lbl+'</div><div class="e">'+ico(h)+'</div><div class="t">'+rd(h.temp)+'\u00b0</div><div class="m">'+h.pop+'%</div><div class="m">'+rd(h.wind)+' kts</div></div>').join("")+'</div>'+
+  '<p class="hint">Forecast by Open-Meteo.</p>';
 }
 function setPlace(p,keep){
  place=p;try{localStorage.setItem("rl-place",JSON.stringify(p));}catch(e){}
