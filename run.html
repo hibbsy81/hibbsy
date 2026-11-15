@@ -19,41 +19,46 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@1,700;1,800&family=Inter:wght@400;500;600;700&display=swap">
 <style>
-:root{color-scheme:light dark;--bg:#F7F0E6;--glow:rgba(233,163,92,.38);--card:#fff;--ink:#1d2b3a;--mu:#6d6a62;--line:rgba(29,43,58,.12);--accent:#D9731A;--track:#C9502B;--night:#1d2b3a;--twi:#e9a35c;--day:#f6d56a;
+:root{color-scheme:light dark;--bg:#F7F0E6;--glow:rgba(233,163,92,.5);--card:#fff;--ink:#1d2b3a;--mu:#6d6a62;--line:rgba(29,43,58,.12);--accent:#D9731A;--track:#C9502B;--night:#1d2b3a;--twi:#e9a35c;--day:#f6d56a;
 --disp:"Barlow Condensed","Arial Narrow",Inter,sans-serif;
 --menu-ink:var(--ink);--menu-accent:var(--accent);--menu-glass:rgba(255,255,255,.85);--menu-line:rgba(29,43,58,.12);--menu-hover:rgba(29,43,58,.06)}
-@media (prefers-color-scheme:dark){:root{--bg:#0e151e;--glow:rgba(240,180,83,.14);--card:#17212e;--ink:#F3EEE6;--mu:#9aa3ad;--line:rgba(255,255,255,.10);--accent:#F0B453;--track:#9c3b22;--night:#0f1626;--twi:#c9803c;--day:#d9b94c;
+@media (prefers-color-scheme:dark){:root{--bg:#0e151e;--glow:rgba(240,180,83,.2);--card:#17212e;--ink:#F3EEE6;--mu:#9aa3ad;--line:rgba(255,255,255,.10);--accent:#F0B453;--track:#9c3b22;--night:#0f1626;--twi:#c9803c;--day:#d9b94c;
 --menu-glass:rgba(23,33,46,.82);--menu-line:rgba(255,255,255,.12);--menu-hover:rgba(255,255,255,.08)}}
 *{box-sizing:border-box}[hidden]{display:none!important}
 #out{display:grid;gap:14px}
-body{margin:0;min-height:100dvh;background:var(--bg) radial-gradient(ellipse 90% 50% at 50% 0,var(--glow),transparent 70%) no-repeat;color:var(--ink);font:15px/1.5 "Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;-webkit-font-smoothing:antialiased;
+body{margin:0;min-height:100dvh;background:var(--bg) radial-gradient(ellipse 90% 55% at 50% 0,var(--glow),transparent 70%) no-repeat;color:var(--ink);font:15px/1.5 "Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;-webkit-font-smoothing:antialiased;
 padding:calc(16px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(40px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
 main{max-width:560px;margin:0 auto;display:grid;gap:14px}
-.hero{position:relative;overflow:hidden;display:flex;align-items:center;gap:14px;padding:18px 74px 32px 18px;border-radius:22px;background:var(--track);color:#fff}
+.hero{position:relative;overflow:hidden;display:flex;align-items:center;gap:14px;padding:18px 74px 32px 18px;border-radius:22px;background:linear-gradient(135deg,color-mix(in srgb,var(--track) 80%,#ff9a5a),var(--track));color:#fff;box-shadow:0 14px 40px color-mix(in srgb,var(--track) 45%,transparent),inset 0 1px 0 rgba(255,255,255,.25)}
 .hero::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(180deg,transparent 0 13px,rgba(255,255,255,.22) 13px 14px)}
 .hero::after{content:"";position:absolute;left:0;right:0;bottom:0;height:12px;background:repeating-conic-gradient(#fff 0 25%,#1d2b3a 0 50%) 0 0/12px 12px}
 .hero>*{position:relative}
 .logo{flex:none;width:54px;height:54px;border-radius:14px;box-shadow:0 4px 12px rgba(0,0,0,.3)}
 h1{margin:0;font:italic 800 40px/1 var(--disp);text-transform:uppercase;letter-spacing:.01em}
 .hero p{margin:3px 0 0;font-size:13px;opacity:.9}
-.card{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--track);border-radius:18px;padding:14px;box-shadow:0 8px 24px rgba(0,0,0,.06)}
+.card{background:color-mix(in srgb,var(--card) 80%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border:1px solid var(--line);border-left:4px solid var(--track);border-radius:18px;padding:14px;box-shadow:0 10px 30px rgba(0,0,0,.12),inset 0 1px 0 rgba(255,255,255,.08)}
 .row{display:flex;gap:8px;flex-wrap:wrap}
-input,button{font:inherit;color:inherit;min-height:46px;border-radius:12px;border:1px solid var(--line);background:var(--bg);padding:8px 12px}
+input,button{font:inherit;color:inherit;min-height:46px;border-radius:12px;border:1px solid var(--line);background:color-mix(in srgb,var(--ink) 6%,transparent);padding:8px 12px;transition:border-color .15s,background-color .15s,box-shadow .2s,filter .15s,transform .1s}
 input{flex:1 1 200px;min-width:0;-webkit-appearance:none;appearance:none}
 button{cursor:pointer;font-weight:600}
-button.p{background:var(--accent);border-color:var(--accent);color:#1d2b3a}
+button.p{background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 70%,#fff),var(--accent));border-color:transparent;color:#1d2b3a;box-shadow:0 8px 22px color-mix(in srgb,var(--accent) 45%,transparent),inset 0 1px 0 rgba(255,255,255,.45)}
+button.p:hover{box-shadow:0 10px 30px color-mix(in srgb,var(--accent) 70%,transparent),inset 0 1px 0 rgba(255,255,255,.5);filter:brightness(1.06)}
+button:not(.p):hover,input:hover{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,transparent);box-shadow:0 0 18px color-mix(in srgb,var(--accent) 28%,transparent)}
+button:active{transform:translateY(1px)}
+input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 28%,transparent),0 0 22px color-mix(in srgb,var(--accent) 30%,transparent)}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .res{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:2px}
-.res button{width:100%;text-align:left;border:0;background:transparent;min-height:42px;font-weight:500;border-radius:10px}
-.res button:hover,.res button:focus-visible{background:var(--bg)}
+.res button{width:100%;text-align:left;border:0;background:transparent;box-shadow:none;min-height:42px;font-weight:500;border-radius:10px}
+.res button:hover,.res button:focus-visible{background:color-mix(in srgb,var(--accent) 14%,transparent);box-shadow:none;border:0}
 .res li.none{color:var(--mu);font-size:13px;padding:8px 12px}
 .hint{color:var(--mu);font-size:13px;margin:8px 0 0}
 .err{color:#d6453a}
 .lbl{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--mu)}
-.big{font:italic 800 48px/1.05 var(--disp);letter-spacing:.01em;margin:6px 0 2px;font-variant-numeric:tabular-nums}
+.big{font:italic 800 clamp(32px,9.5vw,46px)/1.05 var(--disp);letter-spacing:.01em;margin:6px 0 2px;font-variant-numeric:tabular-nums}
 .mu{color:var(--mu);font-size:13px}
-.sun{display:flex;gap:28px;margin-top:12px}
-.sun b{display:block;font-size:20px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.2}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.sun{display:grid;gap:10px;text-align:right;flex:none}
+.sun b{display:block;font-size:19px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.2}
 .now{font-weight:600;margin-top:12px}
 .bar{position:relative;height:34px;border-radius:10px;margin-top:12px;overflow:hidden}
 .bar .w{position:absolute;top:0;bottom:0;border:3px solid #fff;border-radius:8px;background:rgba(255,255,255,.12);box-shadow:0 0 0 1.5px #1d2b3a,inset 0 0 0 1.5px #1d2b3a}
@@ -90,10 +95,10 @@ nav.menu{top:calc(24px + env(safe-area-inset-top,0px));right:calc(30px + env(saf
       <input type="date" id="date" aria-label="Date" style="flex:0 1 170px">
       <button id="today" type="button">Today</button>
     </div>
-    <div class="lbl">Running window</div>
-    <div class="big" id="win"></div>
-    <div class="mu" id="len"></div>
-    <div class="sun"><div><span class="lbl">Sunrise</span><b id="sr"></b></div><div><span class="lbl">Sunset</span><b id="ss"></b></div></div>
+    <div class="top">
+      <div><div class="lbl">Running window</div><div class="big" id="win"></div><div class="mu" id="len"></div></div>
+      <div class="sun"><div><span class="lbl">Sunrise</span><b id="sr"></b></div><div><span class="lbl">Sunset</span><b id="ss"></b></div></div>
+    </div>
     <div class="now" id="now"></div>
     <div class="bar" id="bar"></div>
     <div class="tick"><span>00</span><span>06</span><span>12</span><span>18</span><span>24</span></div>
