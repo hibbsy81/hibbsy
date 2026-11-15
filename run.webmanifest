@@ -1,0 +1,15 @@
+{
+  "name": "Run Light",
+  "short_name": "Run Light",
+  "description": "First light, last light, sunrise and sunset: your running window.",
+  "start_url": "run.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0B0F11",
+  "theme_color": "#0B0F11",
+  "icons": [
+    { "src": "run-icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "run-icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "run-icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

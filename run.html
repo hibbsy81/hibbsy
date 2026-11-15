@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Run Light</title>
+<meta name="description" content="Sunrise, sunset, first light and last light for any place: your running window.">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#EAF0F2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0B0F11" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="run.webmanifest">
+<link rel="icon" href="run-favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="run-apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Run Light">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<style>
+:root{color-scheme:light dark;--bg:#EAF0F2;--glow:rgba(255,255,255,.95);--card:#fff;--ink:#27343A;--mu:#6B7B80;--line:rgba(0,0,0,.08);--accent:#2F8F9D;--night:#25324a;--twi:#e9a35c;--day:#f6d56a;--win:#2F8F9D;
+--menu-ink:var(--ink);--menu-accent:var(--accent);--menu-glass:rgba(255,255,255,.82);--menu-line:rgba(0,0,0,.07);--menu-hover:rgba(0,0,0,.05)}
+@media (prefers-color-scheme:dark){:root{--bg:#0B0F11;--glow:rgba(92,192,207,.12);--card:#151d21;--ink:#E3ECEF;--mu:#8FA3A8;--line:rgba(255,255,255,.10);--accent:#5CC0CF;--night:#141c30;--twi:#c9803c;--day:#d9b94c;--win:#5CC0CF;
+--menu-glass:rgba(24,31,35,.78);--menu-line:rgba(255,255,255,.10);--menu-hover:rgba(255,255,255,.07)}}
+*{box-sizing:border-box}
+body{margin:0;min-height:100dvh;background:var(--bg) radial-gradient(ellipse 90% 60% at 50% 0,var(--glow),transparent 70%) no-repeat;color:var(--ink);font:15px/1.5 "Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;-webkit-font-smoothing:antialiased;
+padding:calc(20px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(40px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+main{max-width:560px;margin:0 auto;display:grid;gap:14px}
+h1{font-size:26px;margin:0;letter-spacing:-.02em;line-height:46px;padding-right:60px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px;box-shadow:0 8px 24px rgba(0,0,0,.06)}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+input,select,button{font:inherit;color:inherit;min-height:46px;border-radius:12px;border:1px solid var(--line);background:var(--bg);padding:8px 12px}
+input{flex:1 1 180px;min-width:0}
+button{cursor:pointer;font-weight:600}
+button.p{background:var(--accent);border-color:var(--accent);color:#06141a}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.places{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.places button{min-height:36px;font-size:13px;font-weight:500;padding:4px 12px;border-radius:999px}
+.places button[aria-pressed=true]{background:var(--ink);color:var(--bg)}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.seg button{min-height:42px;font-size:13px;padding:4px 6px}
+.seg button[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.hint{color:var(--mu);font-size:13px;margin:8px 0 0}
+.where{font-weight:700;font-size:17px}
+.big{font-size:34px;font-weight:800;letter-spacing:-.02em;line-height:1.1;margin:4px 0 2px;font-variant-numeric:tabular-nums}
+.mu{color:var(--mu);font-size:13px}
+.now{font-weight:600;margin-top:8px}
+.bar{position:relative;height:30px;border-radius:10px;margin-top:14px;overflow:hidden}
+.bar .w{position:absolute;top:0;bottom:0;border:3px solid var(--win);border-radius:8px;background:rgba(92,192,207,.18)}
+.bar .n{position:absolute;top:0;bottom:0;width:2px;background:#ff5a4d}
+.tick{display:flex;justify-content:space-between;font-size:11px;color:var(--mu);margin-top:4px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.t{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
+.lbl{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--mu)}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:13.5px}
+th,td{padding:7px 4px;text-align:right;border-bottom:1px solid var(--line)}th:first-child,td:first-child{text-align:left}
+th{font-size:11px;color:var(--mu);text-transform:uppercase;letter-spacing:.04em}tr:last-child td{border:0}
+.wrap{overflow-x:auto}
+.err{color:#e0564b}
+@media (display-mode:standalone){nav.menu{display:none}}html.standalone nav.menu{display:none}
+nav.menu{top:calc(18px + env(safe-area-inset-top,0px))}
+</style>
+<script src="menu.js?v=17" defer></script>
+</head>
+<body>
+<main>
+<h1>Run Light</h1>
+
+<section class="card">
+  <div class="row">
+    <input id="q" type="search" placeholder="Search a place, e.g. Bourton on the Water" autocomplete="off" enterkeyhint="search" aria-label="Place">
+    <button class="p" id="go" type="button">Search</button>
+    <button id="gps" type="button">Use my location</button>
+  </div>
+  <div class="places" id="places"></div>
+  <p class="hint err" id="msg" role="status" hidden></p>
+</section>
+
+<section id="out" hidden class="grid" style="grid-template-columns:1fr">
+  <div class="card">
+    <div class="where" id="where"></div>
+    <div class="row" style="margin:10px 0">
+      <input type="date" id="date" aria-label="Date" style="flex:0 1 170px">
+      <button id="today" type="button">Today</button>
+    </div>
+    <div class="seg" id="mode" role="group" aria-label="What counts as light">
+      <button data-m="c" type="button">First to last light</button>
+      <button data-m="s" type="button">Sunrise to sunset</button>
+      <button data-m="n" type="button">Head torch</button>
+    </div>
+    <p class="hint" id="modeHint"></p>
+  </div>
+
+  <div class="card">
+    <div class="lbl">Running window</div>
+    <div class="big" id="win"></div>
+    <div class="mu" id="len"></div>
+    <div class="now" id="now"></div>
+    <div class="bar" id="bar"></div>
+    <div class="tick"><span>00</span><span>06</span><span>12</span><span>18</span><span>24</span></div>
+  </div>
+
+  <div class="grid">
+    <div class="card"><div class="lbl">First light</div><div class="t" id="fl"></div></div>
+    <div class="card"><div class="lbl">Last light</div><div class="t" id="ll"></div></div>
+    <div class="card"><div class="lbl">Sunrise</div><div class="t" id="sr"></div></div>
+    <div class="card"><div class="lbl">Sunset</div><div class="t" id="ss"></div></div>
+  </div>
+
+  <div class="card wrap">
+    <div class="lbl" style="margin-bottom:6px">Next 7 days</div>
+    <table><thead><tr><th>Day</th><th>First</th><th>Rise</th><th>Set</th><th>Last</th><th>Window</th></tr></thead><tbody id="week"></tbody></table>
+  </div>
+  <p class="hint" style="text-align:center">First and last light are civil twilight (sun 6° below the horizon): bright enough to run without a torch. Head torch uses nautical twilight (12°).</p>
+</section>
+</main>
+
+<script>
+const $=id=>document.getElementById(id),R=Math.PI/180;
+const ZEN={s:90.833,c:96,n:102};
+const MODES={c:["fl","ll","c","First light to last light: enough light to run without a torch."],
+ s:["sr","ss","s","Sunrise to sunset: full daylight only."],
+ n:["nl","nd","n","Nautical twilight: dark-ish, but fine with a head torch."]};
+let place=null,mode="c",found=[];
+try{place=JSON.parse(localStorage.getItem("rl-place"));mode=localStorage.getItem("rl-mode")||"c";}catch(e){}
+if(!MODES[mode])mode="c";
+
+/* NOAA solar position -> sun event times (UTC ms) */
+function pos(jd){const T=(jd-2451545)/36525,s=x=>Math.sin(x*R),L0=(280.46646+T*(36000.76983+T*3.032e-4))%360,M=357.52911+T*(35999.05029-1.537e-4*T),
+ e=.016708634-T*(4.2037e-5+1.267e-7*T),C=s(M)*(1.914602-T*(.004817+1.4e-5*T))+s(2*M)*(.019993-1.01e-4*T)+s(3*M)*2.89e-4,
+ om=125.04-1934.136*T,lam=L0+C-.00569-.00478*s(om),
+ eps=23+(26+(21.448-T*(46.815+T*(5.9e-4-T*1.813e-3)))/60)/60+.00256*Math.cos(om*R),
+ dec=Math.asin(Math.sin(eps*R)*s(lam))/R,y=Math.tan(eps*R/2)**2,
+ eq=4*(y*s(2*L0)-2*e*s(M)+4*e*y*s(M)*Math.cos(2*L0*R)-.5*y*y*s(4*L0)-1.25*e*e*s(2*M))/R;
+ return{dec,eq};}
+function ev(y,m,d,lat,lon,zen){
+ const base=Date.UTC(y,m-1,d),jd=base/864e5+2440587.5;let noon=720-4*lon,p;
+ for(let i=0;i<3;i++){p=pos(jd+noon/1440);noon=720-4*lon-p.eq;}
+ const out={noon:base+noon*6e4};
+ const h=(t)=>{const q=pos(jd+t/1440),c=(Math.cos(zen*R)-Math.sin(lat*R)*Math.sin(q.dec*R))/(Math.cos(lat*R)*Math.cos(q.dec*R));
+  return c>1?null:c<-1?-1:Math.acos(c)/R*4;};
+ const h0=h(noon);
+ if(h0===null){out.st="none";return out;}if(h0===-1){out.st="all";return out;}
+ let a=h0,b=h0;for(let i=0;i<2;i++){const ha=h(noon-a),hb=h(noon+b);if(ha>0)a=ha;if(hb>0)b=hb;}
+ out.rise=base+(noon-a)*6e4;out.set=base+(noon+b)*6e4;return out;}
+const day=(y,m,d,la,lo)=>({s:ev(y,m,d,la,lo,ZEN.s),c:ev(y,m,d,la,lo,ZEN.c),n:ev(y,m,d,la,lo,ZEN.n)});
+
+const tf=(ms,tz)=>new Intl.DateTimeFormat("en-GB",{timeZone:tz,hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).format(ms+3e4);
+const mins=(ms,tz)=>{const[h,m]=tf(ms-3e4,tz).split(":");return+h*60+ +m;};
+const dur=ms=>{const m=Math.round(ms/6e4);return Math.floor(m/60)+"h "+String(m%60).padStart(2,"0")+"m";};
+const todayIn=tz=>new Intl.DateTimeFormat("en-CA",{timeZone:tz}).format(Date.now());
+const show=(e,k,tz)=>e.st?(e.st==="all"?"All day":"None"):tf(e[k],tz);
+function msg(t){$("msg").hidden=!t;$("msg").textContent=t||"";}
+
+function render(){
+ if(!place)return;
+ const tz=place.tz,[y,m,d]=($("date").value||todayIn(tz)).split("-").map(Number);
+ const r=day(y,m,d,place.lat,place.lon);
+ $("out").hidden=false;$("where").textContent=place.name;
+ $("fl").textContent=show(r.c,"rise",tz);$("ll").textContent=show(r.c,"set",tz);
+ $("sr").textContent=show(r.s,"rise",tz);$("ss").textContent=show(r.s,"set",tz);
+ const w=r[mode];
+ [...$("mode").children].forEach(b=>b.setAttribute("aria-pressed",b.dataset.m===mode));
+ $("modeHint").textContent=MODES[mode][3];
+ const bar=$("bar");
+ if(w.st){$("win").textContent=w.st==="all"?"Light all day":"No usable light";$("len").textContent="";$("now").textContent="";bar.style.display="none";}
+ else{
+  $("win").textContent=tf(w.rise,tz)+" – "+tf(w.set,tz);$("len").textContent=dur(w.set-w.rise)+" of usable light";
+  const P=x=>(mins(x,tz)/14.4).toFixed(2),N="var(--night)",T="var(--twi)",D="var(--day)";
+  bar.style.display="";
+  if(!r.c.st&&!r.s.st){const a=P(r.c.rise),b=P(r.s.rise),c=P(r.s.set),e=P(r.c.set);
+   bar.style.background=`linear-gradient(90deg,${N} 0,${N} ${a}%,${T} ${a}%,${T} ${b}%,${D} ${b}%,${D} ${c}%,${T} ${c}%,${T} ${e}%,${N} ${e}%,${N} 100%)`;}
+  else bar.style.background=D;
+  const l=mins(w.rise,tz)/14.4,wd=Math.max(0,(mins(w.set,tz)-mins(w.rise,tz))/14.4);
+  bar.innerHTML=`<div class="w" style="left:${l}%;width:${wd}%"></div>`;
+  const isToday=$("date").value===todayIn(tz);
+  if(isToday){const nm=mins(Date.now(),tz);bar.insertAdjacentHTML("beforeend",`<div class="n" style="left:${nm/14.4}%"></div>`);
+   const t=Date.now();$("now").textContent=t<w.rise?"Light in "+dur(w.rise-t):t<w.set?"Light now. "+dur(w.set-t)+" left.":"Dark now. Window has finished.";}
+  else $("now").textContent="";
+ }
+ // 7 day outlook
+ let rows="";
+ for(let i=0;i<7;i++){const dt=new Date(Date.UTC(y,m-1,d+i)),yy=dt.getUTCFullYear(),mm=dt.getUTCMonth()+1,dd=dt.getUTCDate(),q=day(yy,mm,dd,place.lat,place.lon),ww=q[mode];
+  rows+=`<tr><td>${new Intl.DateTimeFormat("en-GB",{weekday:"short",day:"numeric",month:"short",timeZone:"UTC"}).format(dt)}</td><td>${show(q.c,"rise",tz)}</td><td>${show(q.s,"rise",tz)}</td><td>${show(q.s,"set",tz)}</td><td>${show(q.c,"set",tz)}</td><td>${ww.st?"–":dur(ww.set-ww.rise)}</td></tr>`;}
+ $("week").innerHTML=rows;
+}
+function setPlace(p,keep){
+ place=p;try{localStorage.setItem("rl-place",JSON.stringify(p));}catch(e){}
+ if(!keep||!$("date").value)$("date").value=todayIn(p.tz);
+ msg("");render();
+}
+function showFound(){
+ $("places").innerHTML="";
+ found.forEach((p,i)=>{const b=document.createElement("button");b.type="button";b.textContent=p.name;
+  b.setAttribute("aria-pressed",!!place&&place.lat===p.lat&&place.lon===p.lon);b.onclick=()=>{setPlace(p,true);showFound();};$("places").appendChild(b);});
+}
+async function search(){
+ const q=$("q").value.trim();if(!q)return;msg("");
+ try{
+  const j=await(await fetch("https://geocoding-api.open-meteo.com/v1/search?count=5&language=en&format=json&name="+encodeURIComponent(q))).json();
+  if(!j.results||!j.results.length){msg("No place found for \u201c"+q+"\u201d.");return;}
+  found=j.results.map(x=>({name:[x.name,x.admin1,x.country].filter((v,i,a)=>v&&a.indexOf(v)===i).join(", "),lat:x.latitude,lon:x.longitude,tz:x.timezone||Intl.DateTimeFormat().resolvedOptions().timeZone}));
+  setPlace(found[0]);showFound();
+ }catch(e){msg("Couldn\u2019t search just now. Check your connection.");}
+}
+$("go").onclick=search;
+$("q").addEventListener("keydown",e=>{if(e.key==="Enter")search();});
+$("gps").onclick=()=>{
+ if(!navigator.geolocation){msg("Location isn\u2019t available in this browser.");return;}
+ msg("");$("gps").textContent="Locating\u2026";
+ navigator.geolocation.getCurrentPosition(p=>{$("gps").textContent="Use my location";found=[];showFound();
+  const la=p.coords.latitude,lo=p.coords.longitude;
+  setPlace({name:"My location ("+la.toFixed(2)+", "+lo.toFixed(2)+")",lat:la,lon:lo,tz:Intl.DateTimeFormat().resolvedOptions().timeZone});},
+  e=>{$("gps").textContent="Use my location";msg("Couldn\u2019t get your location: "+e.message);},{timeout:15000,maximumAge:6e5});
+};
+$("mode").onclick=e=>{const b=e.target.closest("[data-m]");if(!b)return;mode=b.dataset.m;try{localStorage.setItem("rl-mode",mode);}catch(x){}render();};
+$("date").onchange=render;
+$("today").onclick=()=>{if(place){$("date").value=todayIn(place.tz);render();}};
+setInterval(()=>{if(place&&$("date").value===todayIn(place.tz))render();},6e4);
+if(place){found=[place];setPlace(place);showFound();}
+if(navigator.standalone||matchMedia("(display-mode: standalone)").matches)document.documentElement.classList.add("standalone");
+if("serviceWorker" in navigator&&/^https?:$/.test(location.protocol))addEventListener("load",()=>navigator.serviceWorker.register("run-sw.js").catch(()=>{}));
+</script>
+</body>
+</html>
