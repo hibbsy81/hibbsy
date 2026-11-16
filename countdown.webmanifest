@@ -1,12 +1,12 @@
 {
-  "name": "Countdown",
+  "name": "Countdown Numbers",
   "short_name": "Countdown",
-  "description": "Countdown numbers and letters games, thirty seconds each.",
+  "description": "A six-tile, thirty-second numbers game.",
   "start_url": "./countdown.html",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#e7edf2",
-  "theme_color": "#1b4b7a",
+  "background_color": "#10283c",
+  "theme_color": "#10283c",
   "icons": [
     { "src": "countdown-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
     { "src": "countdown-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
