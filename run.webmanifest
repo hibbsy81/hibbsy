@@ -5,8 +5,8 @@
   "start_url": "run.html",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#141d2b",
-  "theme_color": "#141d2b",
+  "background_color": "#ff8f58",
+  "theme_color": "#ff8f58",
   "icons": [
     { "src": "run-icon-192.png", "sizes": "192x192", "type": "image/png" },
     { "src": "run-icon-512.png", "sizes": "512x512", "type": "image/png" },
