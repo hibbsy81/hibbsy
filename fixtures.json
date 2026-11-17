@@ -1,34 +1,34 @@
 {
- "updated": "17 Nov 2026, 01:53",
- "updated_iso": "2026-11-17T01:53:45.474443+00:00",
+ "updated": "17 Nov 2026, 16:11",
+ "updated_iso": "2026-11-17T16:11:15.629430+00:00",
  "health": {
   "mc": {
-   "last_ok_iso": "2026-11-17T01:53:45.474443+00:00",
+   "last_ok_iso": "2026-11-17T16:11:15.629430+00:00",
    "from": "man-city-on-tv.html",
    "count": 14
   },
   "mw": {
-   "last_ok_iso": "2026-11-17T01:53:45.474443+00:00",
+   "last_ok_iso": "2026-11-17T16:11:15.629430+00:00",
    "from": "man-city-women-on-tv.html",
    "count": 5
   },
   "aw": {
-   "last_ok_iso": "2026-11-17T01:53:45.474443+00:00",
+   "last_ok_iso": "2026-11-17T16:11:15.629430+00:00",
    "from": "arsenal-women-on-tv.html",
    "count": 5
   },
   "mu": {
-   "last_ok_iso": "2026-11-17T01:53:45.474443+00:00",
+   "last_ok_iso": "2026-11-17T16:11:15.629430+00:00",
    "from": "man-utd-women-on-tv.html",
    "count": 3
   },
   "cw": {
-   "last_ok_iso": "2026-11-17T01:53:45.474443+00:00",
+   "last_ok_iso": "2026-11-17T16:11:15.629430+00:00",
    "from": "chelsea-women-on-tv.html",
    "count": 5
   },
   "li": {
-   "last_ok_iso": "2026-11-17T01:53:45.474443+00:00",
+   "last_ok_iso": "2026-11-17T16:11:15.629430+00:00",
    "from": "england-women-on-tv.html",
    "count": 2
   },
@@ -38,7 +38,7 @@
    "count": 0
   },
   "f1": {
-   "last_ok_iso": "2026-11-17T01:53:45.474443+00:00",
+   "last_ok_iso": "2026-11-17T16:11:15.629430+00:00",
    "from": "api.jolpi.ca",
    "count": 6
   }
@@ -144,7 +144,6 @@
    "a": "Tottenham Hotspur",
    "ch": [
     "Sky Sports Main Event",
-    "Sky One",
     "Sky Sports Mix"
    ],
    "note": "",
