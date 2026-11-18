@@ -1275,16 +1275,16 @@ let lastData = {}; // { sourceKey: { json, idx, i0, frac, hb, targetLocal, dt, b
 
 // forecast data already downloaded, so changing the time doesn't need a new download
 const CACHE_MAX_AGE_MS = 30 * 60 * 1000;
-const sourceCache = {};   // sourceKey -> { json, at }
+const sourceCache = {};   // sourceKey -> { json, at, from, to }  (from/to = DZ-local dates downloaded)
 let cacheKey = null;      // which location the cache belongs to
 
-async function fetchSource(sourceKey, lat, lon){
+async function fetchSource(sourceKey, lat, lon, from, to){
   const vars = ['wind_speed_10m', 'wind_direction_10m', 'wind_gusts_10m', 'temperature_2m', 'pressure_msl', 'freezing_level_height'];
   LEVELS_HPA.forEach(h=>{
     vars.push(`wind_speed_${h}hPa`, `wind_direction_${h}hPa`, `geopotential_height_${h}hPa`, `temperature_${h}hPa`);
   });
   const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}` +
-    `&hourly=${vars.join(',')}&daily=sunrise,sunset&models=${sourceKey}&wind_speed_unit=kn&timezone=auto&forecast_days=16`;
+    `&hourly=${vars.join(',')}&daily=sunrise,sunset&models=${sourceKey}&wind_speed_unit=kn&timezone=auto&start_date=${from}&end_date=${to}`;
   const res = await fetch(url);
   if(!res.ok){
     let reason = res.status;
@@ -1296,6 +1296,62 @@ async function fetchSource(sourceKey, lat, lon){
     throw new Error(`${sourceKey} returned no forecast data`);
   }
   return json;
+}
+
+// Only a few days around the chosen day are downloaded, not the whole 16-day forecast.
+const dateAdd = (ymd, n) => shiftIso(ymd + 'T00:00', n*86400).slice(0,10);
+const utcToday = () => new Date().toISOString().slice(0,10);
+function clampDate(d){
+  const lo = dateAdd(utcToday(), -2), hi = dateAdd(utcToday(), 15);   // what the forecast service can supply
+  return d < lo ? lo : d > hi ? hi : d;
+}
+// two days either side of the chosen day, so nearby times need no new download
+function fetchWindow(dt){
+  const day = dt.slice(0,10);
+  const from = clampDate(dateAdd(day, -2));
+  let to = clampDate(dateAdd(day, 2));
+  if(to < from) to = from;
+  return { from, to };
+}
+// does a saved download hold every hour needed for this time (the whole chosen day, in DZ-local dates)?
+function coversTime(entry, dt, basis){
+  const day = dt.slice(0,10);
+  const off = entry.json.utc_offset_seconds || 0;
+  const lo = clampDate(basis === 'zulu' ? shiftIso(day + 'T00:00', off).slice(0,10) : day);
+  const hi = clampDate(basis === 'zulu' ? shiftIso(day + 'T23:00', off).slice(0,10) : day);
+  return entry.from <= lo && entry.to >= hi;
+}
+// everything the results need for one source at one time
+function buildEntry(json, dt, basis){
+  // forecast hours are in DZ-local time; convert a Zulu request to DZ-local first
+  const targetLocal = basis === 'zulu' ? shiftIso(dt, json.utc_offset_seconds || 0) : dt;
+  const pos = locateTime(json.hourly.time, targetLocal);
+  const hb = blendHourly(json.hourly, pos.i0, pos.frac);
+  return { json, idx: pos.idx, i0: pos.i0, frac: pos.frac, hb, targetLocal, dt, basis, gapMin: pos.gapMin };
+}
+function niceError(err){
+  const m = err && err.message ? err.message : 'failed';
+  return /failed to fetch|networkerror|load failed/i.test(m) ? 'could not reach Open-Meteo. Check your connection and try again.' : m;
+}
+// the other source is only downloaded when it is picked from the dropdown
+async function loadSource(key){
+  const prev = currentSource, cur = lastData[prev];
+  const statusEl = document.getElementById('status');
+  if(!cur || !lastLoc) return;
+  const picker = document.getElementById('sourcePicker');
+  if(picker) picker.disabled = true;
+  const w = fetchWindow(cur.dt);
+  try{
+    const json = await fetchSource(key, lastLoc.lat, lastLoc.lon, w.from, w.to);
+    sourceCache[key] = { json, at: Date.now(), from: w.from, to: w.to };
+    lastData[key] = buildEntry(json, cur.dt, cur.basis);
+    statusEl.className = ''; statusEl.textContent = '';
+    renderResults(key);
+  }catch(err){
+    statusEl.className = 'err';
+    statusEl.textContent = `Couldn't load ${(SOURCES.find(s => s.key === key) || {}).label || key}: ${niceError(err)}`;
+    renderResults(prev);
+  }
 }
 
 function nearestIndex(timesArr, targetLocalIso){
@@ -1431,7 +1487,7 @@ function compass(deg){
 }
 
 function renderSourcePicker(activeKey){
-  const opts = SOURCES.filter(s => lastData[s.key])
+  const opts = SOURCES
     .map(s => `<option value="${s.key}" ${s.key===activeKey?'selected':''}>${s.label}</option>`).join('');
   return `<select id="sourcePicker" aria-label="Forecast source">${opts}</select>`;
 }
@@ -1647,7 +1703,10 @@ function renderResults(activeKey){
   document.getElementById('pdfLink').addEventListener('click', (e)=>{ e.preventDefault(); downloadPDF(); });
 
   const picker = document.getElementById('sourcePicker');
-  if(picker) picker.addEventListener('change', (e)=>{ renderResults(e.target.value); });
+  if(picker) picker.addEventListener('change', (e)=>{
+    const k = e.target.value;
+    if(lastData[k]) renderResults(k); else loadSource(k);
+  });
 }
 
 const locKey = loc => `${loc.lat.toFixed(4)},${loc.lon.toFixed(4)}`;
@@ -1683,14 +1742,20 @@ async function runFetch(force = true){
   loc.mgrsText = locFormat.value === 'mgrs' ? alnumOnly(document.getElementById('mgrsInput').value) : '';
   lastLoc = loc;
 
-  const isFresh = k => sourceCache[k] && (Date.now() - sourceCache[k].at) < CACHE_MAX_AGE_MS;
-  const need = SOURCES.filter(s => force || !isFresh(s.key));
+  // only the source on screen is downloaded; the other one loads when it is picked
+  const primaryKey = SOURCES.some(s => s.key === currentSource) ? currentSource : 'best_match';
+  const primary = SOURCES.find(s => s.key === primaryKey);
+  const win = fetchWindow(dt);
+  const isFresh = k => sourceCache[k] && (Date.now() - sourceCache[k].at) < CACHE_MAX_AGE_MS && coversTime(sourceCache[k], dt, basis);
+  const need = (force || !isFresh(primaryKey)) ? [primary] : [];
 
   if(need.length && navigator.onLine === false){
     statusEl.className = 'err';
     statusEl.textContent = "You're offline, so a new forecast can't be downloaded. Reconnect and press Get Winds.";
     return;
   }
+  // saved downloads that don't hold this time (or that Get Winds replaces) are dropped
+  SOURCES.forEach(s => { if(force || !isFresh(s.key)) delete sourceCache[s.key]; });
 
   const fetchBtn = document.getElementById('fetchBtn');
   const originalLabel = fetchBtn.textContent;
@@ -1703,18 +1768,13 @@ async function runFetch(force = true){
   }
 
   try{
-    const failures = [];
     if(need.length){
-      const outcomes = await Promise.allSettled(need.map(s => fetchSource(s.key, loc.lat, loc.lon)));
-      need.forEach((s, i)=>{
-        const outcome = outcomes[i];
-        if(outcome.status === 'fulfilled'){
-          sourceCache[s.key] = { json: outcome.value, at: Date.now() };
-        } else {
-          delete sourceCache[s.key];
-          failures.push(`${s.label} (${outcome.reason && outcome.reason.message ? outcome.reason.message : 'failed'})`);
-        }
-      });
+      try{
+        const json = await fetchSource(primaryKey, loc.lat, loc.lon, win.from, win.to);
+        sourceCache[primaryKey] = { json, at: Date.now(), from: win.from, to: win.to };
+      }catch(err){
+        throw new Error(`Couldn't load ${primary.label}: ${niceError(err)}`);
+      }
     }
 
     lastData = {};
@@ -1722,24 +1782,14 @@ async function runFetch(force = true){
     SOURCES.forEach(s=>{
       const c = sourceCache[s.key];
       if(!c) return;
-      const json = c.json;
-      // forecast hours are in DZ-local time; convert a Zulu request to DZ-local first
-      const targetLocal = basis === 'zulu' ? shiftIso(dt, json.utc_offset_seconds || 0) : dt;
-      const pos = locateTime(json.hourly.time, targetLocal);
-      gapMin = Math.max(gapMin, pos.gapMin);
-      const hb = blendHourly(json.hourly, pos.i0, pos.frac);
-      lastData[s.key] = { json, idx: pos.idx, i0: pos.i0, frac: pos.frac, hb, targetLocal, dt, basis };
+      const e = buildEntry(c.json, dt, basis);
+      gapMin = Math.max(gapMin, e.gapMin);
+      lastData[s.key] = e;
     });
-
-    const firstOk = SOURCES.find(s => lastData[s.key]);
-    if(!firstOk) throw new Error('Both sources failed to load. ' + failures.join('; '));
-    renderResults(lastData[currentSource] ? currentSource : (lastData['best_match'] ? 'best_match' : firstOk.key));
+    renderResults(primaryKey);
 
     const reqStr = `${dt.replace('T',' ')}${basis === 'zulu' ? 'Z' : ' local'}`;
-    if(failures.length){
-      statusEl.className = 'err';
-      statusEl.textContent = `Loaded, but ${failures.join('; ')}. Showing the source that worked.`;
-    } else if(gapMin > 90){
+    if(gapMin > 90){
       statusEl.className = 'err';
       statusEl.textContent = `${reqStr} is outside the forecast range, so the nearest available hour is shown.`;
     } else {
@@ -1749,7 +1799,7 @@ async function runFetch(force = true){
     }
   } catch(err){
     statusEl.className = 'err';
-    statusEl.textContent = 'Error: ' + err.message;
+    statusEl.textContent = err.message;
   } finally {
     fetchBtn.disabled = false;
     fetchBtn.textContent = originalLabel;
