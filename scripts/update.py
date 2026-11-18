@@ -132,24 +132,35 @@ def page_text(slug):
         raise _pages[slug]
     return _pages[slug]
 
+NONE_LISTED = "No Upcoming TV Fixtures"   # what the site prints when a team has nothing coming up
+
 def fetch_team(key):
-    """-> (fixtures, page it came from)"""
+    """-> (fixtures, page it came from, ok). ok is True when every page loaded and the team's own page
+    says it has no upcoming fixtures (a quiet spell, not a fault)."""
     merged, used = {}, []
-    for slug in PAGES[key]:
+    failed, own_empty = 0, False
+    for n, slug in enumerate(PAGES[key]):
         try:
-            got = parse(page_text(slug), key)
+            text = page_text(slug)
+            got = parse(text, key)
         except Exception as e:
+            failed += 1
             print(f"{key}: {slug} failed ({e})", file=sys.stderr); continue
         if not got:
+            if n == 0 and NONE_LISTED in text:
+                own_empty = True
             print(f"{key}: {slug} had no matching fixtures", file=sys.stderr); continue
         if slug not in SHARED:                       # the club's own page lists every competition
             print(f"{key}: {len(got)} fixtures from {slug}")
-            return got, slug
+            return got, slug, False
         print(f"{key}: {len(got)} fixtures from shared listing {slug}")
         used.append(slug)
         for g in got:
             merged[(g["iso"], g["h"], g["a"])] = g   # WSL + Champions League pages are combined
-    return list(merged.values()), "+".join(used)
+    ok = own_empty and failed == 0 and not merged
+    if ok:
+        print(f"{key}: {PAGES[key][0]} says there are no upcoming fixtures")
+    return list(merged.values()), "+".join(used) or (PAGES[key][0] if ok else ""), ok
 
 # ---- Formula 1: qualifying, sprints and races, from the free Jolpica calendar (Ergast-compatible) ----
 F1_API = "https://api.jolpi.ca/ergast/f1/{}.json"
@@ -241,7 +252,7 @@ def main():
         if key == "f1":
             got, src, ok = fetch_f1()
         else:
-            got, src = fetch_team(key)
+            got, src, ok = fetch_team(key)
         got = [g for g in got if recent(g)]
         kept = [f for f in old if f["t"] == key and recent(f)]
         upcoming_before = len([f for f in kept if dt.datetime.fromisoformat(f["iso"]) > now])
@@ -252,8 +263,8 @@ def main():
             problems.append(f"{key}: no usable fixtures (had {upcoming_before} upcoming)")
         if key == "f1" and not ok:
             problems.append("f1: the calendar could not be read")
-        if got or ok:                     # F1 can legitimately have nothing left in the off-season
-            new += got
+        if got or ok:                     # F1 and quiet spells can legitimately have nothing listed
+            new += got or [f for f in kept if dt.datetime.fromisoformat(f["iso"]) <= now]   # keep a match that has just finished
             health[key] = {"last_ok_iso": now.isoformat(), "from": src, "count": len(got)}
         else:
             print(f"::warning::fixtures: nothing usable for {key}; keeping its previous fixtures")
