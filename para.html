@@ -129,6 +129,7 @@
   .spd.mod{ color:var(--warn); }
   .spd.strong{ color:var(--bad); }
   .approx-note{ font-size:11.5px; color:var(--muted); }
+  .src-err{ margin-bottom:10px; padding:9px 12px; border:1px solid var(--bad); border-radius:10px; color:var(--bad); font-size:13px; }
 
   a{ color:var(--accent); }
   .table-wrap{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
@@ -1349,8 +1350,11 @@ async function loadSource(key){
     renderResults(key);
   }catch(err){
     statusEl.className = 'err';
-    statusEl.textContent = `Couldn't load ${(SOURCES.find(s => s.key === key) || {}).label || key}: ${niceError(err)}`;
+    const msg = `Couldn't load ${(SOURCES.find(s => s.key === key) || {}).label || key}: ${niceError(err)}`;
+    statusEl.textContent = msg;
     renderResults(prev);
+    // also show it at the top of the results, where the person is looking (the status line can be off screen on a phone)
+    document.getElementById('resultsPane').insertAdjacentHTML('afterbegin', `<div class="src-err" role="alert">${escapeHtml(msg)}</div>`);
   }
 }
 
