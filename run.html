@@ -59,7 +59,10 @@ input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px color-m
  .sbox .clr svg{width:8px;height:8px}
  .sbox .clr[hidden]{display:none}
 }
-.res{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:2px}
+#srch{position:relative;z-index:5}
+.sw{position:relative}
+#gps{display:block;width:100%;margin-top:8px}
+.res{list-style:none;position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:10;margin:0;padding:6px;display:grid;gap:2px;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 14px 36px rgba(0,0,0,.3);max-height:46vh;overflow-y:auto}
 .res button{width:100%;text-align:left;border:0;background:transparent;box-shadow:none;min-height:42px;font-weight:500;border-radius:10px}
 .res button:hover,.res button:focus-visible{background:color-mix(in srgb,var(--accent) 14%,transparent);box-shadow:none;border:0}
 .res li.none{color:var(--mu);font-size:13px;padding:8px 12px}
@@ -106,12 +109,12 @@ nav.menu{top:calc(24px + env(safe-area-inset-top,0px));right:calc(30px + env(saf
   <div><h1>Run Light</h1><p>Is it light enough to run?</p></div>
 </header>
 
-<section class="card">
-  <div class="row">
+<section class="card" id="srch">
+  <div class="sw">
     <div class="sbox"><input id="q" type="search" placeholder="Search for a place" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="search" aria-label="Place"><button class="clr" id="clr" type="button" aria-label="Clear place" hidden><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" fill="none"/></svg></button></div>
-    <button class="p" id="gps" type="button">Use my location</button>
+    <ul class="res" id="res" hidden></ul>
   </div>
-  <ul class="res" id="res" hidden></ul>
+  <button class="p" id="gps" type="button">Use my location</button>
   <p class="hint err" id="msg" role="status" hidden></p>
 </section>
 
@@ -223,11 +226,12 @@ function drawWx(w,tz){
  if(wx.err){wxSig="";body.innerHTML='<p class="hint">Couldn\u2019t load the weather just now.</p>';return;}
  const sig=wkey()+"|"+$("date").value+"|"+Math.round(w.rise/6e4)+"|"+wx.at;
  if(sig===wxSig)return;wxSig=sig;
- const H=wx.j.hourly,off=wx.j.utc_offset_seconds||0,hrs=[];
+ const H=wx.j.hourly,off=wx.j.utc_offset_seconds||0,all=[];
  for(let i=0;i<H.time.length;i++){
   const hh=+H.time[i].slice(11,13),[Y,M,D]=H.time[i].slice(0,10).split("-").map(Number),t=Date.UTC(Y,M-1,D,hh)-off*1e3;
-  if(t+36e5>w.rise&&t<w.set&&H.temperature_2m[i]!=null)hrs.push({lbl:H.time[i].slice(11,16),temp:H.temperature_2m[i],feel:H.apparent_temperature[i],pop:H.precipitation_probability[i]||0,pr:H.precipitation[i]||0,wind:H.wind_speed_10m[i],gust:H.wind_gusts_10m[i],code:H.weather_code[i],day:H.is_day[i]});
+  if(H.temperature_2m[i]!=null&&t+36e5>w.rise&&t<w.set)all.push({full:t>=w.rise&&t+36e5<=w.set,mid:t+18e5>w.rise&&t+18e5<w.set,lbl:H.time[i].slice(11,16),temp:H.temperature_2m[i],feel:H.apparent_temperature[i],pop:H.precipitation_probability[i]||0,pr:H.precipitation[i]||0,wind:H.wind_speed_10m[i],gust:H.wind_gusts_10m[i],code:H.weather_code[i],day:H.is_day[i]});
  }
+ let hrs=all.filter(h=>h.full);if(!hrs.length)hrs=all.filter(h=>h.mid);
  if(!hrs.length){body.innerHTML='<p class="hint">No forecast available for this date.</p>';return;}
  const rd=Math.round,mn=k=>Math.min(...hrs.map(h=>h[k])),mx=k=>Math.max(...hrs.map(h=>h[k])),sum=k=>hrs.reduce((a,h)=>a+h[k],0);
  const worst=hrs.reduce((a,h)=>h.code>a.code?h:a,hrs[0]);
