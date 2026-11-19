@@ -1,56 +1,58 @@
 {
- "updated": "18 Nov 2026, 21:40",
- "updated_iso": "2026-11-18T21:40:47.024243+00:00",
+ "updated": "19 Nov 2026, 00:28",
+ "updated_iso": "2026-11-19T00:28:35.192841+00:00",
  "health": {
   "mc": {
-   "last_ok_iso": "2026-11-18T21:40:47.024243+00:00",
+   "last_ok_iso": "2026-11-19T00:28:35.192841+00:00",
    "from": "man-city-on-tv.html",
    "count": 14
   },
   "mw": {
-   "last_ok_iso": "2026-11-18T21:40:47.024243+00:00",
-   "from": "wsl-on-tv.html",
-   "count": 3
+   "last_ok_iso": "2026-11-19T00:28:35.192841+00:00",
+   "from": "man-city-women-on-tv.html",
+   "count": 4
   },
   "aw": {
-   "last_ok_iso": "2026-11-18T21:40:47.024243+00:00",
-   "from": "wsl-on-tv.html",
-   "count": 3
+   "last_ok_iso": "2026-11-19T00:28:35.192841+00:00",
+   "from": "arsenal-women-on-tv.html",
+   "count": 5
   },
   "mu": {
-   "last_ok_iso": "2026-11-18T21:40:47.024243+00:00",
-   "from": "wsl-on-tv.html",
+   "last_ok_iso": "2026-11-19T00:28:35.192841+00:00",
+   "from": "man-utd-women-on-tv.html",
    "count": 3
   },
   "cw": {
-   "last_ok_iso": "2026-11-18T21:40:47.024243+00:00",
+   "last_ok_iso": "2026-11-19T00:28:35.192841+00:00",
    "from": "chelsea-women-on-tv.html",
-   "count": 5
+   "count": 4
   },
   "li": {
-   "last_ok_iso": "2026-11-18T15:46:25.147867+00:00",
-   "from": null,
+   "last_ok_iso": "2026-11-19T00:28:35.192841+00:00",
+   "from": "england-women-on-tv.html",
    "count": 2
   },
   "en": {
-   "last_ok_iso": "2026-11-18T21:40:47.024243+00:00",
+   "last_ok_iso": "2026-11-19T00:28:35.192841+00:00",
    "from": "england-on-tv.html",
    "count": 0
   },
   "f1": {
-   "last_ok_iso": "2026-11-18T21:40:47.024243+00:00",
+   "last_ok_iso": "2026-11-19T00:28:35.192841+00:00",
    "from": "api.jolpi.ca",
    "count": 6
   }
  },
  "fixtures": [
   {
-   "t": "cw",
-   "iso": "2026-11-18T20:00:00+00:00",
+   "t": "aw",
+   "iso": "2026-11-19T20:00:00+00:00",
    "comp": "Women's Champions League League Phase",
-   "h": "Chelsea",
-   "a": "PSG",
+   "h": "Arsenal",
+   "a": "Lyon",
    "ch": [
+    "BBC Three",
+    "BBC iPlayer",
     "Disney+"
    ],
    "note": "",
@@ -362,6 +364,30 @@
    "ch": [
     "Sky Sports Main Event",
     "Sky Sports Football"
+   ],
+   "note": "",
+   "tbc": false
+  },
+  {
+   "t": "mw",
+   "iso": "2026-12-16T20:00:00+00:00",
+   "comp": "Women's Champions League League Phase",
+   "h": "Man City",
+   "a": "Austria Wien",
+   "ch": [
+    "Disney+"
+   ],
+   "note": "",
+   "tbc": false
+  },
+  {
+   "t": "aw",
+   "iso": "2026-12-16T20:00:00+00:00",
+   "comp": "Women's Champions League League Phase",
+   "h": "Inter Milan",
+   "a": "Arsenal",
+   "ch": [
+    "Disney+"
    ],
    "note": "",
    "tbc": false
