@@ -101,6 +101,7 @@ def parse(text, key):
 
 UA = "Mozilla/5.0 (compatible; personal-fixtures-page; +https://www.hibbs.org.uk/)"
 PAUSE = 3          # seconds between requests to the listings site
+RETRY_PAUSE = [10, 30]
 _pages, _last = {}, [0.0]
 _robots = urllib.robotparser.RobotFileParser()
 
@@ -119,12 +120,23 @@ def page_text(slug):
         try:
             if not _robots.can_fetch(UA, BASE + slug):
                 raise RuntimeError("blocked by robots.txt")
-            wait = PAUSE - (time.time() - _last[0])
-            if wait > 0:
-                time.sleep(wait)
-            r = requests.get(BASE + slug, timeout=30, headers={"User-Agent": UA})
-            _last[0] = time.time()
-            r.raise_for_status()
+            for attempt in range(3):                 # a blip (timeout, 429, 5xx) gets two more tries, 10 then 30 seconds later
+                wait = PAUSE - (time.time() - _last[0])
+                if wait > 0:
+                    time.sleep(wait)
+                try:
+                    r = requests.get(BASE + slug, timeout=30, headers={"User-Agent": UA})
+                    _last[0] = time.time()
+                    if r.status_code in (429, 500, 502, 503, 504):
+                        raise RuntimeError(f"HTTP {r.status_code}")
+                    r.raise_for_status()
+                    break
+                except Exception as e:
+                    _last[0] = time.time()
+                    if attempt == 2:
+                        raise
+                    print(f"{slug}: {e}; trying again", file=sys.stderr)
+                    time.sleep(RETRY_PAUSE[attempt])
             _pages[slug] = BeautifulSoup(r.text, "html.parser").get_text("\n")
         except Exception as e:
             _pages[slug] = e
@@ -244,6 +256,8 @@ def main():
     except Exception: prev = {}
     old, old_health = prev.get("fixtures", []), prev.get("health", {})
     now = dt.datetime.now(LON)
+    persistent = lambda k: not (old_health.get(k, {}).get("last_ok_iso")) or \
+        now - dt.datetime.fromisoformat(old_health[k]["last_ok_iso"]) > dt.timedelta(hours=18)   # last good read was before the previous run too
     recent = lambda f: dt.datetime.fromisoformat(f["iso"]) > now - dt.timedelta(hours=3)
     load_robots()
     new, health, problems = [], {}, []
@@ -260,9 +274,13 @@ def main():
             print(f"::warning::fixtures: {key} returned only {len(got)} fixtures (had {upcoming_before}); keeping the previous ones in case the page layout changed")
             got = []
         if not got and not ok and upcoming_before > 0:
-            problems.append(f"{key}: no usable fixtures (had {upcoming_before} upcoming)")
+            if persistent(key):
+                problems.append(f"{key}: no usable fixtures (had {upcoming_before} upcoming)")
+            else:
+                print(f"::warning::fixtures: {key} had no usable fixtures this run (had {upcoming_before} upcoming); will flag it if it happens again")
         if key == "f1" and not ok:
-            problems.append("f1: the calendar could not be read")
+            if persistent("f1"):
+                problems.append("f1: the calendar could not be read")
         if got or ok:                     # F1 and quiet spells can legitimately have nothing listed
             new += got or [f for f in kept if dt.datetime.fromisoformat(f["iso"]) <= now]   # keep a match that has just finished
             health[key] = {"last_ok_iso": now.isoformat(), "from": src, "count": len(got)}
