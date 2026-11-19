@@ -198,8 +198,21 @@ input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(11
 @media (hover:hover) and (pointer:fine){
 	.card>.tools{display:flex;opacity:0;transition:opacity .15s}
 	.card:hover>.tools,.card:focus-within>.tools,.card>.tools.on{opacity:1}
-	.card .top{padding-right:84px}
+	.card .top{padding-right:126px}
 }
+.tool.pin.on{color:var(--accent);border-color:var(--accent)}
+.pinmark{display:inline-block;width:13px;height:13px;margin-right:6px;vertical-align:-1px;fill:none;stroke:var(--accent);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.backup{display:flex;justify-content:center;align-items:center;gap:6px;margin:10px 0 0;font-size:12px;color:var(--muted)}
+.backup button{background:none;border:0;padding:6px 8px;border-radius:8px;color:var(--muted);font-size:12px;font-weight:600;transition:color .15s}
+.backup button:hover{color:var(--text)}
+.backup button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.toast{position:fixed;z-index:30;left:max(16px,env(safe-area-inset-left,0px));right:calc(94px + env(safe-area-inset-right,0px));bottom:calc(28px + env(safe-area-inset-bottom,0px));display:flex;align-items:center;justify-content:space-between;gap:14px;padding:10px 12px 10px 16px;color:var(--menu-ink);font-size:14px;background:var(--menu-glass);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border:1px solid var(--menu-line);border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.35);opacity:0;visibility:hidden;transform:translateY(10px);transition:opacity .2s,transform .25s,visibility 0s .25s}
+.toast.show{opacity:1;visibility:visible;transform:none;transition:opacity .2s,transform .25s,visibility 0s}
+.toast button{flex:none;background:none;border:0;padding:6px 10px;border-radius:10px;color:var(--accent);font-size:14px;font-weight:700}
+.toast button:hover{background:rgba(255,255,255,.07)}
+.toast button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (min-width:760px){.toast{left:50%;right:auto;width:max-content;max-width:420px;transform:translate(-50%,10px)}.toast.show{transform:translateX(-50%)}}
+@media (prefers-reduced-motion:reduce){.toast,.toast.show{transition:none}}
 .pasthead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:26px}
 .pastbtn,.pastclear{background:none;border:0;padding:6px 4px;color:var(--muted);font-size:13px;font-weight:600;letter-spacing:.04em;display:inline-flex;align-items:center;gap:8px;transition:color .15s}
 .pastbtn:hover,.pastclear:hover{color:var(--text)}
@@ -244,7 +257,9 @@ html.standalone header{padding-right:0}
 </header>
 <button class="fab" id="openAdd" type="button" aria-label="Add countdown"></button>
 <div id="list"></div>
+<div class="backup"><button type="button" id="bkExport">Back up</button><span aria-hidden="true">·</span><button type="button" id="bkImport">Restore</button><input type="file" id="bkFile" accept=".json,application/json" hidden></div>
 </main>
+<div class="toast" id="toast" role="status" aria-live="polite"><span id="toastMsg"></span><button type="button" id="toastUndo">Undo</button></div>
 
 <div class="ov" id="ovAdd" hidden>
 <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="addT">
@@ -254,6 +269,7 @@ html.standalone header{padding-right:0}
 <label>Event<input id="n" type="text" name="cd-event-label" maxlength="60" inputmode="text" enterkeyhint="done" autocomplete="off" aria-autocomplete="none" autocorrect="on" autocapitalize="sentences" spellcheck="true" data-lpignore="true" data-1p-ignore data-form-type="other"></label>
 <label>Date<input id="d" type="date"></label>
 <label class="chk"><input id="r" type="checkbox"><span>Repeats every year</span></label>
+<label class="chk"><input id="p" type="checkbox"><span>Pin to top</span></label>
 </div>
 <div id="err" role="alert"></div>
 <div class="btns"><button class="ghost" type="button" id="cancelAdd">Cancel</button><button class="add" type="submit" id="saveBtn">Add</button></div>
@@ -280,7 +296,7 @@ var now=Date.now(),L=$('list');
 if(!items.length){L.innerHTML='<div class="empty">No dates yet. Tap the + button to start.</div>';return}
 var today=new Date(now).toDateString();
 var arr=items.map(function(it){var t=ts(it);return{it:it,t:t,cat:t>now?1:(new Date(t).toDateString()===today?0:2)}});
-arr.sort(function(a,b){if(a.cat!==b.cat)return a.cat-b.cat;return a.cat===2?b.t-a.t:a.t-b.t});
+arr.sort(function(a,b){var pa=a.it.pinned?0:1,pb=b.it.pinned?0:1;if(pa!==pb)return pa-pb;if(a.cat!==b.cat)return a.cat-b.cat;return a.cat===2?b.t-a.t:a.t-b.t});
 function cardHtml(o){
 var body,past=o.cat===2;
 if(o.cat===1){var d=Math.round((o.t-new Date(now).setHours(0,0,0,0))/864e5);
@@ -288,15 +304,15 @@ body=d===1?'<div class="units"><div class="u tm"><b>Tomorrow</b></div></div>':'<
 else if(o.cat===0){body='<div class="msg">It’s today!</div>'}
 else{var n=Math.floor((now-o.t)/864e5);body='<div class="msg">Passed '+n+' day'+(n===1?'':'s')+' ago</div>'}
 var th=theme(o.it);var cls=(past?' past':'')+(th?' '+th:' cal');
-return'<div class="swipe'+(o.it.id===openId?(openSide>0?' open-r':' open-l'):'')+'" data-id="'+o.it.id+'"><button class="edit-act" type="button" data-id="'+o.it.id+'" aria-label="Edit '+esc(o.it.name)+'">Edit</button><button class="del-act" type="button" data-id="'+o.it.id+'" aria-label="Delete '+esc(o.it.name)+'">Delete</button><div class="card'+cls+'" tabindex="0"><div class="tools'+(o.it.id===confirmId?' on':'')+'"><button class="tool ed" type="button" data-id="'+o.it.id+'" aria-label="Edit '+esc(o.it.name)+'" title="Edit"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg></button><button class="tool dl'+(o.it.id===confirmId?' confirm':'')+'" type="button" data-id="'+o.it.id+'" aria-label="Delete '+esc(o.it.name)+'" title="Delete">'+(o.it.id===confirmId?'Delete':'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>')+'</button></div><div class="top"><div><div class="name">'+esc(o.it.name)+'</div><div class="when">'+fmt(o.it)+(o.it.repeat?' · every year':'')+'</div></div></div>'+body+'</div></div>'}
-var act=arr.filter(function(o){return o.cat<2}),old=arr.filter(function(o){return o.cat===2});
+return'<div class="swipe'+(o.it.id===openId?(openSide>0?' open-r':' open-l'):'')+'" data-id="'+o.it.id+'"><button class="edit-act" type="button" data-id="'+o.it.id+'" aria-label="Edit '+esc(o.it.name)+'">Edit</button><button class="del-act" type="button" data-id="'+o.it.id+'" aria-label="Delete '+esc(o.it.name)+'">Delete</button><div class="card'+cls+'" tabindex="0"><div class="tools'+(o.it.id===confirmId?' on':'')+'"><button class="tool pin'+(o.it.pinned?' on':'')+'" type="button" data-id="'+o.it.id+'" aria-pressed="'+(o.it.pinned?'true':'false')+'" aria-label="'+(o.it.pinned?'Unpin ':'Pin ')+esc(o.it.name)+'" title="'+(o.it.pinned?'Unpin':'Pin to top')+'"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5"/><path d="M9 3h6l-1 7 3 3v2H7v-2l3-3z"/></svg></button><button class="tool ed" type="button" data-id="'+o.it.id+'" aria-label="Edit '+esc(o.it.name)+'" title="Edit"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg></button><button class="tool dl'+(o.it.id===confirmId?' confirm':'')+'" type="button" data-id="'+o.it.id+'" aria-label="Delete '+esc(o.it.name)+'" title="Delete">'+(o.it.id===confirmId?'Delete':'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>')+'</button></div><div class="top"><div><div class="name">'+(o.it.pinned?'<svg class="pinmark" viewBox="0 0 24 24" aria-label="Pinned"><path d="M12 17v5"/><path d="M9 3h6l-1 7 3 3v2H7v-2l3-3z"/></svg>':'')+esc(o.it.name)+'</div><div class="when">'+fmt(o.it)+(o.it.repeat?' · every year':'')+'</div></div></div>'+body+'</div></div>'}
+var act=arr.filter(function(o){return o.cat<2||o.it.pinned}),old=arr.filter(function(o){return o.cat===2&&!o.it.pinned});
 var h=act.map(cardHtml).join('');
 if(old.length){h+='<div class="pasthead"><button class="pastbtn" type="button" aria-expanded="'+pastOpen+'"><span class="chev'+(pastOpen?' o':'')+'" aria-hidden="true">›</span>Past <span class="cnt">'+old.length+'</span></button>'+(pastOpen?'<button class="pastclear" type="button">'+(clearArm?'Tap again to clear':'Clear all')+'</button>':'')+'</div>';if(pastOpen)h+=old.map(cardHtml).join('')}
 L.innerHTML=h+'<div class="hint">Swipe right to edit, left to delete</div>'}
 
 function openAdd(){editingId=null;$('addT').textContent='New countdown';$('saveBtn').textContent='Add';$('err').textContent='';$('ovAdd').hidden=false;$('n').focus()}
-function openEdit(id){var it=items.filter(function(i){return i.id===id})[0];if(!it)return;editingId=id;$('addT').textContent='Edit countdown';$('saveBtn').textContent='Save';$('err').textContent='';$('n').value=it.name;$('d').value=it.date;$('r').checked=!!it.repeat;$('ovAdd').hidden=false;$('d').focus()}
-function closeAdd(){$('ovAdd').hidden=true;if(editingId){$('n').value='';$('d').value='';$('r').checked=false;editingId=null}$('openAdd').focus()}
+function openEdit(id){var it=items.filter(function(i){return i.id===id})[0];if(!it)return;editingId=id;$('addT').textContent='Edit countdown';$('saveBtn').textContent='Save';$('err').textContent='';$('n').value=it.name;$('d').value=it.date;$('r').checked=!!it.repeat;$('p').checked=!!it.pinned;$('ovAdd').hidden=false;$('d').focus()}
+function closeAdd(){$('ovAdd').hidden=true;if(editingId){$('n').value='';$('d').value='';$('r').checked=false;$('p').checked=false;editingId=null}$('openAdd').focus()}
 $('openAdd').addEventListener('click',openAdd);
 $('cancelAdd').addEventListener('click',closeAdd);
 $('ovAdd').addEventListener('click',function(e){if(e.target===this)closeAdd()});
@@ -307,10 +323,17 @@ e.preventDefault();
 var n=$('n'),d=$('d'),er=$('err');
 if(!n.value.trim()){er.textContent='Give the countdown a name.';n.focus();return}
 if(!d.value){er.textContent='Pick a date.';d.focus();return}
-if(editingId){items.forEach(function(i){if(i.id===editingId){i.name=n.value.trim();i.date=d.value;i.repeat=$('r').checked}});editingId=null}
-else items.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),name:n.value.trim(),date:d.value,repeat:$('r').checked});
-openId=null;openSide=0;save();n.value='';d.value='';$('r').checked=false;$('ovAdd').hidden=true;render()});
+if(editingId){items.forEach(function(i){if(i.id===editingId){i.name=n.value.trim();i.date=d.value;i.repeat=$('r').checked;i.pinned=$('p').checked}});editingId=null}
+else items.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),name:n.value.trim(),date:d.value,repeat:$('r').checked,pinned:$('p').checked});
+openId=null;openSide=0;save();n.value='';d.value='';$('r').checked=false;$('p').checked=false;$('ovAdd').hidden=true;render()});
 
+var lastUndo=null,toastT=null;
+function showToast(msg,undo){clearTimeout(toastT);$('toastMsg').textContent=msg;$('toastUndo').hidden=!undo;if(!undo)lastUndo=null;$('toast').classList.add('show');toastT=setTimeout(hideToast,undo?6500:3500)}
+function hideToast(){clearTimeout(toastT);$('toast').classList.remove('show');lastUndo=null}
+function removeItems(list,msg){var rm=[];list.forEach(function(it){var i=items.indexOf(it);if(i>-1)rm.push({it:it,i:i})});if(!rm.length)return;items=items.filter(function(i){return list.indexOf(i)===-1});openId=null;openSide=0;save();render();lastUndo=rm;showToast(msg,true)}
+function undoDelete(){if(!lastUndo)return;lastUndo.sort(function(a,b){return a.i-b.i}).forEach(function(r){items.splice(Math.min(r.i,items.length),0,r.it)});save();render();hideToast()}
+$('toastUndo').addEventListener('click',undoDelete);
+function nm(it){var n=it.name.length>28?it.name.slice(0,27)+'…':it.name;return '“'+n+'”'}
 function clearConfirm(quiet){clearTimeout(confirmT);if(confirmId){confirmId=null;if(!quiet)render()}}
 document.addEventListener('click',function(e){if(confirmId&&!e.target.closest('.tool.dl'))clearConfirm()});
 /* Swipe a card left to reveal Delete */
@@ -348,18 +371,48 @@ $('list').addEventListener('click',function(e){
 if(e.target.closest('.pastbtn')){pastOpen=!pastOpen;openId=null;openSide=0;clearArm=false;render();return}
 if(e.target.closest('.pastclear')){
 if(!clearArm){clearArm=true;clearTimeout(clearT);clearT=setTimeout(function(){clearArm=false;render()},3500);render()}
-else{clearArm=false;clearTimeout(clearT);var nw=Date.now(),td=new Date(nw).toDateString();items=items.filter(function(i){var t=ts(i);return t>nw||new Date(t).toDateString()===td});openId=null;openSide=0;save();render()}
+else{clearArm=false;clearTimeout(clearT);var nw=Date.now(),td=new Date(nw).toDateString();var gone=items.filter(function(i){var t=ts(i);return !i.pinned&&t<=nw&&new Date(t).toDateString()!==td});removeItems(gone,'Cleared '+gone.length+' past event'+(gone.length===1?'':'s'))}
 return}
 var tb=e.target.closest('.tool');
 if(tb){var tid=tb.dataset.id;
 if(tb.classList.contains('ed')){clearConfirm();openEdit(tid)}
-else if(confirmId===tid){clearConfirm(true);items=items.filter(function(i){return i.id!==tid});openId=null;openSide=0;save();render()}
-else{clearTimeout(confirmT);confirmId=tid;confirmT=setTimeout(clearConfirm,3500);render()}
+else if(tb.classList.contains('pin')){items.forEach(function(i){if(i.id===tid)i.pinned=!i.pinned});save();render()}
+else{var tgt=items.filter(function(i){return i.id===tid});removeItems(tgt,'Deleted '+(tgt[0]?nm(tgt[0]):''))}
 return}
 var eb=e.target.closest('.edit-act');
 if(eb){var id=eb.dataset.id,sw=swipeEl(id);if(sw)setOpen(sw,0);openEdit(id);return}
 var b=e.target.closest('.del-act');if(!b)return;
-items=items.filter(function(i){return i.id!==b.dataset.id});openId=null;openSide=0;save();render()});
+var tg=items.filter(function(i){return i.id===b.dataset.id});removeItems(tg,'Deleted '+(tg[0]?nm(tg[0]):''))});
+
+/* Back up and restore */
+function mobileish(){return /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1)}
+$('bkExport').addEventListener('click',function(){
+if(!items.length){showToast('Nothing to back up yet');return}
+var data=JSON.stringify({app:'chuff',version:1,exported:new Date().toISOString(),items:items},null,1),name='chuff-backup-'+new Date().toISOString().slice(0,10)+'.json',file=null;
+try{file=new File([data],name,{type:'application/json'})}catch(e){}
+if(file&&mobileish()&&navigator.canShare&&navigator.canShare({files:[file]})){navigator.share({files:[file],title:'Chuff Chart backup'}).catch(function(){});return}
+var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type:'application/json'}));a.download=name;document.body.appendChild(a);a.click();
+setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},500);showToast('Backup saved to your downloads')});
+$('bkImport').addEventListener('click',function(){$('bkFile').click()});
+$('bkFile').addEventListener('change',function(){
+var f=this.files&&this.files[0];this.value='';if(!f)return;
+var r=new FileReader();
+r.onload=function(){try{
+var j=JSON.parse(r.result),list=Array.isArray(j)?j:(j&&j.items);if(!Array.isArray(list))throw 0;
+var ids={},keys={},add=0,skip=0;
+items.forEach(function(i){ids[i.id]=1;keys[(i.name+'|'+i.date+'|'+(i.repeat?1:0)).toLowerCase()]=1});
+list.forEach(function(x){
+if(!x||typeof x.name!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(x.date||'')){return}
+var q=x.date.split('-'),dt=new Date(+q[0],q[1]-1,+q[2]);if(dt.getMonth()!==q[1]-1){return}
+var name=x.name.trim().slice(0,60);if(!name)return;
+var k=(name+'|'+x.date+'|'+(x.repeat?1:0)).toLowerCase();
+if(keys[k]){skip++;return}
+var id=(typeof x.id==='string'&&x.id&&!ids[x.id])?x.id:Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+ids[id]=1;keys[k]=1;items.push({id:id,name:name,date:x.date,repeat:!!x.repeat,pinned:!!x.pinned});add++});
+openId=null;openSide=0;save();render();
+showToast(add?('Restored '+add+' countdown'+(add===1?'':'s')+(skip?', '+skip+' already here':'')):(skip?'Those are all already here':'No countdowns found in that file'))
+}catch(e){showToast('That file isn’t a Chuff backup')}};
+r.readAsText(f)});
 
 /* Installed web app (iPhone home-screen app reports navigator.standalone) */
 if(window.navigator.standalone===true||(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)){document.documentElement.classList.add('standalone')}
