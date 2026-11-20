@@ -205,6 +205,7 @@ def f1_year(year):
     out = []
     for race in r.json()["MRData"]["RaceTable"]["Races"]:
         gp = race.get("raceName") or "Grand Prix"
+        sprint = any(race.get(k) for k in ("Sprint", "SprintQualifying", "SprintShootout"))
         country = ((race.get("Circuit") or {}).get("Location") or {}).get("country", "")
         cc = F1_FLAGS.get(country.strip().lower(), "")
         if country and not cc:
@@ -213,7 +214,7 @@ def f1_year(year):
             s = {"date": race.get("date"), "time": race.get("time")} if key == "Race" else race.get(key)
             iso = f1_iso((s or {}).get("date"), (s or {}).get("time"))
             if iso:                                   # sessions without a published time are skipped
-                out.append({"t": "f1", "iso": iso, "comp": "Formula 1, " + label, "h": gp, "a": "", "cc": cc,
+                out.append({"t": "f1", "iso": iso, "comp": "Formula 1, " + label, "h": gp, "a": "", "cc": cc, "sp": sprint,
                             "ch": list(F1_CHANNELS), "note": "", "tbc": False})
     return out
 
