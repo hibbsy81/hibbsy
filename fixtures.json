@@ -1,44 +1,44 @@
 {
- "updated": "20 Nov 2026, 00:40",
- "updated_iso": "2026-11-20T00:40:51.973076+00:00",
+ "updated": "20 Nov 2026, 01:05",
+ "updated_iso": "2026-11-20T01:05:17.255078+00:00",
  "health": {
   "mc": {
-   "last_ok_iso": "2026-11-20T00:40:51.973076+00:00",
+   "last_ok_iso": "2026-11-20T01:05:17.255078+00:00",
    "from": "man-city-on-tv.html",
    "count": 16
   },
   "mw": {
-   "last_ok_iso": "2026-11-20T00:40:51.973076+00:00",
+   "last_ok_iso": "2026-11-20T01:05:17.255078+00:00",
    "from": "man-city-women-on-tv.html",
    "count": 4
   },
   "aw": {
-   "last_ok_iso": "2026-11-20T00:40:51.973076+00:00",
+   "last_ok_iso": "2026-11-20T01:05:17.255078+00:00",
    "from": "arsenal-women-on-tv.html",
    "count": 4
   },
   "mu": {
-   "last_ok_iso": "2026-11-20T00:40:51.973076+00:00",
+   "last_ok_iso": "2026-11-20T01:05:17.255078+00:00",
    "from": "man-utd-women-on-tv.html",
    "count": 3
   },
   "cw": {
-   "last_ok_iso": "2026-11-20T00:40:51.973076+00:00",
+   "last_ok_iso": "2026-11-20T01:05:17.255078+00:00",
    "from": "chelsea-women-on-tv.html",
    "count": 4
   },
   "li": {
-   "last_ok_iso": "2026-11-20T00:40:51.973076+00:00",
+   "last_ok_iso": "2026-11-20T01:05:17.255078+00:00",
    "from": "england-women-on-tv.html",
    "count": 2
   },
   "en": {
-   "last_ok_iso": "2026-11-20T00:40:51.973076+00:00",
+   "last_ok_iso": "2026-11-20T01:05:17.255078+00:00",
    "from": "england-on-tv.html",
    "count": 0
   },
   "f1": {
-   "last_ok_iso": "2026-11-20T00:40:51.973076+00:00",
+   "last_ok_iso": "2026-11-20T01:05:17.255078+00:00",
    "from": "api.jolpi.ca",
    "count": 6
   }
@@ -51,6 +51,7 @@
    "h": "Las Vegas Grand Prix",
    "a": "",
    "cc": "us",
+   "sp": false,
    "ch": [
     "Sky Sports F1"
    ],
@@ -92,6 +93,7 @@
    "h": "Las Vegas Grand Prix",
    "a": "",
    "cc": "us",
+   "sp": false,
    "ch": [
     "Sky Sports F1"
    ],
@@ -157,6 +159,7 @@
    "h": "Qatar Grand Prix",
    "a": "",
    "cc": "qa",
+   "sp": false,
    "ch": [
     "Sky Sports F1"
    ],
@@ -170,6 +173,7 @@
    "h": "Qatar Grand Prix",
    "a": "",
    "cc": "qa",
+   "sp": false,
    "ch": [
     "Sky Sports F1"
    ],
@@ -221,6 +225,7 @@
    "h": "Abu Dhabi Grand Prix",
    "a": "",
    "cc": "ae",
+   "sp": false,
    "ch": [
     "Sky Sports F1"
    ],
@@ -260,6 +265,7 @@
    "h": "Abu Dhabi Grand Prix",
    "a": "",
    "cc": "ae",
+   "sp": false,
    "ch": [
     "Sky Sports F1"
    ],
