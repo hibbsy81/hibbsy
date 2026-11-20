@@ -39,14 +39,16 @@ h1{font-family:"Bricolage Grotesque","Inter",-apple-system,BlinkMacSystemFont,"S
 .crest img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;padding:12%;background:#fff}
 .crest.has span{display:none}
 .crest img.flag{padding:0;object-fit:cover}
-/* Women's / men's / F1: a faint pink, blue or green glow in the card's bottom-right corner */
-.card.gw::after,.card.gm::after,.card.gf::after,.hero.gw::after,.hero.gm::after,.hero.gf::after{content:"";position:absolute;right:-50px;bottom:-50px;width:230px;height:230px;border-radius:50%;pointer-events:none;background:radial-gradient(closest-side,var(--gl),transparent)}
+/* Women's / men's: a faint pink or blue glow in the card's bottom-right corner */
+.card.gw::after,.card.gm::after,.hero.gw::after,.hero.gm::after{content:"";position:absolute;right:-50px;bottom:-50px;width:230px;height:230px;border-radius:50%;pointer-events:none;background:radial-gradient(closest-side,var(--gl),transparent)}
 .card.gw{--gl:rgba(255,120,190,.22)}
 .card.gm{--gl:rgba(90,160,255,.22)}
-.card.gf{--gl:rgba(70,220,130,.22)}
 .hero.gw{--gl:rgba(255,120,190,.28)}
 .hero.gm{--gl:rgba(90,160,255,.28)}
-.hero.gf{--gl:rgba(70,220,130,.28)}
+.ch .cal{margin-left:auto;min-height:30px;padding:5px 11px;border-radius:8px;border:1px solid rgba(255,255,255,.2);background:transparent;color:var(--mu);font:inherit;font-size:12px;font-weight:700;cursor:pointer;transition:background-color .15s ease,color .15s ease}
+@media (hover:hover){.ch .cal:hover{background:rgba(255,255,255,.08);color:var(--tx)}}
+.ch .cal:focus-visible{outline:2px solid var(--menu-accent);outline-offset:2px}
+.empty span{display:block;margin-top:6px;opacity:.85}
 .ses{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:6px}
 .ses li{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:8px 12px;border-radius:10px;background:rgba(255,255,255,.06);font-size:15px;font-weight:600}
 .ses time{color:var(--mu);font-weight:700}
@@ -133,7 +135,7 @@ const BR={bbc:["#bb1919","#fff"],itv:["#101820","#fff"],sky:["#0072c9","#fff"],t
 const brand=c=>/^BBC/i.test(c)?"bbc":/^ITV/i.test(c)?"itv":/^Sky/i.test(c)?"sky":/^TNT/i.test(c)?"tnt":/^HBO/i.test(c)?"hbo":/^Disney/i.test(c)?"disney":/YouTube/i.test(c)?"youtube":/Prime/i.test(c)?"prime":/^DAZN/i.test(c)?"dazn":c.toLowerCase().replace(/[^a-z0-9]+/g,"-");
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 // Built-in snapshot, used only if fixtures.json can't be loaded.
-const EMBED={"updated": "20 Nov 2026, 00:40", "fixtures": [{"t": "f1", "iso": "2026-11-21T04:00:00+00:00", "comp": "Formula 1, Qualifying", "h": "Las Vegas Grand Prix", "a": "", "cc": "us", "ch": ["Sky Sports F1"], "note": "", "tbc": false}, {"t": "mc", "iso": "2026-11-21T12:30:00+00:00", "comp": "Premier League", "h": "Man City", "a": "Fulham", "ch": ["TNT Sports 1", "TNT Sports Ultimate", "HBO Max"], "note": "", "tbc": false}, {"t": "cw", "iso": "2026-11-21T12:45:00+00:00", "comp": "Women's Super League", "h": "Liverpool", "a": "Chelsea", "ch": ["Sky Sports Premier League", "Sky One", "Sky Sports Mix"], "note": "", "tbc": false}, {"t": "f1", "iso": "2026-11-22T04:00:00+00:00", "comp": "Formula 1, Race", "h": "Las Vegas Grand Prix", "a": "", "cc": "us", "ch": ["Sky Sports F1"], "note": "", "tbc": false}, {"t": "mw", "iso": "2026-11-22T12:00:00+00:00", "comp": "Women's Super League", "h": "Man City", "a": "Tottenham Hotspur", "ch": ["Sky Sports Main Event", "Sky Sports Mix"], "note": "", "tbc": false}, {"t": "mu", "iso": "2026-11-22T12:00:00+00:00", "comp": "Women's Super League", "h": "Birmingham City", "a": "Man Utd", "ch": ["Sky Sports+"], "note": "", "tbc": false}, {"t": "aw", "iso": "2026-11-22T14:30:00+00:00", "comp": "Women's Super League", "h": "Arsenal", "a": "West Ham United", "ch": ["BBC Two", "BBC iPlayer"], "note": "", "tbc": false}, {"t": "mc", "iso": "2026-11-24T20:00:00+00:00", "comp": "UEFA Champions League\u00a0League Phase", "h": "Man City", "a": "Napoli", "ch": ["TNT Sports 1", "TNT Sports Ultimate", "HBO Max"], "note": "", "tbc": false}, {"t": "f1", "iso": "2026-11-28T18:00:00+00:00", "comp": "Formula 1, Qualifying", "h": "Qatar Grand Prix", "a": "", "cc": "qa", "ch": ["Sky Sports F1"], "note": "", "tbc": false}, {"t": "f1", "iso": "2026-11-29T16:00:00+00:00", "comp": "Formula 1, Race", "h": "Qatar Grand Prix", "a": "", "cc": "qa", "ch": ["Sky Sports F1"], "note": "", "tbc": false}, {"t": "mc", "iso": "2026-11-29T16:30:00+00:00", "comp": "Premier League", "h": "Arsenal", "a": "Man City", "ch": ["Sky Sports Main Event", "Sky Sports Premier League"], "note": "", "tbc": false}, {"t": "li", "iso": "2026-12-01T17:00:00+00:00", "comp": "FIFA Women's World Cup 2027\u00a0Play-Off 1st Leg", "h": "Ukraine", "a": "England", "ch": ["ITV1", "ITVX"], "note": "", "tbc": false}, {"t": "mc", "iso": "2026-12-02T19:30:00+00:00", "comp": "Premier League", "h": "Man City", "a": "Leeds United", "ch": ["Sky Sports"], "note": "Channel to be confirmed", "tbc": false}, {"t": "f1", "iso": "2026-12-05T14:00:00+00:00", "comp": "Formula 1, Qualifying", "h": "Abu Dhabi Grand Prix", "a": "", "cc": "ae", "ch": ["Sky Sports F1"], "note": "", "tbc": false}, {"t": "li", "iso": "2026-12-05T17:30:00+00:00", "comp": "FIFA Women's World Cup 2027\u00a0Play-Off 2nd Leg", "h": "England", "a": "Ukraine", "ch": ["ITV1", "ITVX"], "note": "", "tbc": false}, {"t": "mc", "iso": "2026-12-05T20:00:00+00:00", "comp": "Premier League", "h": "Brentford", "a": "Man City", "ch": ["Sky Sports Main Event", "Sky Sports Premier League"], "note": "", "tbc": false}, {"t": "f1", "iso": "2026-12-06T13:00:00+00:00", "comp": "Formula 1, Race", "h": "Abu Dhabi Grand Prix", "a": "", "cc": "ae", "ch": ["Sky Sports F1"], "note": "", "tbc": false}, {"t": "mc", "iso": "2026-12-08T20:00:00+00:00", "comp": "UEFA Champions League\u00a0League Phase", "h": "Barcelona", "a": "Man City", "ch": ["Amazon Prime Video"], "note": "", "tbc": false}], "updated_iso": "2026-11-20T00:40:51.973076+00:00"};
+const EMBED={"updated": "21 Oct 2026", "fixtures": [{"t": "mc", "iso": "2026-10-24T12:30:00+01:00", "comp": "Premier League", "h": "Aston Villa", "a": "Man City", "ch": ["TNT Sports 1", "TNT Sports Ultimate", "HBO Max"], "note": "", "tbc": false}, {"t": "aw", "iso": "2026-10-24T12:45:00+01:00", "comp": "Women’s Super League", "h": "Tottenham", "a": "Arsenal", "ch": ["BBC One", "BBC iPlayer"], "note": "", "tbc": false}, {"t": "cw", "iso": "2026-10-25T12:00:00+00:00", "comp": "Women’s Super League", "h": "Crystal Palace", "a": "Chelsea", "ch": ["Sky Sports Mix"], "note": "", "tbc": false}, {"t": "mu", "iso": "2026-10-25T18:00:00+00:00", "comp": "Women’s Super League", "h": "Man Utd", "a": "Man City", "ch": ["Sky Sports Football", "Sky One"], "note": "", "tbc": false}, {"t": "mw", "iso": "2026-10-25T18:00:00+00:00", "comp": "Women’s Super League", "h": "Man Utd", "a": "Man City", "ch": ["Sky Sports Football", "Sky One"], "note": "", "tbc": false}, {"t": "cw", "iso": "2026-10-28T17:45:00+00:00", "comp": "Women’s Champions League", "h": "Chelsea", "a": "Roma", "ch": ["Disney+"], "note": "", "tbc": false}, {"t": "mc", "iso": "2026-10-28T19:30:00+00:00", "comp": "Carabao Cup, 4th Round", "h": "Man City", "a": "Brighton", "ch": ["Sky Sports+"], "note": "", "tbc": false}, {"t": "aw", "iso": "2026-10-28T20:00:00+00:00", "comp": "Women’s Champions League", "h": "Arsenal", "a": "Benfica", "ch": ["Disney+"], "note": "", "tbc": false}, {"t": "mw", "iso": "2026-10-29T20:00:00+00:00", "comp": "Women’s Champions League", "h": "Man City", "a": "PSG", "ch": ["BBC Two", "BBC iPlayer", "Disney+"], "note": "", "tbc": false}, {"t": "mu", "iso": "2026-10-31T12:45:00+00:00", "comp": "Women’s Super League", "h": "Everton", "a": "Man Utd", "ch": ["Sky Sports Premier League"], "note": "", "tbc": false}, {"t": "mc", "iso": "2026-10-31T15:00:00+00:00", "comp": "Premier League", "h": "Man City", "a": "Brighton", "ch": [], "note": "Not televised", "tbc": false}, {"t": "aw", "iso": "2026-11-01T12:00:00+00:00", "comp": "Women’s Super League", "h": "Arsenal", "a": "Aston Villa", "ch": ["Sky Sports+"], "note": "", "tbc": false}, {"t": "mw", "iso": "2026-11-01T12:00:00+00:00", "comp": "Women’s Super League", "h": "London City Lionesses", "a": "Man City", "ch": ["Sky Sports Premier League"], "note": "", "tbc": false}, {"t": "cw", "iso": "2026-11-01T14:30:00+00:00", "comp": "Women’s Super League", "h": "Charlton Athletic", "a": "Chelsea", "ch": ["BBC Two", "BBC iPlayer"], "note": "", "tbc": false}, {"t": "mc", "iso": "2026-11-04T20:00:00+00:00", "comp": "Champions League", "h": "RB Leipzig", "a": "Man City", "ch": ["TNT Sports 2", "HBO Max"], "note": "", "tbc": false}, {"t": "cw", "iso": "2026-11-07T12:45:00+00:00", "comp": "Women’s Super League", "h": "Chelsea", "a": "Everton", "ch": ["Sky Sports Premier League"], "note": "", "tbc": false}, {"t": "mw", "iso": "2026-11-07T12:45:00+00:00", "comp": "Women’s Super League", "h": "Man City", "a": "West Ham", "ch": ["Sky Sports Mix"], "note": "", "tbc": false}, {"t": "mc", "iso": "2026-11-07T17:30:00+00:00", "comp": "Premier League", "h": "Nottingham Forest", "a": "Man City", "ch": ["Sky Sports Main Event", "Sky Sports Premier League"], "note": "", "tbc": false}, {"t": "aw", "iso": "2026-11-08T12:00:00+00:00", "comp": "Women’s Super League", "h": "Liverpool", "a": "Arsenal", "ch": ["Sky Sports Football"], "note": "", "tbc": false}, {"t": "mu", "iso": "2026-11-08T12:00:00+00:00", "comp": "Women’s Super League", "h": "Aston Villa", "a": "Man Utd", "ch": ["Sky Sports Mix", "WSL YouTube"], "note": "", "tbc": false}, {"t": "cw", "iso": "2026-11-10T17:45:00+00:00", "comp": "Women’s Champions League", "h": "Häcken", "a": "Chelsea", "ch": ["Disney+"], "note": "", "tbc": false}, {"t": "mw", "iso": "2026-11-10T20:00:00+00:00", "comp": "Women’s Champions League", "h": "Inter", "a": "Man City", "ch": ["Disney+"], "note": "", "tbc": false}, {"t": "aw", "iso": "2026-11-11T17:45:00+00:00", "comp": "Women’s Champions League", "h": "Barcelona", "a": "Arsenal", "ch": ["Disney+"], "note": "", "tbc": false}, {"t": "en", "iso": "2026-11-12T19:45:00+00:00", "comp": "Nations League", "h": "England", "a": "Croatia", "ch": ["ITV1", "ITVX"], "note": "", "tbc": false}, {"t": "mu", "iso": "2026-11-14T12:45:00+00:00", "comp": "Women’s Super League", "h": "Man Utd", "a": "Crystal Palace", "ch": ["Sky Sports Premier League"], "note": "", "tbc": false}, {"t": "cw", "iso": "2026-11-14T13:30:00+00:00", "comp": "Women’s Super League", "h": "Chelsea", "a": "Man City", "ch": ["BBC One", "BBC iPlayer"], "note": "", "tbc": false}, {"t": "mw", "iso": "2026-11-14T13:30:00+00:00", "comp": "Women’s Super League", "h": "Chelsea", "a": "Man City", "ch": ["BBC One", "BBC iPlayer"], "note": "", "tbc": false}, {"t": "aw", "iso": "2026-11-15T16:30:00+00:00", "comp": "Women’s Super League", "h": "Arsenal", "a": "London City Lionesses", "ch": ["Sky Sports Main Event", "Sky Sports Premier League"], "note": "", "tbc": false}, {"t": "en", "iso": "2026-11-15T19:45:00+00:00", "comp": "Nations League", "h": "Spain", "a": "England", "ch": ["ITV1", "ITVX"], "note": "", "tbc": false}, {"t": "mw", "iso": "2026-11-18T17:45:00+00:00", "comp": "Women’s Champions League", "h": "Hacken", "a": "Man City", "ch": ["Disney+"], "note": "", "tbc": false}, {"t": "cw", "iso": "2026-11-18T20:00:00+00:00", "comp": "Women’s Champions League", "h": "Chelsea", "a": "PSG", "ch": ["Disney+"], "note": "", "tbc": false}, {"t": "aw", "iso": "2026-11-19T20:00:00+00:00", "comp": "Women’s Champions League", "h": "Arsenal", "a": "Lyon", "ch": ["Disney+"], "note": "", "tbc": false}, {"t": "mc", "iso": "2026-11-21T12:30:00+00:00", "comp": "Premier League", "h": "Man City", "a": "Fulham", "ch": ["TNT Sports 1", "TNT Sports Ultimate", "HBO Max"], "note": "", "tbc": false}, {"t": "cw", "iso": "2026-11-21T12:45:00+00:00", "comp": "Women’s Super League", "h": "Liverpool", "a": "Chelsea", "ch": ["Sky Sports Premier League", "Sky Sports Mix"], "note": "", "tbc": false}, {"t": "mw", "iso": "2026-11-22T12:00:00+00:00", "comp": "Women’s Super League", "h": "Man City", "a": "Tottenham", "ch": ["Sky Sports Mix"], "note": "", "tbc": false}, {"t": "aw", "iso": "2026-11-22T12:30:00+00:00", "comp": "Women’s Super League", "h": "Arsenal", "a": "West Ham", "ch": ["BBC Two", "BBC iPlayer"], "note": "", "tbc": false}, {"t": "mc", "iso": "2026-11-24T20:00:00+00:00", "comp": "Champions League", "h": "Man City", "a": "Napoli", "ch": ["TNT Sports", "HBO Max"], "note": "TNT channel to be confirmed", "tbc": false}, {"t": "li", "iso": "2026-11-26T12:00:00+00:00", "comp": "World Cup play-off, 1st leg", "h": "Ukraine", "a": "England", "ch": ["ITV"], "note": "Kick-off time and channel to be confirmed", "tbc": true}, {"t": "mc", "iso": "2026-11-29T16:30:00+00:00", "comp": "Premier League", "h": "Arsenal", "a": "Man City", "ch": ["Sky Sports Main Event", "Sky Sports Premier League"], "note": "", "tbc": false}, {"t": "mc", "iso": "2026-12-02T19:30:00+00:00", "comp": "Premier League", "h": "Man City", "a": "Leeds United", "ch": ["Sky Sports"], "note": "Sky channel to be confirmed", "tbc": false}, {"t": "li", "iso": "2026-12-05T12:00:00+00:00", "comp": "World Cup play-off, 2nd leg", "h": "England", "a": "Ukraine", "ch": ["ITV"], "note": "Kick-off time and channel to be confirmed", "tbc": true}, {"t": "mc", "iso": "2026-12-05T20:00:00+00:00", "comp": "Premier League", "h": "Brentford", "a": "Man City", "ch": ["Sky Sports Main Event", "Sky Sports Premier League"], "note": "", "tbc": false}, {"t": "mc", "iso": "2026-12-08T20:00:00+00:00", "comp": "Champions League", "h": "Barcelona", "a": "Man City", "ch": ["TNT Sports", "HBO Max"], "note": "TNT channel to be confirmed", "tbc": false}, {"t": "mc", "iso": "2026-12-12T17:30:00+00:00", "comp": "Premier League", "h": "Man City", "a": "Chelsea", "ch": ["Sky Sports Main Event", "Sky Sports Premier League"], "note": "", "tbc": false}, {"t": "aw", "iso": "2026-12-16T20:00:00+00:00", "comp": "Women’s Champions League", "h": "Inter", "a": "Arsenal", "ch": ["Disney+"], "note": "", "tbc": false}, {"t": "cw", "iso": "2026-12-16T20:00:00+00:00", "comp": "Women’s Champions League", "h": "OH Leuven", "a": "Chelsea", "ch": ["Disney+"], "note": "", "tbc": false}, {"t": "mw", "iso": "2026-12-16T20:00:00+00:00", "comp": "Women’s Champions League", "h": "Man City", "a": "Austria Wien", "ch": ["Disney+"], "note": "", "tbc": false}, {"t": "mc", "iso": "2026-12-26T20:00:00+00:00", "comp": "Premier League", "h": "Newcastle United", "a": "Man City", "ch": ["Sky Sports Main Event", "Sky Sports Premier League"], "note": "", "tbc": false}, {"t": "mc", "iso": "2026-12-29T20:15:00+00:00", "comp": "Premier League", "h": "Everton", "a": "Man City", "ch": ["Sky Sports Premier League"], "note": "", "tbc": false}, {"t": "mc", "iso": "2027-01-03T16:30:00+00:00", "comp": "Premier League", "h": "Man City", "a": "Tottenham Hotspur", "ch": ["Sky Sports Premier League", "Sky Sports Main Event"], "note": "", "tbc": false}], "updated_iso": "2026-10-21T12:00:00+01:00"};
 
 let F=[],shown=[],heroF=null,sel=new Set(),ready=false,lastSig="";
 try{
@@ -170,13 +172,22 @@ const ALIAS={"tottenham":"Tottenham Hotspur","spurs":"Tottenham Hotspur","west h
 const plain=n=>String(n).normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim();
 const canon=n=>ALIAS[plain(n).toLowerCase()]||n;
 function load(j,stale){
-  F=j.fixtures.map(f=>({t:f.t,iso:f.iso,d:new Date(f.iso),comp:f.comp,h:canon(f.h),a:canon(f.a),ch:f.ch||[],note:f.note||"",tbc:!!f.tbc,cc:f.cc||""})).filter(f=>T[f.t]);
+  F=j.fixtures.map(f=>({t:f.t,iso:f.iso,d:new Date(f.iso),comp:f.comp,h:canon(f.h),a:canon(f.a),ch:f.ch||[],note:f.note||"",tbc:!!f.tbc,cc:f.cc||"",sp:!!f.sp})).filter(f=>T[f.t]);
   document.getElementById("stale").textContent=stale?"Showing saved fixtures. Couldn’t load the latest.":"";
   setUpd(j);ready=true;lastSig="";render();
 }
 const slow=setTimeout(()=>{if(!ready)listEl.innerHTML='<p class="empty">Loading fixtures…</p>';},700);
 fetch("fixtures.json",{cache:"no-cache"}).then(r=>{if(!r.ok)throw 0;return r.json()}).then(j=>load(j,false))
   .catch(()=>{try{load(EMBED,true);}catch(e){clearTimeout(slow);listEl.innerHTML='<p class="empty">Couldn’t load fixtures. Check your connection and refresh.</p>';}});
+// Refresh when the app or tab comes back to the front (an installed app can stay open for days).
+let lastPull=Date.now();
+function refresh(){
+  if(!ready||Date.now()-lastPull<60000){render();return;}
+  lastPull=Date.now();
+  fetch("fixtures.json",{cache:"no-cache"}).then(r=>{if(!r.ok)throw 0;return r.json()}).then(j=>load(j,false)).catch(()=>render());
+}
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)refresh();});
+addEventListener("pageshow",e=>{if(e.persisted)refresh();});
 function crest(k,s,alt){return '<span class="crest" aria-hidden="true" style="--c:'+T[k].c+';--s:'+s+'px"><span>'+T[k].m+'</span><img src="logos/teams/'+k+'.png"'+(alt?' data-alt="'+alt+'"':'')+' alt="" onload="this.parentNode.classList.add(\'has\')" onerror="var a=this.dataset.alt;if(a){this.removeAttribute(\'data-alt\');this.src=a}else this.remove()"></span>';}
 function status(f,now){const ms=now-f.d;return ms<0?"up":ms<2*36e5?"live":"ft";}
 function relText(f,now){
@@ -211,13 +222,44 @@ const ORDER=Object.keys(T);
 const GROUPS={nat:{n:"National",k:["li","en"]},wsl:{n:"WSL",k:["aw","mu","cw","mw"]}};   // phone-only buttons that select several teams
 const keysOf=k=>GROUPS[k]?GROUPS[k].k:[k];
 const CHIP_ORDER=["f1","mc","li","en","aw","mu","cw","mw"];   // All, then F1 + the non-WSL teams, then the four WSL teams
-const WOMEN=["aw","mu","cw","mw","li"],MEN=["mc","en"];   // Formula 1 gets its own green glow
-const gender=f=>f.teams.every(k=>k==="f1")?"f":f.teams.every(k=>WOMEN.includes(k))?"w":f.teams.every(k=>MEN.includes(k))?"m":"";
+const WOMEN=["aw","mu","cw","mw","li"],MEN=["mc","en"];   // Formula 1 gets neither
+const gender=f=>f.teams.every(k=>WOMEN.includes(k))?"w":f.teams.every(k=>MEN.includes(k))?"m":"";
 const names=f=>f.teams.map(k=>T[k].n.toUpperCase()).join(" · ");
 const cvars=f=>"--c:"+T[f.teams[0]].c+";--c2:"+T[f.teams[f.teams.length-1]].c;
 // One match followed through two teams (e.g. Arsenal v Chelsea) becomes a single card with both badges.
 // Formula 1: every session on the same day for the same Grand Prix becomes one card with a list of sessions.
 // The card follows the next session that hasn't finished; earlier ones that are over are dimmed.
+// Add to calendar: one .ics file per card (a Formula 1 day card holds every session still to come).
+const icsDate=d=>d.toISOString().replace(/[-:]/g,"").replace(/\.\d{3}/,"");
+const icsText=s=>String(s).replace(/\\/g,"\\\\").replace(/\n/g,"\\n").replace(/([,;])/g,"\\$1");
+const icsFold=l=>{const o=[];while(l.length>73){o.push(l.slice(0,73));l=" "+l.slice(73);}o.push(l);return o.join("\r\n");};
+function calEvents(f){
+  const chan=f.ch.length?"Watch on "+f.ch.join(", "):"";
+  if(f.ses)return f.ses.filter(s=>!s.done).map(s=>({title:f.h+": "+s.name,d:s.d,tbc:s.tbc,mins:/Race/.test(s.name)?120:60,desc:"Formula 1. "+chan}));
+  if(f.t==="f1"){const nm=String(f.comp).replace(/ · Sprint weekend$/,"").split(", ").slice(1).join(", ");
+    return [{title:f.h+": "+nm,d:f.d,tbc:f.tbc,mins:/Race/.test(nm)?120:60,desc:"Formula 1. "+chan}];}
+  return [{title:f.h+" v "+f.a,d:f.d,tbc:f.tbc,mins:120,desc:f.comp+(chan?". "+chan:"")}];
+}
+function icsFile(f){
+  const stamp=icsDate(new Date()),L=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//hibbs.org.uk//Fixtures//EN","CALSCALE:GREGORIAN"];
+  calEvents(f).forEach(e=>{
+    L.push("BEGIN:VEVENT","UID:"+icsDate(e.d)+"-"+slug(e.title)+"@hibbs.org.uk","DTSTAMP:"+stamp);
+    if(e.tbc)L.push("DTSTART;VALUE=DATE:"+dayK(e.d).replace(/-/g,""),"SUMMARY:"+icsText(e.title+" (time TBC)"));
+    else L.push("DTSTART:"+icsDate(e.d),"DTEND:"+icsDate(new Date(e.d.getTime()+e.mins*6e4)),"SUMMARY:"+icsText(e.title));
+    L.push("DESCRIPTION:"+icsText(e.desc),"END:VEVENT");
+  });
+  L.push("END:VCALENDAR");
+  return L.map(icsFold).join("\r\n")+"\r\n";
+}
+function addToCal(f){
+  const evs=calEvents(f);if(!evs.length)return;
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([icsFile(f)],{type:"text/calendar;charset=utf-8"}));
+  a.download=slug(evs[0].title)+".ics";
+  document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+}
+const calBtn=(f,ref,now)=>status(f,now)==="ft"?"":'<button class="cal" type="button" data-cal="'+ref+'" aria-label="Add to calendar: '+esc(f.a?f.h+" v "+f.a:f.h)+'">Add to calendar</button>';
+document.addEventListener("click",e=>{const b=e.target.closest("[data-cal]");if(!b)return;const f=b.dataset.cal==="h"?heroF:shown[+b.dataset.cal];if(f)addToCal(f);});
 const sesHtml=f=>f.ses?'<ul class="ses">'+f.ses.map(s=>'<li'+(s.done?' class="done"':'')+'><span>'+esc(s.name)+'</span><time datetime="'+esc(s.iso)+'">'+(s.tbc?"Time TBC":clock(s))+'</time></li>').join("")+'</ul>':"";
 function f1Groups(list,now){
   const m=new Map();
@@ -231,7 +273,7 @@ function f1Groups(list,now){
     const cur=ses.find(s=>status(s,now)!=="ft")||ses[ses.length-1];
     ses.forEach(s=>{s.done=s.d<cur.d;});
     const many=ses.length>1;
-    return Object.assign({},base,{teams:["f1"],ses:many?ses:null,d:cur.d,iso:cur.iso,tbc:cur.tbc,comp:many?"Formula 1":base.comp});
+    return Object.assign({},base,{teams:["f1"],ses:many?ses:null,d:cur.d,iso:cur.iso,tbc:cur.tbc,comp:(many?"Formula 1":base.comp)+(base.sp?" · Sprint weekend":"")});
   });
 }
 function mergeDupes(list,now){
@@ -253,7 +295,15 @@ function hero(f,now){
   return '<section class="hero'+(gender(f)?' g'+gender(f):'')+'" style="'+cvars(f)+'" aria-label="Next match"><div class="hk">'+(status(f,now)==="live"?"LIVE NOW":"NEXT UP")+' · '+names(f)+'</div>'+
     '<div class="hrow"><div class="hcount">'+label(f,now)+'</div>'+matchCrests(f,52)+'</div>'+
     '<div class="hsub"><time datetime="'+esc(f.iso)+'">'+(f.tbc?"Time TBC":clock(f))+'</time> · '+esc(f.comp)+'</div>'+
-    '<div class="hvs">'+versus(f)+'</div>'+sesHtml(f)+'<div class="ch">'+chanHtml(f)+'</div></section>';
+    '<div class="hvs">'+versus(f)+'</div>'+sesHtml(f)+'<div class="ch">'+chanHtml(f)+calBtn(f,"h",now)+'</div></section>';
+}
+function emptyMsg(){
+  if(!sel.size)return "No upcoming fixtures listed.";
+  const ks=[...sel],n=ks.map(k=>T[k].n),nm=n.length>1?n.slice(0,-1).join(", ")+" and "+n[n.length-1]:n[0];
+  const note=ks.includes("f1")?"Formula 1 sessions are listed up to 60 days ahead, so a new season appears once its calendar is published."
+    :ks.some(k=>k==="li"||k==="en")?"International fixtures appear once the next window is announced."
+    :"New fixtures appear as the TV listings are published.";
+  return "No upcoming fixtures for "+nm+" right now.<span>"+note+"</span>";
 }
 function render(){
   if(!ready)return;
@@ -268,14 +318,14 @@ function render(){
     return;
   }
   lastSig=sig;
-  if(!all.length){listEl.innerHTML='<p class="empty">'+(sel.size?"No upcoming fixtures for the selected teams.":"No upcoming fixtures listed.")+'</p>';return;}
+  if(!all.length){listEl.innerHTML='<p class="empty">'+emptyMsg()+'</p>';return;}
   let last="";
   listEl.innerHTML=(heroF?hero(heroF,now):"")+shown.map((f,i)=>{
     const mk=fd({month:"long",year:"numeric"}).format(f.d);
     const head=mk!==last?'<h2 class="month">'+mk+'</h2>':"";last=mk;
     const note=f.ch.length&&f.note&&!/confirm/i.test(f.note)?'<div class="meta">'+esc(f.note)+'</div>':"";
     return head+'<article class="card'+(gender(f)?' g'+gender(f):'')+'" style="'+cvars(f)+'"><div class="top">'+matchCrests(f,40)+'<div class="who"><div class="tag">'+names(f)+'</div><div class="comp">'+esc(f.comp)+'</div></div><time class="when" datetime="'+esc(f.iso)+'"><b>'+label(f,now)+'</b><span>'+(f.tbc?"Time TBC":clock(f))+'</span></time></div>'+
-      '<div class="vs">'+versus(f)+'</div>'+sesHtml(f)+'<div class="meta rel" data-i="'+i+'">'+relText(f,now)+'</div>'+note+'<div class="ch">'+chanHtml(f)+'</div></article>';
+      '<div class="vs">'+versus(f)+'</div>'+sesHtml(f)+'<div class="meta rel" data-i="'+i+'">'+relText(f,now)+'</div>'+note+'<div class="ch">'+chanHtml(f)+calBtn(f,i,now)+'</div></article>';
   }).join("");
 }
 function pressed(){document.querySelectorAll("#chips [data-k]").forEach(b=>{const k=b.dataset.k;
