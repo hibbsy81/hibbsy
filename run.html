@@ -317,6 +317,9 @@ $("date").addEventListener("click",()=>{try{$("date").showPicker();}catch(e){}})
 $("today").onclick=()=>{if(place){$("date").value=todayIn(place.tz);render();}};
 setInterval(()=>{if(place&&$("date").value===todayIn(place.tz))render();},6e4);
 if(place)setPlace(place);
+/* Home Screen icon: iOS saves the icon when the app is added, so a phone in dark mode gets the black-background version */
+{const mq=matchMedia("(prefers-color-scheme: dark)"),ic=()=>document.querySelectorAll('link[rel="apple-touch-icon"]').forEach(l=>l.href=mq.matches?"run-apple-touch-icon-dark.png":"run-apple-touch-icon.png");
+ ic();if(mq.addEventListener)mq.addEventListener("change",ic);}
 if(navigator.standalone||matchMedia("(display-mode: standalone)").matches)document.documentElement.classList.add("standalone");
 if("serviceWorker" in navigator&&/^https?:$/.test(location.protocol))addEventListener("load",()=>navigator.serviceWorker.register("run-sw.js").catch(()=>{}));
 </script>
