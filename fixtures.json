@@ -1,44 +1,44 @@
 {
- "updated": "20 Nov 2026, 01:05",
- "updated_iso": "2026-11-20T01:05:17.255078+00:00",
+ "updated": "21 Nov 2026, 00:01",
+ "updated_iso": "2026-11-21T00:01:40.027552+00:00",
  "health": {
   "mc": {
-   "last_ok_iso": "2026-11-20T01:05:17.255078+00:00",
+   "last_ok_iso": "2026-11-21T00:01:40.027552+00:00",
    "from": "man-city-on-tv.html",
    "count": 16
   },
   "mw": {
-   "last_ok_iso": "2026-11-20T01:05:17.255078+00:00",
+   "last_ok_iso": "2026-11-21T00:01:40.027552+00:00",
    "from": "man-city-women-on-tv.html",
    "count": 4
   },
   "aw": {
-   "last_ok_iso": "2026-11-20T01:05:17.255078+00:00",
+   "last_ok_iso": "2026-11-21T00:01:40.027552+00:00",
    "from": "arsenal-women-on-tv.html",
    "count": 4
   },
   "mu": {
-   "last_ok_iso": "2026-11-20T01:05:17.255078+00:00",
+   "last_ok_iso": "2026-11-21T00:01:40.027552+00:00",
    "from": "man-utd-women-on-tv.html",
    "count": 3
   },
   "cw": {
-   "last_ok_iso": "2026-11-20T01:05:17.255078+00:00",
+   "last_ok_iso": "2026-11-21T00:01:40.027552+00:00",
    "from": "chelsea-women-on-tv.html",
    "count": 4
   },
   "li": {
-   "last_ok_iso": "2026-11-20T01:05:17.255078+00:00",
+   "last_ok_iso": "2026-11-21T00:01:40.027552+00:00",
    "from": "england-women-on-tv.html",
    "count": 2
   },
   "en": {
-   "last_ok_iso": "2026-11-20T01:05:17.255078+00:00",
+   "last_ok_iso": "2026-11-21T00:01:40.027552+00:00",
    "from": "england-on-tv.html",
-   "count": 0
+   "count": 2
   },
   "f1": {
-   "last_ok_iso": "2026-11-20T01:05:17.255078+00:00",
+   "last_ok_iso": "2026-11-21T00:01:40.027552+00:00",
    "from": "api.jolpi.ca",
    "count": 6
   }
@@ -213,9 +213,9 @@
    "h": "Man City",
    "a": "Leeds United",
    "ch": [
-    "Sky Sports"
+    "Sky Sports+"
    ],
-   "note": "Channel to be confirmed",
+   "note": "",
    "tbc": false
   },
   {
@@ -544,6 +544,32 @@
    "ch": [
     "Sky Sports Main Event",
     "Sky Sports Premier League"
+   ],
+   "note": "",
+   "tbc": false
+  },
+  {
+   "t": "en",
+   "iso": "2027-03-27T17:00:00+00:00",
+   "comp": "UEFA Nations League Quarter-Final 1st Leg",
+   "h": "Norway",
+   "a": "England",
+   "ch": [
+    "ITV1",
+    "ITVX"
+   ],
+   "note": "",
+   "tbc": false
+  },
+  {
+   "t": "en",
+   "iso": "2027-03-30T19:45:00+01:00",
+   "comp": "UEFA Nations League Quarter-Final 2nd Leg",
+   "h": "England",
+   "a": "Norway",
+   "ch": [
+    "ITV1",
+    "ITVX"
    ],
    "note": "",
    "tbc": false
