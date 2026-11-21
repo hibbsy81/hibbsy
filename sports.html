@@ -215,9 +215,13 @@ const ROOT={f1:"Formula 1",mc:"Man City",mw:"Man City",aw:"Arsenal",mu:"Man Utd"
 const initials=n=>{const w=String(n).replace(/[^A-Za-z0-9 ]/g,"").split(/\s+/).filter(Boolean);return(w.length>1?w[0][0]+w[1][0]:(w[0]||"?").slice(0,2)).toUpperCase();};
 function oppCrest(n,s){return '<span class="crest" aria-hidden="true" style="--c:#3b5a4c;--s:'+s+'px"><span>'+initials(n)+'</span><img src="logos/opponents/'+slug(n)+'.png" alt="" onload="this.parentNode.classList.add(\'has\')" onerror="this.remove()"></span>';}
 // Every match shows both clubs' logos overlapped: home on the left, away on the right.
-function sideBadge(n,f,s){const k=f.teams.find(k=>n.includes(ROOT[k]));return k?crest(k,s,"logos/opponents/"+slug(n)+".png"):oppCrest(n,s);}
+// England internationals (men and women): the opponent is shown as a country flag (logos/flags/<code>.png), so no opponent logo is needed.
+const COUNTRY={"albania":"al","andorra":"ad","armenia":"am","austria":"at","azerbaijan":"az","belarus":"by","belgium":"be","bosnia and herzegovina":"ba","bosnia-herzegovina":"ba","bulgaria":"bg","croatia":"hr","cyprus":"cy","czechia":"cz","czech republic":"cz","denmark":"dk","estonia":"ee","faroe islands":"fo","finland":"fi","france":"fr","georgia":"ge","germany":"de","gibraltar":"gi","greece":"gr","hungary":"hu","iceland":"is","israel":"il","italy":"it","kazakhstan":"kz","kosovo":"xk","latvia":"lv","liechtenstein":"li","lithuania":"lt","luxembourg":"lu","malta":"mt","moldova":"md","montenegro":"me","netherlands":"nl","holland":"nl","north macedonia":"mk","northern ireland":"gb-nir","norway":"no","poland":"pl","portugal":"pt","republic of ireland":"ie","ireland":"ie","romania":"ro","san marino":"sm","scotland":"gb-sct","serbia":"rs","slovakia":"sk","slovenia":"si","spain":"es","sweden":"se","switzerland":"ch","turkey":"tr","turkiye":"tr","ukraine":"ua","wales":"gb-wls","russia":"ru","argentina":"ar","australia":"au","brazil":"br","canada":"ca","chile":"cl","china":"cn","china pr":"cn","colombia":"co","costa rica":"cr","ecuador":"ec","egypt":"eg","ghana":"gh","haiti":"ht","india":"in","iran":"ir","ivory coast":"ci","jamaica":"jm","japan":"jp","mexico":"mx","morocco":"ma","new zealand":"nz","nigeria":"ng","panama":"pa","paraguay":"py","peru":"pe","qatar":"qa","saudi arabia":"sa","senegal":"sn","south africa":"za","south korea":"kr","korea republic":"kr","uruguay":"uy","usa":"us","united states":"us","venezuela":"ve","zambia":"zm","cameroon":"cm","algeria":"dz","tunisia":"tn","bolivia":"bo","honduras":"hn","trinidad and tobago":"tt","united arab emirates":"ae","uae":"ae","thailand":"th","vietnam":"vn","philippines":"ph","uzbekistan":"uz","jordan":"jo","iraq":"iq","south sudan":"ss","dr congo":"cd","mali":"ml","kenya":"ke","tanzania":"tz","uganda":"ug","zimbabwe":"zw","angola":"ao","guatemala":"gt","el salvador":"sv","cuba":"cu","dominican republic":"do"};
+const intl=f=>f.teams.includes("en")||f.teams.includes("li");
+const flagOf=n=>COUNTRY[plain(n).toLowerCase()]||"";
+function sideBadge(n,f,s){const k=f.teams.find(k=>n.includes(ROOT[k]));if(k)return crest(k,s,"logos/opponents/"+slug(n)+".png");return intl(f)&&flagOf(n)?flagCrest(flagOf(n),s):oppCrest(n,s);}
 // Formula 1: the F1 logo overlapped with the flag of the grand prix's country (logos/flags/<code>.png)
-function flagCrest(cc,s){return '<span class="crest" aria-hidden="true" style="--c:#3b5a4c;--s:'+s+'px"><span>'+esc(cc.toUpperCase())+'</span><img class="flag" src="logos/flags/'+esc(cc)+'.png" alt="" onload="this.parentNode.classList.add(\'has\')" onerror="this.remove()"></span>';}
+function flagCrest(cc,s){return '<span class="crest" aria-hidden="true" style="--c:#3b5a4c;--s:'+s+'px"><span>'+esc(cc.slice(0,2).toUpperCase())+'</span><img class="flag" src="logos/flags/'+esc(cc)+'.png" alt="" onload="this.parentNode.classList.add(\'has\')" onerror="this.remove()"></span>';}
 const matchCrests=(f,s)=>f.teams[0]==="f1"?'<span class="crests">'+crest("f1",s)+(f.cc?flagCrest(f.cc,s):"")+'</span>':'<span class="crests">'+sideBadge(f.h,f,s)+sideBadge(f.a,f,s)+'</span>';
 const ORDER=Object.keys(T);
 const GROUPS={nat:{n:"National",k:["li","en"]},wsl:{n:"WSL",k:["aw","mu","cw","mw"]}};   // phone-only buttons that select several teams
@@ -361,8 +365,9 @@ if(/[?&]logos\b/.test(location.search))addEventListener("load",()=>setTimeout(()
       img.onload=()=>{li.textContent="✓ "+f;li.className="have";};img.src=dir+f;ul.appendChild(li);});
   };
   const football=F.filter(f=>f.t!=="f1");
-  section("Opponent logos","logos/opponents/",[...new Set(football.flatMap(f=>[f.h,f.a]).filter(Boolean).map(n=>slug(n)+".png"))].sort());
-  section("Formula 1 flags","logos/flags/",[...new Set(F.filter(f=>f.t==="f1"&&f.cc).map(f=>f.cc+".png"))].sort());
+  const needsLogo=(n,f)=>!(intl(f)&&(flagOf(n)||/^England/.test(n)));   // England itself uses the team logo
+  section("Opponent logos","logos/opponents/",[...new Set(football.flatMap(f=>[f.h,f.a].filter(n=>n&&needsLogo(n,{teams:[f.t]}))).map(n=>slug(n)+".png"))].sort());
+  section("Formula 1 flags","logos/flags/",[...new Set([...F.filter(f=>f.t==="f1"&&f.cc).map(f=>f.cc),...football.filter(intl2=>intl2.t==="en"||intl2.t==="li").flatMap(f=>[f.h,f.a]).filter(n=>n&&!/^England/.test(n)).map(flagOf).filter(Boolean)].map(c=>c+".png"))].sort());
   document.getElementById("chips").after(box);},600));
 if("serviceWorker" in navigator&&/^https?:$/.test(location.protocol))addEventListener("load",()=>navigator.serviceWorker.register("sports-sw.js",{scope:"./sports.html"}).catch(()=>{}));
 </script>

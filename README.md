@@ -20,10 +20,10 @@ A dark-green, mobile-first page of upcoming fixtures and UK TV channels. Plain H
 | `logos/teams/<key>.png` | Team logos (`f1.png` too). |
 | `logos/opponents/<club-slug>.png` | Opponent logos. Open `sports.html?logos` to see which are missing. |
 | `logos/channels/<brand>.png` | bbc, itv, sky, tnt, hbo, disney, prime, dazn, youtube. |
-| `logos/flags/<code>.png` | Country flags for F1 cards (already included). |
+| `logos/flags/<code>.png` | Country flags for F1 cards and for the opponents in England men and Lionesses matches (already included, ~115 countries). |
 
 ## After changing the page
-Raise the number in `const V` at the top of `sports-sw.js` (currently `fixtures-v23`) so installed copies refresh.
+Raise the number in `const V` at the top of `sports-sw.js` (currently `fixtures-v24`) so installed copies refresh.
 
 ## How the page behaves
 - A Next up card sits at the top, then cards grouped by month. Each card shows both clubs' logos (home first), channel badges and a dashed TBC badge when a channel is unconfirmed.
