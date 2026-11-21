@@ -71,12 +71,9 @@ input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px color-m
 .lbl{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--mu)}
 .big{font:italic 800 clamp(32px,9.5vw,46px)/1.05 var(--disp);letter-spacing:.01em;margin:6px 0 2px;font-variant-numeric:tabular-nums}
 .mu{color:var(--mu);font-size:13px}
-.dnav{display:grid;grid-template-columns:46px 1fr 46px auto;gap:8px;margin-bottom:14px}
+.dnav{display:grid;grid-template-columns:46px 1fr 46px;gap:8px;margin-bottom:14px}
 .dnav>button{padding:0;font-size:24px;line-height:1}
-.dnav>#today{padding:0 14px;font-size:14px;line-height:1.5}
-.dpick{position:relative;display:flex;align-items:center;justify-content:center;min-height:46px;padding:0 12px;border-radius:12px;border:1px solid var(--line);background:color-mix(in srgb,var(--ink) 6%,transparent);font-weight:600;text-align:center;cursor:pointer;transition:border-color .15s,background-color .15s,box-shadow .2s}
-.dpick:hover,.dpick:focus-within{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,transparent);box-shadow:0 0 18px color-mix(in srgb,var(--accent) 28%,transparent)}
-.dpick input{position:absolute;inset:0;width:100%;height:100%;min-height:0;padding:0;opacity:0;cursor:pointer;border:0;box-shadow:none!important;background:none!important}
+.dnav>.dpick{font-size:15px;font-weight:600;padding:0 12px}
 .top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
 .sun{display:grid;gap:10px;text-align:right;flex:none}
 .sun b{display:block;font-size:19px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.2}
@@ -122,9 +119,9 @@ nav.menu{top:calc(24px + env(safe-area-inset-top,0px));right:calc(30px + env(saf
   <div class="card">
     <div class="dnav">
       <button id="prev" type="button" aria-label="Previous day">&#8249;</button>
-      <label class="dpick"><span id="dtxt"></span><input type="date" id="date" aria-label="Choose a date"></label>
+      <button id="dpick" class="dpick" type="button" aria-label="Go to today"><span id="dtxt"></span></button>
       <button id="next" type="button" aria-label="Next day">&#8250;</button>
-      <button id="today" type="button" hidden>Today</button>
+      <input type="hidden" id="date">
     </div>
     <div class="top">
       <div><div class="lbl">Running window</div><div class="big" id="win"></div><div class="mu" id="len"></div></div>
@@ -182,7 +179,7 @@ function render(){
  $("out").hidden=false;
  {const tp=todayIn(tz).split("-").map(Number),df=Math.round((Date.UTC(y,m-1,d)-Date.UTC(tp[0],tp[1]-1,tp[2]))/864e5);
   $("dtxt").textContent=(df===0?"Today \u00b7 ":df===1?"Tomorrow \u00b7 ":df===-1?"Yesterday \u00b7 ":"")+new Intl.DateTimeFormat("en-GB",{weekday:"short",day:"numeric",month:"short",timeZone:"UTC"}).format(Date.UTC(y,m-1,d));
-  $("today").hidden=df===0;}
+  }
  $("sr").textContent=show(r.s,"rise",tz);$("ss").textContent=show(r.s,"set",tz);
  if(w.st){$("win").textContent=w.st==="all"?"Light all day":"No usable light";$("len").textContent="";$("now").textContent="";bar.style.display="none";}
  else{
@@ -310,11 +307,9 @@ $("gps").onclick=()=>{
  },e=>{$("gps").textContent="Use my location";msg("Couldn\u2019t get your location: "+e.message);},{timeout:15000,maximumAge:6e5});
 };
 document.addEventListener("click",e=>{if(!e.target.closest(".card"))$("res").hidden=true;});
-$("date").onchange=render;
 function shift(n){if(!place)return;const[y,m,d]=($("date").value||todayIn(place.tz)).split("-").map(Number);$("date").value=new Date(Date.UTC(y,m-1,d+n)).toISOString().slice(0,10);render();}
 $("prev").onclick=()=>shift(-1);$("next").onclick=()=>shift(1);
-$("date").addEventListener("click",()=>{try{$("date").showPicker();}catch(e){}});
-$("today").onclick=()=>{if(place){$("date").value=todayIn(place.tz);render();}};
+$("dpick").onclick=()=>{if(place){$("date").value=todayIn(place.tz);render();}};
 setInterval(()=>{if(place&&$("date").value===todayIn(place.tz))render();},6e4);
 if(place)setPlace(place);
 /* Home Screen icon: iOS saves the icon when the app is added, so a phone in dark mode gets the black-background version */
