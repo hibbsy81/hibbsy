@@ -23,7 +23,7 @@ A dark-green, mobile-first page of upcoming fixtures and UK TV channels. Plain H
 | `logos/flags/<code>.png` | Country flags for F1 cards and for the opponents in England men and Lionesses matches (already included, ~115 countries). |
 
 ## After changing the page
-Raise the number in `const V` at the top of `sports-sw.js` (currently `fixtures-v24`) so installed copies refresh.
+Raise the number in `const V` at the top of `sports-sw.js` (currently `fixtures-v25`) so installed copies refresh.
 
 ## How the page behaves
 - A Next up card sits at the top, then cards grouped by month. Each card shows both clubs' logos (home first), channel badges and a dashed TBC badge when a channel is unconfirmed.
