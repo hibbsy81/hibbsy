@@ -1,44 +1,44 @@
 {
- "updated": "20 Nov 2026, 22:16",
- "updated_iso": "2026-11-20T22:16:28.911299+00:00",
+ "updated": "21 Nov 2026, 00:01",
+ "updated_iso": "2026-11-21T00:01:40.027552+00:00",
  "health": {
   "mc": {
-   "last_ok_iso": "2026-11-20T22:16:28.911299+00:00",
+   "last_ok_iso": "2026-11-21T00:01:40.027552+00:00",
    "from": "man-city-on-tv.html",
    "count": 16
   },
   "mw": {
-   "last_ok_iso": "2026-11-20T22:16:28.911299+00:00",
+   "last_ok_iso": "2026-11-21T00:01:40.027552+00:00",
    "from": "man-city-women-on-tv.html",
    "count": 4
   },
   "aw": {
-   "last_ok_iso": "2026-11-20T22:16:28.911299+00:00",
+   "last_ok_iso": "2026-11-21T00:01:40.027552+00:00",
    "from": "arsenal-women-on-tv.html",
    "count": 4
   },
   "mu": {
-   "last_ok_iso": "2026-11-20T22:16:28.911299+00:00",
+   "last_ok_iso": "2026-11-21T00:01:40.027552+00:00",
    "from": "man-utd-women-on-tv.html",
    "count": 3
   },
   "cw": {
-   "last_ok_iso": "2026-11-20T22:16:28.911299+00:00",
+   "last_ok_iso": "2026-11-21T00:01:40.027552+00:00",
    "from": "chelsea-women-on-tv.html",
    "count": 4
   },
   "li": {
-   "last_ok_iso": "2026-11-20T22:16:28.911299+00:00",
+   "last_ok_iso": "2026-11-21T00:01:40.027552+00:00",
    "from": "england-women-on-tv.html",
    "count": 2
   },
   "en": {
-   "last_ok_iso": "2026-11-20T22:16:28.911299+00:00",
+   "last_ok_iso": "2026-11-21T00:01:40.027552+00:00",
    "from": "england-on-tv.html",
    "count": 2
   },
   "f1": {
-   "last_ok_iso": "2026-11-20T22:16:28.911299+00:00",
+   "last_ok_iso": "2026-11-21T00:01:40.027552+00:00",
    "from": "api.jolpi.ca",
    "count": 6
   }
