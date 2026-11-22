@@ -1,63 +1,49 @@
 {
- "updated": "22 Nov 2026, 04:13",
- "updated_iso": "2026-11-22T04:13:47.508031+00:00",
+ "updated": "22 Nov 2026, 14:42",
+ "updated_iso": "2026-11-22T14:42:00.535162+00:00",
  "health": {
   "mc": {
-   "last_ok_iso": "2026-11-22T04:13:47.508031+00:00",
+   "last_ok_iso": "2026-11-22T14:42:00.535162+00:00",
    "from": "man-city-on-tv.html",
    "count": 15
   },
   "mw": {
-   "last_ok_iso": "2026-11-22T04:13:47.508031+00:00",
+   "last_ok_iso": "2026-11-22T14:42:00.535162+00:00",
    "from": "man-city-women-on-tv.html",
    "count": 4
   },
   "aw": {
-   "last_ok_iso": "2026-11-22T04:13:47.508031+00:00",
+   "last_ok_iso": "2026-11-22T14:42:00.535162+00:00",
    "from": "arsenal-women-on-tv.html",
    "count": 4
   },
   "mu": {
-   "last_ok_iso": "2026-11-22T04:13:47.508031+00:00",
+   "last_ok_iso": "2026-11-22T14:42:00.535162+00:00",
    "from": "man-utd-women-on-tv.html",
    "count": 3
   },
   "cw": {
-   "last_ok_iso": "2026-11-22T04:13:47.508031+00:00",
+   "last_ok_iso": "2026-11-22T14:42:00.535162+00:00",
    "from": "chelsea-women-on-tv.html",
    "count": 3
   },
   "li": {
-   "last_ok_iso": "2026-11-22T04:13:47.508031+00:00",
+   "last_ok_iso": "2026-11-22T14:42:00.535162+00:00",
    "from": "england-women-on-tv.html",
    "count": 2
   },
   "en": {
-   "last_ok_iso": "2026-11-22T04:13:47.508031+00:00",
+   "last_ok_iso": "2026-11-22T14:42:00.535162+00:00",
    "from": "england-on-tv.html",
    "count": 2
   },
   "f1": {
-   "last_ok_iso": "2026-11-22T04:13:47.508031+00:00",
+   "last_ok_iso": "2026-11-22T14:42:00.535162+00:00",
    "from": "api.jolpi.ca",
-   "count": 5
+   "count": 4
   }
  },
  "fixtures": [
-  {
-   "t": "f1",
-   "iso": "2026-11-22T04:00:00+00:00",
-   "comp": "Formula 1, Race",
-   "h": "Las Vegas Grand Prix",
-   "a": "",
-   "cc": "us",
-   "sp": false,
-   "ch": [
-    "Sky Sports F1"
-   ],
-   "note": "",
-   "tbc": false
-  },
   {
    "t": "mw",
    "iso": "2026-11-22T12:00:00+00:00",
