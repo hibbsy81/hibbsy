@@ -5,6 +5,7 @@ on:
   workflow_dispatch:
 permissions:
   contents: write
+  issues: write
 jobs:
   update:
     runs-on: ubuntu-latest
@@ -24,6 +25,12 @@ jobs:
           git config user.email "fixtures-bot@users.noreply.github.com"
           git add fixtures.json sports.html
           git diff --staged --quiet || (git commit -m "Update fixtures" && git push)
+      - name: Check for missing logos
+        continue-on-error: true          # never fails the run; it opens or updates a "Logos needed" issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
+        run: python scripts/check_logos.py
       - name: Flag problems
         if: steps.update.outcome == 'failure'
         run: |
