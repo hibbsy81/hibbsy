@@ -14,6 +14,7 @@ A dark-green, mobile-first page of upcoming fixtures and UK TV channels. Plain H
 | `sports.html` | The whole page and its script. Also holds a built-in fallback copy of the fixtures (the `EMBED` line), which the updater refreshes. |
 | `fixtures.json` | Written by the updater. Never upload it by hand. |
 | `scripts/update.py` | The updater. |
+| `scripts/check_logos.py` | Run by the workflow after each update. Opens a GitHub issue called "Logos needed" listing any logo files the page wants that are not in the repo (you are assigned, so GitHub emails you), adds a comment when new names appear, and closes the issue when everything is present. `python scripts/check_logos.py --dry` just prints the list. |
 | `.github/workflows/update.yml` | Runs the updater twice a day (cron `23 6,18 * * *`), commits `fixtures.json` and `sports.html`, and fails the run if there is a repeat problem. |
 | `menu.js`, `menu.css` | The shared burger menu (hidden in the installed app). |
 | `sports.webmanifest`, `sports-sw.js`, `sports-icons/` | The installable web app. |
@@ -23,7 +24,7 @@ A dark-green, mobile-first page of upcoming fixtures and UK TV channels. Plain H
 | `logos/flags/<code>.png` | Country flags for F1 cards and for the opponents in England men and Lionesses matches (already included, ~115 countries). |
 
 ## After changing the page
-Raise the number in `const V` at the top of `sports-sw.js` (currently `fixtures-v25`) so installed copies refresh.
+Raise the number in `const V` at the top of `sports-sw.js` (currently `fixtures-v26`) so installed copies refresh.
 
 ## How the page behaves
 - A Next up card sits at the top, then cards grouped by month. Each card shows both clubs' logos (home first), channel badges and a dashed TBC badge when a channel is unconfirmed.
@@ -33,6 +34,7 @@ Raise the number in `const V` at the top of `sports-sw.js` (currently `fixtures-
 - A small calendar-plus icon on each card downloads an `.ics` file (all remaining sessions on an F1 day card).
 - The page reloads the fixtures when the app or tab comes back to the front.
 - The bottom line says "Fixtures updated ..." and turns amber after 36 hours, or if a team has not refreshed for 2+ days.
+- Times are UK time. If the device is in another time zone, a small "UK time / My time" switch appears under the team buttons (remembered between visits).
 - Pinch and double-tap zoom are switched off.
 
 ## The updater
@@ -42,6 +44,9 @@ Raise the number in `const V` at the top of `sports-sw.js` (currently `fixtures-
 - One spelling per club (the `ALIAS` table, in the updater and the page) so each club needs a single logo file.
 - If a page fails or returns far fewer fixtures than before, that team's old fixtures are kept. A team page that says "No Upcoming TV Fixtures" counts as healthy.
 - Alerts: the first failed run for a team only logs a warning. If the same team fails again on the next run, the Action goes red and GitHub emails you (turn on Actions notifications in GitHub Settings > Notifications).
+
+## Logo alerts
+When a new club, channel or country needs a logo, a "Logos needed" issue appears in the repo's Issues tab and GitHub emails you. Save the PNGs with the names listed, upload them, and the issue closes itself on the next run (or run the workflow by hand). Email delivery follows your GitHub notification settings.
 
 ## Checking the Action
 Actions tab > Update fixtures > Run workflow. Open the run, then the `update` job, then the **Update fixtures** step. Each team should report fixtures (or say there are none upcoming), and you should see `f1: N sessions in the next 60 days`. Yellow lines are warnings, red `Error:` lines name the team that needs attention.
