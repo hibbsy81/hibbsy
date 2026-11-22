@@ -1,303 +1,38 @@
-"""Refresh fixtures.json from live-footballontv.com listings (be gentle: few requests, robots.txt respected).
-Each team has a list of pages to try; the first that yields fixtures wins.
-Formula 1 session times come from the free Jolpica F1 calendar API (two requests: this year and next); Sky Sports F1 shows every session.
-If every page fails for a team, that team's existing fixtures are kept."""
-import json, re, sys, time, unicodedata, datetime as dt
-import urllib.robotparser
-from zoneinfo import ZoneInfo
-import requests
-from bs4 import BeautifulSoup
-
-BASE = "https://www.live-footballontv.com/"
-# Listings shared by every women's club: used if a club's own page is missing or empty.
-SHARED = ["wsl-on-tv.html", "womens-champions-league-on-tv.html"]
-PAGES = {
-    "mc": ["man-city-on-tv.html"],
-    "mw": ["man-city-women-on-tv.html"] + SHARED,
-    "aw": ["arsenal-women-on-tv.html"] + SHARED,
-    "mu": ["man-utd-women-on-tv.html"] + SHARED,
-    "cw": ["chelsea-women-on-tv.html"] + SHARED,
-    "li": ["england-women-on-tv.html"],
-    "en": ["england-on-tv.html"],
-}
-LON = ZoneInfo("Europe/London")
-DATE = re.compile(r"^(?:Mon|Tues|Wednes|Thurs|Fri|Satur|Sun)day\s+(\d{1,2})(?:st|nd|rd|th)?\s+([A-Za-z]+)\s+(\d{4})$")
-TIME = re.compile(r"^(\d{1,2}:\d{2}|TBC|TBA)$", re.I)
-MATCH = re.compile(r"^(.+?)\s+v\s+(.+)$")
-# Channel names. Lines may hold one name or several run together ("Sky Sports MixSky Mix"), so match by token.
-TOKEN = re.compile(
-    r"Sky Sports (?:Main Event|Premier League|Football|Mix|Ultra HDR|Cricket|Golf|TBC)|Sky Sports\+|Sky Mix|Sky One"
-    r"|BBC (?:One|Two|Three|Four|iPlayer|Sport Website|Sport Web|TBC|Scotland|Alba)|ITV(?: TBC|[1-4X])?|STV(?: Player)?"
-    r"|S4C(?: Online)?|TNT Sports (?:\d|Ultimate|TBC)|HBO Max|Disney\+|Amazon Prime (?:Video|PPV)|DAZN|WSL2? YouTube|Premier Sports (?:\d|TBC)")
-DROP = {"Sky Mix", "Sky Sports Ultra HDR", "BBC Sport Website", "BBC Sport Web", "STV", "STV Player", "S4C Online", "BBC Scotland", "BBC Alba"}
-UNWANTED = re.compile(r"Women|\bU\d\d\b|Lionesses")
-TEAM = {
-    "mc": lambda t: "Manchester City" in t and not UNWANTED.search(t),
-    "mw": lambda t: bool(re.search(r"(Manchester City|Man City)\s+(Women|WFC)", t)),
-    "aw": lambda t: bool(re.search(r"Arsenal\s+(Women|WFC)", t)),
-    "mu": lambda t: bool(re.search(r"(Manchester United|Man Utd)\s+(Women|WFC)", t)),
-    "cw": lambda t: bool(re.search(r"Chelsea\s+(Women|WFC)", t)),
-    "li": lambda t: bool(re.search(r"England\s+Women", t)) and not re.search(r"\bU\d\d\b", t),
-    "en": lambda t: "England" in t and "Women" not in t and not re.search(r"\bU\d\d\b", t),
-}
-
-# One spelling per club, so each needs a single logo file and the same match from two teams' pages merges into one card.
-ALIAS = {"tottenham": "Tottenham Hotspur", "spurs": "Tottenham Hotspur", "west ham": "West Ham United",
-         "inter": "Inter Milan", "hacken": "Hacken"}
-
-def tidy(name):
-    name = re.sub(r"\s*\(.*?\)\s*$", "", name).strip()
-    name = name.replace("Manchester City", "Man City").replace("Manchester United", "Man Utd")
-    name = re.sub(r"\s+Women$", "", name)
-    plain = "".join(c for c in unicodedata.normalize("NFD", name) if not unicodedata.combining(c)).strip().lower()
-    return ALIAS.get(plain, name)
-
-def channels(line):
-    """-> (names, unconfirmed) or None if the line isn't a channel line."""
-    found = TOKEN.findall(line)
-    if not found or TOKEN.sub("", line).strip():
-        return None
-    names, unsure = [], False
-    for c in found:
-        if c.endswith(" TBC"):
-            unsure, c = True, c[:-4]
-        if c in DROP or c in names:
-            continue
-        names.append(c)
-    return names, unsure
-
-def parse(text, key):
-    out, day = [], None
-    lines = [l.strip() for l in text.splitlines() if l.strip()]
-    i = 0
-    while i < len(lines):
-        m = DATE.match(lines[i])
-        if m:
-            try:
-                day = dt.datetime.strptime(f"{m[1]} {m[2][:3]} {m[3]}", "%d %b %Y").date()
-            except ValueError:
-                day = None
-            i += 1; continue
-        if day and TIME.match(lines[i]) and i + 1 < len(lines):
-            t, mm = lines[i], MATCH.match(lines[i + 1])
-            if mm and TEAM[key](mm[1] + " v " + mm[2]):
-                j, comp, chans, unsure = i + 2, "", [], False
-                if j < len(lines) and not channels(lines[j]) and not TIME.match(lines[j]) and not DATE.match(lines[j]):
-                    comp = lines[j]; j += 1
-                while j < len(lines) and channels(lines[j]):
-                    names, u = channels(lines[j])
-                    unsure = unsure or u
-                    chans += [c for c in names if c not in chans]
-                    j += 1
-                tbc = not re.match(r"\d", t)
-                hh, mi = (12, 0) if tbc else map(int, t.split(":"))
-                iso = dt.datetime(day.year, day.month, day.day, hh, mi, tzinfo=LON).isoformat()
-                note = ("Kick-off time to be confirmed" if tbc else "") if chans and not unsure else \
-                       ("Kick-off time and channel to be confirmed" if tbc else "Channel to be confirmed")
-                out.append({"t": key, "iso": iso, "comp": comp, "h": tidy(mm[1]), "a": tidy(mm[2]),
-                            "ch": chans, "note": note, "tbc": tbc})
-        i += 1
-    return out
-
-UA = "Mozilla/5.0 (compatible; personal-fixtures-page; +https://www.hibbs.org.uk/)"
-PAUSE = 3          # seconds between requests to the listings site
-RETRY_PAUSE = [10, 30]
-_pages, _last = {}, [0.0]
-_robots = urllib.robotparser.RobotFileParser()
-
-def load_robots():
-    try:
-        r = requests.get(BASE + "robots.txt", timeout=20, headers={"User-Agent": UA})
-        if r.ok:
-            _robots.parse(r.text.splitlines()); return
-    except Exception:
-        pass
-    _robots.parse([])                    # no robots.txt reachable: nothing is forbidden
-
-def page_text(slug):
-    """Each page is fetched at most once per run (a failure is remembered too)."""
-    if slug not in _pages:
-        try:
-            if not _robots.can_fetch(UA, BASE + slug):
-                raise RuntimeError("blocked by robots.txt")
-            for attempt in range(3):                 # a blip (timeout, 429, 5xx) gets two more tries, 10 then 30 seconds later
-                wait = PAUSE - (time.time() - _last[0])
-                if wait > 0:
-                    time.sleep(wait)
-                try:
-                    r = requests.get(BASE + slug, timeout=30, headers={"User-Agent": UA})
-                    _last[0] = time.time()
-                    if r.status_code in (429, 500, 502, 503, 504):
-                        raise RuntimeError(f"HTTP {r.status_code}")
-                    r.raise_for_status()
-                    break
-                except Exception as e:
-                    _last[0] = time.time()
-                    if attempt == 2:
-                        raise
-                    print(f"{slug}: {e}; trying again", file=sys.stderr)
-                    time.sleep(RETRY_PAUSE[attempt])
-            _pages[slug] = BeautifulSoup(r.text, "html.parser").get_text("\n")
-        except Exception as e:
-            _pages[slug] = e
-    if isinstance(_pages[slug], Exception):
-        raise _pages[slug]
-    return _pages[slug]
-
-NONE_LISTED = "No Upcoming TV Fixtures"   # what the site prints when a team has nothing coming up
-
-def fetch_team(key):
-    """-> (fixtures, page it came from, ok). ok is True when every page loaded and the team's own page
-    says it has no upcoming fixtures (a quiet spell, not a fault)."""
-    merged, used = {}, []
-    failed, own_empty = 0, False
-    for n, slug in enumerate(PAGES[key]):
-        try:
-            text = page_text(slug)
-            got = parse(text, key)
-        except Exception as e:
-            failed += 1
-            print(f"{key}: {slug} failed ({e})", file=sys.stderr); continue
-        if not got:
-            if n == 0 and NONE_LISTED in text:
-                own_empty = True
-            print(f"{key}: {slug} had no matching fixtures", file=sys.stderr); continue
-        if slug not in SHARED:                       # the club's own page lists every competition
-            print(f"{key}: {len(got)} fixtures from {slug}")
-            return got, slug, False
-        print(f"{key}: {len(got)} fixtures from shared listing {slug}")
-        used.append(slug)
-        for g in got:
-            merged[(g["iso"], g["h"], g["a"])] = g   # WSL + Champions League pages are combined
-    ok = own_empty and failed == 0 and not merged
-    if ok:
-        print(f"{key}: {PAGES[key][0]} says there are no upcoming fixtures")
-    return list(merged.values()), "+".join(used) or (PAGES[key][0] if ok else ""), ok
-
-# ---- Formula 1: qualifying, sprints and races, from the free Jolpica calendar (Ergast-compatible) ----
-F1_API = "https://api.jolpi.ca/ergast/f1/{}.json"
-# (key in the API's race record, name shown on the card). Practice sessions are left out on purpose.
-F1_SESSIONS = [("SprintQualifying", "Sprint Qualifying"), ("SprintShootout", "Sprint Qualifying"),
-               ("Qualifying", "Qualifying"), ("Sprint", "Sprint"), ("Race", "Race")]
-F1_CHANNELS = ["Sky Sports F1"]
-# Country name as the calendar spells it -> flag file in logos/flags/ (lower-case two-letter code)
-F1_FLAGS = {"australia": "au", "china": "cn", "japan": "jp", "bahrain": "bh", "saudi arabia": "sa", "usa": "us",
-            "united states": "us", "canada": "ca", "monaco": "mc", "spain": "es", "austria": "at", "uk": "gb",
-            "united kingdom": "gb", "great britain": "gb", "belgium": "be", "hungary": "hu", "netherlands": "nl",
-            "italy": "it", "azerbaijan": "az", "singapore": "sg", "mexico": "mx", "brazil": "br", "qatar": "qa",
-            "uae": "ae", "united arab emirates": "ae", "portugal": "pt", "france": "fr", "turkey": "tr"}
-F1_DAYS = 60          # only list sessions up to this many days ahead, so a whole season does not flood the page
-
-def f1_iso(date, time_):
-    """API date + UTC time -> London-time ISO string, or None when no time is published yet."""
-    if not date or not time_:
-        return None
-    utc = dt.datetime.fromisoformat(f"{date}T{time_}".replace("Z", "+00:00"))
-    return utc.astimezone(LON).isoformat()
-
-def f1_year(year):
-    wait = PAUSE - (time.time() - _last[0])
-    if wait > 0:
-        time.sleep(wait)
-    r = requests.get(F1_API.format(year), timeout=30, headers={"User-Agent": UA})
-    _last[0] = time.time()
-    r.raise_for_status()
-    out = []
-    for race in r.json()["MRData"]["RaceTable"]["Races"]:
-        gp = race.get("raceName") or "Grand Prix"
-        sprint = any(race.get(k) for k in ("Sprint", "SprintQualifying", "SprintShootout"))
-        country = ((race.get("Circuit") or {}).get("Location") or {}).get("country", "")
-        cc = F1_FLAGS.get(country.strip().lower(), "")
-        if country and not cc:
-            print(f"f1: no flag known for country '{country}' ({gp})", file=sys.stderr)
-        for key, label in F1_SESSIONS:
-            s = {"date": race.get("date"), "time": race.get("time")} if key == "Race" else race.get(key)
-            iso = f1_iso((s or {}).get("date"), (s or {}).get("time"))
-            if iso:                                   # sessions without a published time are skipped
-                out.append({"t": "f1", "iso": iso, "comp": "Formula 1, " + label, "h": gp, "a": "", "cc": cc, "sp": sprint,
-                            "ch": list(F1_CHANNELS), "note": "", "tbc": False})
-    return out
-
-def fetch_f1():
-    """-> (fixtures, source, ok). ok is True when this year's calendar was read, even if no sessions are left."""
-    year = dt.datetime.now(LON).year
-    try:
-        out = f1_year(year)
-    except Exception as e:
-        print(f"f1: {year} calendar failed ({e})", file=sys.stderr)
-        return [], None, False
-    try:
-        out += f1_year(year + 1)                      # next season, once its calendar has times
-    except Exception as e:
-        print(f"f1: {year + 1} calendar not available yet ({e})", file=sys.stderr)
-    now = dt.datetime.now(LON)
-    start, end = now - dt.timedelta(hours=3), now + dt.timedelta(days=F1_DAYS)
-    out = [f for f in out if start < dt.datetime.fromisoformat(f["iso"]) <= end]   # recent and upcoming only
-    print(f"f1: {len(out)} sessions in the next {F1_DAYS} days from the Jolpica calendar")
-    return out, "api.jolpi.ca", True
-
-def refresh_fallback(updated, updated_iso, fixtures, now):
-    """Keep the built-in fallback copy in sports.html (used only if fixtures.json can't load) current: the next three weeks."""
-    try:
-        html = open("sports.html", encoding="utf-8").read()
-    except OSError:
-        return
-    cutoff = now + dt.timedelta(days=21)
-    snap = {"updated": updated, "fixtures": [f for f in fixtures if dt.datetime.fromisoformat(f["iso"]) <= cutoff],
-            "updated_iso": updated_iso}
-    text = json.dumps(snap).replace("</", "<\\/")
-    new, n = re.subn(r"^const EMBED=.*;$", lambda m: "const EMBED=" + text + ";", html, count=1, flags=re.M)
-    if n != 1:
-        print("::warning::fixtures: could not find the built-in fallback copy in sports.html", file=sys.stderr)
-    elif new != html:
-        open("sports.html", "w", encoding="utf-8").write(new)
-
-def main():
-    try: prev = json.load(open("fixtures.json"))
-    except Exception: prev = {}
-    old, old_health = prev.get("fixtures", []), prev.get("health", {})
-    now = dt.datetime.now(LON)
-    persistent = lambda k: not (old_health.get(k, {}).get("last_ok_iso")) or \
-        now - dt.datetime.fromisoformat(old_health[k]["last_ok_iso"]) > dt.timedelta(hours=18)   # last good read was before the previous run too
-    recent = lambda f: dt.datetime.fromisoformat(f["iso"]) > now - dt.timedelta(hours=3)
-    load_robots()
-    new, health, problems = [], {}, []
-    for key in [*PAGES, "f1"]:
-        ok = False
-        if key == "f1":
-            got, src, ok = fetch_f1()
-        else:
-            got, src, ok = fetch_team(key)
-        got = [g for g in got if recent(g)]
-        kept = [f for f in old if f["t"] == key and recent(f)]
-        upcoming_before = len([f for f in kept if dt.datetime.fromisoformat(f["iso"]) > now])
-        if key != "f1" and got and upcoming_before >= 4 and len(got) < upcoming_before / 2:
-            print(f"::warning::fixtures: {key} returned only {len(got)} fixtures (had {upcoming_before}); keeping the previous ones in case the page layout changed")
-            got = []
-        if not got and not ok and upcoming_before > 0:
-            if persistent(key):
-                problems.append(f"{key}: no usable fixtures (had {upcoming_before} upcoming)")
-            else:
-                print(f"::warning::fixtures: {key} had no usable fixtures this run (had {upcoming_before} upcoming); will flag it if it happens again")
-        if key == "f1" and not ok:
-            if persistent("f1"):
-                problems.append("f1: the calendar could not be read")
-        if got or ok:                     # F1 and quiet spells can legitimately have nothing listed
-            new += got or [f for f in kept if dt.datetime.fromisoformat(f["iso"]) <= now]   # keep a match that has just finished
-            health[key] = {"last_ok_iso": now.isoformat(), "from": src, "count": len(got)}
-        else:
-            print(f"::warning::fixtures: nothing usable for {key}; keeping its previous fixtures")
-            new += kept
-            health[key] = {"last_ok_iso": old_health.get(key, {}).get("last_ok_iso"), "from": None, "count": len(kept)}
-    new.sort(key=lambda f: f["iso"])
-    updated, updated_iso = now.strftime("%-d %b %Y, %H:%M"), now.isoformat()
-    json.dump({"updated": updated, "updated_iso": updated_iso, "health": health, "fixtures": new},
-              open("fixtures.json", "w"), indent=1, ensure_ascii=False)
-    refresh_fallback(updated, updated_iso, new, now)
-    # A non-zero exit makes the GitHub Action show as failed (and email you). fixtures.json is still saved and committed first.
-    for msg in problems:
-        print(f"::error::fixtures: {msg}")
-    sys.exit(1 if problems else 0)
-
-if __name__ == "__main__":
-    main()
+name: Update fixtures
+on:
+  schedule:
+    - cron: "23 6,18 * * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+  issues: write
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests beautifulsoup4
+      - name: Update fixtures
+        id: update
+        continue-on-error: true          # a problem must not stop the good data being saved below
+        run: python scripts/update.py
+      - name: Commit if changed
+        run: |
+          git config user.name "fixtures-bot"
+          git config user.email "fixtures-bot@users.noreply.github.com"
+          git add fixtures.json sports.html
+          git diff --staged --quiet || (git commit -m "Update fixtures" && git push)
+      - name: Check for missing logos
+        continue-on-error: true          # never fails the run; it opens or updates a "Logos needed" issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
+        run: python scripts/check_logos.py
+      - name: Flag problems
+        if: steps.update.outcome == 'failure'
+        run: |
+          echo "::error::The fixtures update had problems (see the 'Update fixtures' step above). Good data was still saved."
+          exit 1
