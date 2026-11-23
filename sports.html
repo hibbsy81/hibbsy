@@ -217,10 +217,13 @@ function badge(c){
   const k=brand(c),b=BR[k]||["#2a3446","#fff"];
   return '<span class="b" style="--bc:'+b[0]+';--bt:'+b[1]+'"><img src="logos/channels/'+k+'.png" alt="" onerror="this.remove()">'+esc(c)+'</span>';
 }
-// A match on a BBC or ITV channel doesn't also need its online version listed (iPlayer, ITVX); online-only matches keep it.
+// A match on a BBC or ITV channel and its online version shares one badge: "BBC One/iPlayer", "ITV1/ITVX".
 function chans(f){
-  const tvBBC=f.ch.some(c=>/^BBC (?!iPlayer)/i.test(c)),tvITV=f.ch.some(c=>/^ITV(?!X)/i.test(c));
-  return f.ch.filter(c=>!((tvBBC&&/^BBC iPlayer$/i.test(c))||(tvITV&&/^ITVX$/i.test(c))));
+  let ch=f.ch.slice();
+  const join=(isTv,isWeb,suffix)=>{const t=ch.findIndex(isTv);if(t<0||!ch.some(isWeb))return;ch[t]+="/"+suffix;ch=ch.filter(c=>!isWeb(c));};
+  join(c=>/^BBC (?!iPlayer)/i.test(c),c=>/^BBC iPlayer$/i.test(c),"iPlayer");
+  join(c=>/^ITV(?!X)/i.test(c),c=>/^ITVX$/i.test(c),"ITVX");
+  return ch;
 }
 function chanHtml(f){
   const unconf=/confirm/i.test(f.note);

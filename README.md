@@ -24,14 +24,14 @@ A dark-green, mobile-first page of upcoming fixtures and UK TV channels. Plain H
 | `logos/flags/<code>.png` | Country flags for F1 cards and for the opponents in England men and Lionesses matches (already included, ~115 countries). |
 
 ## After changing the page
-Raise the number in `const V` at the top of `sports-sw.js` (currently `fixtures-v28`) so installed copies refresh.
+Raise the number in `const V` at the top of `sports-sw.js` (currently `fixtures-v29`) so installed copies refresh.
 
 ## How the page behaves
 - A Next up card sits at the top, then cards grouped by month. Each card shows both clubs' logos (home first), channel badges and a dashed TBC badge when a channel is unconfirmed.
 - A match between two of your teams shows once with both names. Women's cards get a faint pink glow, men's a faint blue one (F1 has neither).
 - Live for 2 hours after kick-off, Full time until 3 hours, then it disappears.
 - Formula 1: one card per day, listing that day's sessions (Qualifying, Sprint Qualifying, Sprint, Race). Sprint weekends are marked in the competition line.
-- A match on a BBC or ITV channel shows only that channel, not also iPlayer or ITVX (online-only matches keep theirs).
+- A match on a BBC or ITV channel and its online version share one badge (BBC One/iPlayer, ITV1/ITVX); online-only matches keep their own badge.
 - A small calendar-plus icon on each card downloads an `.ics` file (all remaining sessions on an F1 day card).
 - The page reloads the fixtures when the app or tab comes back to the front.
 - The bottom line says "Fixtures updated ..." and turns amber after 36 hours, or if a team has not refreshed for 2+ days.
