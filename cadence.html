@@ -4,14 +4,22 @@
 <title>Cadence</title>
 <meta name="description" content="Cadence: live Strava training dashboard.">
 <meta name="color-scheme" content="light dark">
+<link rel="manifest" href="cadence-manifest.webmanifest">
+<link rel="apple-touch-icon" href="cadence-apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Cadence">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#fbf8f4" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#141416" media="(prefers-color-scheme: dark)">
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23fc4c02'/%3E%3Cpath d='M44 22a15 15 0 1 0 0 20' fill='none' stroke='%23fff' stroke-width='6' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%201024%201024%22%3E%3Crect%20width%3D%221024%22%20height%3D%221024%22%20rx%3D%22224%22%20fill%3D%22%23fbf3e8%22%2F%3E%3Cpath%20d%3D%22M210%20780C210%20560%20400%20640%20430%20480S330%20260%20520%20280%20640%20560%20720%20440%20830%20250%20830%20250%22%20fill%3D%22none%22%20stroke%3D%22%23fc4c02%22%20stroke-width%3D%2264%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3Ccircle%20cx%3D%22210%22%20cy%3D%22780%22%20r%3D%2252%22%20fill%3D%22%2314213d%22%2F%3E%3Ccircle%20cx%3D%22830%22%20cy%3D%22250%22%20r%3D%2252%22%20fill%3D%22%23fc4c02%22%20stroke%3D%22%23fff%22%20stroke-width%3D%2216%22%2F%3E%3C%2Fsvg%3E">
 <script src="menu.js?v=17" defer></script>
 <style>
 :root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#fbf8f4;--card:#fff;--tx:#1d1d1f;--mut:#6e6e73;--line:#e6e0d8;--run:#fc4c02;--hike:#2f7d6d;--ride:#3b6fd4;--h0:#efe9e1;--h1:#fdc9b0;--h2:#fb9566;--h3:#fc4c02;--menu-ink:var(--tx);--menu-accent:var(--run);--menu-glass:color-mix(in srgb,var(--card) 82%,transparent);--menu-line:var(--line);--menu-hover:color-mix(in srgb,var(--tx) 7%,transparent)}
 @media (prefers-color-scheme:dark){:root{--bg:#141416;--card:#1e1e21;--tx:#f2f2f4;--mut:#9a9aa2;--line:#2e2e33;--run:#ff6a2b;--hike:#4fb5a2;--ride:#6b97f0;--h0:#26262a;--h1:#6b3a24;--h2:#b5532b;--h3:#ff6a2b}}
 *{box-sizing:border-box}html,body{margin:0}
+@media (display-mode:standalone){nav.menu{display:none!important}h1{margin-right:0!important}}
+.standalone nav.menu{display:none!important}.standalone h1{margin-right:0!important}
 body{background:var(--bg);color:var(--tx);font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;padding:16px;max-width:760px;margin:0 auto}
 h1{font-size:22px;margin:4px 62px 2px 0}h2{font-size:15px;margin:0 0 2px}.sub,.note,.l{color:var(--mut);font-size:12px}.note{margin:0 0 8px}
 .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:12px}
@@ -50,6 +58,7 @@ function plot(id,{x0,x1,y0,y1,yf=v=>Math.round(v),dots=[],lines=[]}){const W=700
  dots.forEach(p=>s+=`<circle cx="${X(p[0])}" cy="${Y(p[1])}" r="3.5" fill="var(--run)" opacity=".45"/>`);
  lines.forEach(l=>s+=`<polyline fill="none" stroke="${l.c}" stroke-width="2" ${l.d?'stroke-dasharray="5 4"':''} points="${l.p.map(p=>X(p[0])+','+Y(p[1])).join(' ')}"/>`);
  const e=$(id);e.setAttribute('viewBox',`0 0 ${W} ${H}`);e.innerHTML=s}
+if(navigator.standalone)document.documentElement.classList.add('standalone');
 const API='https://cadence-api.mike-69f.workers.dev';  // your deployed Worker address
 let SID='';try{const m=location.hash.match(/s=([\w-]+)/);if(m){localStorage.setItem('cadence-sid',m[1]);history.replaceState(null,'',location.pathname)}SID=localStorage.getItem('cadence-sid')||''}catch(e){}
 const get=u=>fetch(API+u,{headers:{authorization:'Bearer '+SID}});
