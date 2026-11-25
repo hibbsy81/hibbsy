@@ -1,63 +1,49 @@
 {
- "updated": "24 Nov 2026, 17:54",
- "updated_iso": "2026-11-24T17:54:02.310747+00:00",
+ "updated": "25 Nov 2026, 02:34",
+ "updated_iso": "2026-11-25T02:34:26.125260+00:00",
  "health": {
   "mc": {
-   "last_ok_iso": "2026-11-24T17:54:02.310747+00:00",
+   "last_ok_iso": "2026-11-25T02:34:26.125260+00:00",
    "from": "man-city-on-tv.html",
-   "count": 15
+   "count": 14
   },
   "mw": {
-   "last_ok_iso": "2026-11-24T17:54:02.310747+00:00",
+   "last_ok_iso": "2026-11-25T02:34:26.125260+00:00",
    "from": "man-city-women-on-tv.html",
    "count": 3
   },
   "aw": {
-   "last_ok_iso": "2026-11-24T17:54:02.310747+00:00",
+   "last_ok_iso": "2026-11-25T02:34:26.125260+00:00",
    "from": "arsenal-women-on-tv.html",
    "count": 3
   },
   "mu": {
-   "last_ok_iso": "2026-11-24T17:54:02.310747+00:00",
+   "last_ok_iso": "2026-11-25T02:34:26.125260+00:00",
    "from": "man-utd-women-on-tv.html",
    "count": 2
   },
   "cw": {
-   "last_ok_iso": "2026-11-24T17:54:02.310747+00:00",
+   "last_ok_iso": "2026-11-25T02:34:26.125260+00:00",
    "from": "chelsea-women-on-tv.html",
    "count": 3
   },
   "li": {
-   "last_ok_iso": "2026-11-24T17:54:02.310747+00:00",
+   "last_ok_iso": "2026-11-25T02:34:26.125260+00:00",
    "from": "england-women-on-tv.html",
    "count": 2
   },
   "en": {
-   "last_ok_iso": "2026-11-24T17:54:02.310747+00:00",
+   "last_ok_iso": "2026-11-25T02:34:26.125260+00:00",
    "from": "england-on-tv.html",
    "count": 2
   },
   "f1": {
-   "last_ok_iso": "2026-11-24T17:54:02.310747+00:00",
+   "last_ok_iso": "2026-11-25T02:34:26.125260+00:00",
    "from": "api.jolpi.ca",
    "count": 4
   }
  },
  "fixtures": [
-  {
-   "t": "mc",
-   "iso": "2026-11-24T20:00:00+00:00",
-   "comp": "UEFA Champions League League Phase",
-   "h": "Man City",
-   "a": "Napoli",
-   "ch": [
-    "TNT Sports 1",
-    "TNT Sports Ultimate",
-    "HBO Max"
-   ],
-   "note": "",
-   "tbc": false
-  },
   {
    "t": "f1",
    "iso": "2026-11-28T18:00:00+00:00",
