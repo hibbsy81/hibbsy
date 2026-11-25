@@ -50,7 +50,9 @@ svg{width:100%;height:auto;display:block}text{fill:var(--mut);font-size:10.5px;f
 input{font:inherit;width:84px;padding:4px 10px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--tx)}
 #tip{position:fixed;z-index:50;pointer-events:none;background:var(--tx);color:var(--bg);padding:8px 11px;border-radius:10px;font-size:12.5px;line-height:1.4;max-width:260px;box-shadow:0 8px 24px rgba(0,0,0,.25)}#tip em{opacity:.65;font-style:normal}
 .scroll{overflow-x:auto}
+.spin{width:34px;height:34px;margin:0 auto 16px;border:3px solid var(--line);border-top-color:var(--run);border-radius:50%;animation:sp .8s linear infinite}@keyframes sp{to{transform:rotate(360deg)}}@media (prefers-reduced-motion:reduce){.spin{animation-duration:2.4s}}
 </style></head><body>
+<div id="loading" style="text-align:center;padding:90px 0"><div class="spin"></div><p class="sub" id="lmsg">Connecting to Strava…</p></div>
 <div id="login" hidden style="text-align:center;padding:90px 0"><h1 style="margin:0">Cadence</h1><p class="sub" style="margin:8px 0 26px">Connect your Strava account to see your own training dashboard. Your data is only shown to you.</p><a class="btn" id="signin" href="#">Connect with Strava</a></div>
 <div id="app" hidden>
 <h1>Cadence</h1><p class="sub" id="range"></p>
@@ -74,7 +76,7 @@ input{font:inherit;width:84px;padding:4px 10px;border-radius:10px;border:1px sol
 <script>
 if(navigator.standalone)document.documentElement.classList.add('standalone');
 const API='https://cadence-api.mike-69f.workers.dev';  // your deployed Worker address
-let SID='';try{const m=location.hash.match(/s=([\w-]+)/);if(m){localStorage.setItem('cadence-sid',m[1]);history.replaceState(null,'',location.pathname)}SID=localStorage.getItem('cadence-sid')||''}catch(e){}
+let SID='';try{const m=location.hash.match(/s=([\w-]+)/);if(m){localStorage.setItem('cadence-sid',m[1]);localStorage.removeItem('cadence-cache');localStorage.removeItem('cadence-gear');history.replaceState(null,'',location.pathname)}SID=localStorage.getItem('cadence-sid')||''}catch(e){}
 const get=u=>fetch(API+u,{headers:{authorization:'Bearer '+SID}});
 const $=id=>document.getElementById(id),DAY=864e5,cv=v=>`var(--${v})`;
 const fmt=s=>Math.floor(s/60)+':'+String(Math.round(s%60)).padStart(2,'0');
@@ -138,11 +140,13 @@ function render(){
  const hid=cand.length-act.length;$('reset').hidden=!st.off.size;$('hid').textContent=hid?`${hid} switched off. They are excluded from every chart and total.`:'Switch any activity off to remove it from every chart and total.';
  const rows=cand.slice().reverse();$('list').innerHTML=rows.slice(0,st.more).map(a=>`<button class="act${st.off.has(a.key)?' off':''}" data-k="${esc(a.key)}"><i style="background:${cv(a.ty)}"></i><span class="an">${esc(a.n)}</span><span class="am">${dshort(a.t)} · ${a.km.toFixed(1)} km${a.ty==='run'?' · '+fmt(a.mt/a.km)+'/km':''}</span><span class="sw"></span></button>`).join('');
  $('more').hidden=rows.length<=st.more}
+const isBike=g=>String(g.id).startsWith('b');
+function drawGear(gs){const list=(arr,shoe)=>{if(!arr.length)return'<p class="note">None to show.</p>';const mx=arr[0].distance/1000||1;return arr.map(g=>{const km=g.distance/1000,warn=shoe&&km>700;return`<div class="gr"><div class="t"><span>${esc(g.name||g.nickname||'Unnamed')}</span><b>${Math.round(km).toLocaleString()} km${warn?' · replace soon':''}</b></div><div class="bar"><b style="width:${km/mx*100}%;${warn?'background:var(--run)':''}"></b></div></div>`}).join('')};
+ $('bikes').innerHTML=list(gs.filter(isBike),false);$('shoes').innerHTML=list(gs.filter(g=>!isBike(g)),true)}
 async function loadGear(){
  const ids=[...new Set(A.map(a=>a.g).filter(Boolean))];
  const gs=(await Promise.all(ids.map(i=>get('/api/gear?id='+encodeURIComponent(i)).then(r=>r.ok?r.json():null).catch(()=>null)))).filter(Boolean).filter(g=>!/retired/i.test((g.name||'')+' '+(g.nickname||''))).sort((a,b)=>b.distance-a.distance);
- const list=(arr,shoe)=>{if(!arr.length)return'<p class="note">None to show.</p>';const mx=arr[0].distance/1000||1;return arr.map(g=>{const km=g.distance/1000,warn=shoe&&km>700;return`<div class="gr"><div class="t"><span>${esc(g.name||g.nickname||'Unnamed')}</span><b>${Math.round(km).toLocaleString()} km${warn?' · replace soon':''}</b></div><div class="bar"><b style="width:${km/mx*100}%;${warn?'background:var(--run)':''}"></b></div></div>`}).join('')};
- const isBike=g=>String(g.id).startsWith('b');$('bikes').innerHTML=list(gs.filter(isBike),false);$('shoes').innerHTML=list(gs.filter(g=>!isBike(g)),true)}
+ store.set('cadence-gear',gs);drawGear(gs)}
 const toggle=k=>{st.off.has(k)?st.off.delete(k):st.off.add(k);save();$('tip').hidden=true;render()};
 document.addEventListener('click',e=>{const t=e.target.closest('[data-k]');if(t)return toggle(t.getAttribute('data-k'));
  const r=e.target.closest('[data-range]');if(r){st.range=+r.dataset.range;save();return render()}
@@ -151,17 +155,24 @@ document.addEventListener('click',e=>{const t=e.target.closest('[data-k]');if(t)
 const tipEl=$('tip'),showTip=e=>{const t=e.target.closest&&e.target.closest('[data-tip]');if(!t){tipEl.hidden=true;return}tipEl.innerHTML=t.getAttribute('data-tip');tipEl.hidden=false;const r=tipEl.getBoundingClientRect(),x=Math.max(8,Math.min(e.clientX+14,innerWidth-r.width-8)),y=e.clientY+18+r.height>innerHeight?e.clientY-r.height-12:e.clientY+18;tipEl.style.left=x+'px';tipEl.style.top=y+'px'};
 document.addEventListener('pointermove',showTip);document.addEventListener('pointerdown',showTip);
 $('goal').value=store.get('cadence-goal',1500);$('goal').oninput=render;
-const leave=async(path,msg)=>{if(msg&&!confirm(msg))return;await get(path).catch(()=>{});try{localStorage.removeItem('cadence-sid')}catch(e){}location.reload()};
+const leave=async(path,msg)=>{if(msg&&!confirm(msg))return;await get(path).catch(()=>{});try{['cadence-sid','cadence-cache','cadence-gear'].forEach(k=>localStorage.removeItem(k))}catch(e){}location.reload()};
 $('out').onclick=e=>{e.preventDefault();leave('/api/logout')};
 $('disc').onclick=e=>{e.preventDefault();leave('/api/disconnect','Disconnect Cadence from Strava and delete the data stored for you?')};
+const show=v=>['loading','login','app'].forEach(i=>$(i).hidden=i!==v);
+const msg=t=>{show('login');$('login').querySelector('p').textContent=t};
+function ingest(raw){const now=new Date();T0=Date.UTC(now.getFullYear(),now.getMonth(),now.getDate());
+ A=raw.map(a=>({...a,key:a.d,mt:a.t,ty:K[a.s]||'o',t:Date.UTC(+a.d.slice(0,4),+a.d.slice(5,7)-1,+a.d.slice(8,10))})).sort((a,b)=>a.t-b.t||(a.d<b.d?-1:1));
+ if(!A.length){msg('No activities found on your Strava account yet.');return false}show('app');render();return true}
 async function main(){
  $('signin').href=API+'/auth/login';
- const r=await get('/api/activities').catch(()=>null);if(!r||r.status===401){$('login').hidden=false;return}
- const msg=t=>{$('login').hidden=false;$('login').querySelector('p').textContent=t};
- if(!r.ok){msg('Strava is busy right now. Please try again in a few minutes.');return}
- const now=new Date();T0=Date.UTC(now.getFullYear(),now.getMonth(),now.getDate());
- A=(await r.json()).map(a=>({...a,key:a.d,mt:a.t,ty:K[a.s]||'o',t:Date.UTC(+a.d.slice(0,4),+a.d.slice(5,7)-1,+a.d.slice(8,10))})).sort((a,b)=>a.t-b.t||(a.d<b.d?-1:1));
- if(!A.length){msg('No activities found on your Strava account yet.');return}
- $('app').hidden=false;render();loadGear()}
+ const cached=SID?store.get('cadence-cache',null):null;let shown=false,timers=[];
+ if(cached&&cached.length){shown=ingest(cached);const gc=store.get('cadence-gear',null);if(shown&&gc)drawGear(gc);if(shown)$('range').textContent+=' · updating…'}
+ else timers=[setTimeout(()=>{$('lmsg').textContent='Loading your activities. The first load can take a few seconds…'},2500),setTimeout(()=>{$('lmsg').textContent='Still working. Strava can be slow to respond…'},9000)];
+ const r=await get('/api/activities').catch(()=>null);timers.forEach(clearTimeout);
+ if(r&&r.status===401){try{['cadence-cache','cadence-gear'].forEach(k=>localStorage.removeItem(k))}catch(e){}show('login');return}
+ if(!r||!r.ok){if(!shown)msg(r?'Strava is busy right now. Please try again in a few minutes.':'Couldn’t reach the Cadence server. Check your connection and try again.');return}
+ if(!shown)$('lmsg').textContent='Drawing your charts…';
+ const raw=await r.json();store.set('cadence-cache',raw.map(({pl,...x})=>x));
+ if(ingest(raw))loadGear()}
 main();
 </script></body></html>
