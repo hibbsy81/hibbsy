@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Aeroplane Top Trumps — 8 Cards per A4 Landscape (Top 25 Aircraft Nations)</title>
+<style>
+  @page {
+    size: A4 landscape;
+    margin: 5mm;
+  }
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+    background: #f1f5f9;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px;
+  }
+  .toolbar {
+    width: 287mm;
+    background: #0f172a;
+    color: #f8fafc;
+    padding: 10px 16px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    gap: 12px;
+  }
+  .toolbar button {
+    background: #facc15;
+    color: #08142b;
+    border: none;
+    padding: 7px 14px;
+    border-radius: 5px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .sheet {
+    width: 287mm;
+    height: 198mm;
+    background: #ffffff;
+    display: grid;
+    grid-template-columns: repeat(4, 66.5mm);
+    grid-template-rows: repeat(2, 94mm);
+    gap: 7mm 7mm;
+    justify-content: center;
+    align-content: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+  }
+  .card {
+    width: 66.5mm;
+    height: 94mm;
+    background: linear-gradient(180deg, #0b1c3d 0%, #061024 100%);
+    border: 1.4mm solid #030812;
+    border-radius: 3.5mm;
+    padding: 2.2mm 2.6mm 2.4mm 2.6mm;
+    display: flex;
+    flex-direction: column;
+    color: #ffffff;
+    position: relative;
+    overflow: hidden;
+  }
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 7.5mm;
+    margin-bottom: 1.5mm;
+    gap: 1.5mm;
+  }
+  .aircraft-name {
+    flex: 1;
+    min-width: 0;
+    background: transparent;
+    border: none;
+    border-bottom: 0.3mm dashed rgba(255,255,255,0.28);
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 10.5pt;
+    font-weight: 800;
+    letter-spacing: -0.2px;
+    padding: 0.5mm 1mm;
+    outline: none;
+  }
+  .aircraft-name::placeholder {
+    color: rgba(255,255,255,0.55);
+  }
+  .flag-btn {
+    width: 11mm;
+    height: 7mm;
+    border: 0.35mm solid rgba(255,255,255,0.5);
+    border-radius: 0.8mm;
+    background: rgba(255,255,255,0.08);
+    color: #cbd5e1;
+    font-size: 5.5pt;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    cursor: pointer;
+    flex-shrink: 0;
+    padding: 0;
+  }
+  .flag-btn svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  .photo-frame {
+    width: 100%;
+    height: 33mm;
+    background: #dbe4ef;
+    border: 0.45mm solid #7b93b8;
+    border-radius: 1.2mm;
+    margin-bottom: 1.8mm;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+  }
+  .photo-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: none;
+  }
+  .photo-placeholder {
+    color: #334155;
+    font-size: 7.5pt;
+    font-style: italic;
+    text-align: center;
+    padding: 2mm;
+    pointer-events: none;
+  }
+  .fact-section {
+    height: 17mm;
+    margin-bottom: 1.5mm;
+    display: flex;
+    flex-direction: column;
+  }
+  .fact-badge {
+    display: inline-block;
+    color: #ffd60a;
+    font-size: 6.2pt;
+    font-weight: 900;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    margin-bottom: 0.5mm;
+  }
+  .fact-text {
+    width: 100%;
+    flex: 1;
+    background: transparent;
+    border: none;
+    resize: none;
+    color: #e2e8f0;
+    font-family: Arial, sans-serif;
+    font-size: 5.8pt;
+    line-height: 1.22;
+    outline: none;
+  }
+  .fact-text::placeholder {
+    color: rgba(226, 232, 240, 0.45);
+  }
+  .stats-list {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .stat-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 0.3mm solid #365585;
+    height: 4.5mm;
+    padding: 0 0.5mm;
+  }
+  .stat-row:last-child {
+    border-bottom: none;
+  }
+  .stat-label {
+    font-size: 6.8pt;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: 0.1px;
+    white-space: nowrap;
+  }
+  .stat-val {
+    width: 15mm;
+    background: transparent;
+    border: none;
+    color: #ffd60a;
+    font-family: inherit;
+    font-size: 7.5pt;
+    font-weight: 800;
+    text-align: right;
+    outline: none;
+  }
+  .stat-val::placeholder {
+    color: rgba(255, 214, 10, 0.38);
+  }
+
+  /* Country Picker Modal */
+  .modal-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(2, 6, 23, 0.65);
+    z-index: 999;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-backdrop.open {
+    display: flex;
+  }
+  .modal {
+    background: #0f172a;
+    color: #f8fafc;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    width: 440px;
+    max-width: 92vw;
+    max-height: 82vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.45);
+  }
+  .modal-header {
+    padding: 12px 16px;
+    background: #1e293b;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 700;
+    font-size: 14px;
+  }
+  .modal-close {
+    background: none;
+    border: none;
+    color: #cbd5e1;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 0 4px;
+  }
+  .country-list {
+    padding: 8px;
+    overflow-y: auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+  .country-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    padding: 7px 9px;
+    color: #f8fafc;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: left;
+  }
+  .country-item:hover {
+    border-color: #facc15;
+    background: #273549;
+  }
+  .country-item svg {
+    width: 24px;
+    height: 16px;
+    flex-shrink: 0;
+    border-radius: 2px;
+  }
+  .clear-flag-btn {
+    margin: 0 8px 10px 8px;
+    padding: 7px;
+    background: #334155;
+    color: #f8fafc;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+  }
+
+  @media print {
+    body {
+      background: none;
+      padding: 0;
+    }
+    .toolbar, .modal-backdrop {
+      display: none !important;
+    }
+    .sheet {
+      box-shadow: none;
+      width: 287mm;
+      height: 198mm;
+    }
+    .aircraft-name {
+      border-bottom: none;
+    }
+    .flag-btn {
+      border-color: rgba(255,255,255,0.35);
+    }
+    input::placeholder, textarea::placeholder {
+      color: transparent !important;
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="toolbar">
+    <span><strong>Aeroplane Top Trumps Builder (8 per A4 Landscape):</strong> Click <strong>FLAG</strong> to pick from the top 25 aeroplane-producing countries, or click a photo box to add an aircraft image.</span>
+    <button onclick="window.print()">Print / Save as PDF</button>
+  </div>
+  <div class="sheet" id="sheet"></div>
+
+  <div class="modal-backdrop" id="flagModal" onclick="closeModalOnBackdrop(event)">
+    <div class="modal">
+      <div class="modal-header">
+        <span>Select Aircraft Country (Top 25 Producers)</span>
+        <button class="modal-close" onclick="closeFlagModal()">&times;</button>
+      </div>
+      <div class="country-list" id="countryList"></div>
+      <button class="clear-flag-btn" onclick="clearFlag()">Clear Flag</button>
+    </div>
+  </div>
+
+<script>
+  const stats = [
+    "MAX SPEED (knots)",
+    "MAX HEIGHT (ft)",
+    "RANGE (miles)",
+    "MAX TAKE-OFF WEIGHT (kg)",
+    "WINGSPAN (metres)",
+    "TOP TRUMPS FIREPOWER"
+  ];
+
+  // Top 25 aeroplane-producing & aerospace manufacturing countries with inline SVG flags
+  const TOP_25_COUNTRIES = [
+    {
+      name: "United States",
+      svg: `<svg viewBox="0 0 60 36"><rect width="60" height="36" fill="#B22234"/><rect y="2.77" width="60" height="2.77" fill="#fff"/><rect y="8.31" width="60" height="2.77" fill="#fff"/><rect y="13.85" width="60" height="2.77" fill="#fff"/><rect y="19.38" width="60" height="2.77" fill="#fff"/><rect y="24.92" width="60" height="2.77" fill="#fff"/><rect y="30.46" width="60" height="2.77" fill="#fff"/><rect width="26" height="19.38" fill="#3C3B6E"/><g fill="#fff"><circle cx="4.5" cy="3.5" r="1.1"/><circle cx="10.5" cy="3.5" r="1.1"/><circle cx="16.5" cy="3.5" r="1.1"/><circle cx="22.5" cy="3.5" r="1.1"/><circle cx="7.5" cy="7.5" r="1.1"/><circle cx="13.5" cy="7.5" r="1.1"/><circle cx="19.5" cy="7.5" r="1.1"/><circle cx="4.5" cy="11.5" r="1.1"/><circle cx="10.5" cy="11.5" r="1.1"/><circle cx="16.5" cy="11.5" r="1.1"/><circle cx="22.5" cy="11.5" r="1.1"/><circle cx="7.5" cy="15.5" r="1.1"/><circle cx="13.5" cy="15.5" r="1.1"/><circle cx="19.5" cy="15.5" r="1.1"/></g></svg>`
+    },
+    {
+      name: "France",
+      svg: `<svg viewBox="0 0 60 36"><rect width="20" height="36" fill="#002395"/><rect x="20" width="20" height="36" fill="#fff"/><rect x="40" width="20" height="36" fill="#ED2939"/></svg>`
+    },
+    {
+      name: "Germany",
+      svg: `<svg viewBox="0 0 60 36"><rect width="60" height="12" fill="#000"/><rect y="12" width="60" height="12" fill="#DD0000"/><rect y="24" width="60" height="12" fill="#FFCE00"/></svg>`
+    },
+    {
+      name: "United Kingdom",
+      svg: `<svg viewBox="0 0 60 36"><rect width="60" height="36" fill="#012169"/><path d="M0,0 L60,36 M60,0 L0,36" stroke="#fff" stroke-width="6"/><path d="M0,0 L60,36 M60,0 L0,36" stroke="#C8102E" stroke-width="3.5"/><path d="M30,0 V36 M0,18 H60" stroke="#fff" stroke-width="10"/><path d="M30,0 V36 M0,18 H60" stroke="#C8102E" stroke-width="6"/></svg>`
+    },
+    {
+      name: "China",
+      svg: `<svg viewBox="0 0 60 36"><rect width="60" height="36" fill="#DE2910"/><polygon points="12,6 14.3,13.2 8.2,8.7 15.8,8.7 9.7,13.2" fill="#FFDE00"/><circle cx="21" cy="5" r="1.3" fill="#FFDE00"/><circle cx="24" cy="9" r="1.3" fill="#FFDE00"/><circle cx="24" cy="14" r="1.3" fill="#FFDE00"/><circle cx="21" cy="18" r="1.3" fill="#FFDE00"/></svg>`
+    },
+    {
+      name: "Canada",
+      svg: `<svg viewBox="0 0 60 36"><rect width="15" height="36" fill="#D80621"/><rect x="15" width="30" height="36" fill="#FFFFFF"/><rect x="45" width="15" height="36" fill="#D80621"/><path fill="#D80621" d="M30,5.5 L27.6,12.2 L24.5,10.8 L25.6,15.4 L20.2,13.6 L21.4,16.1 L17.6,16.9 L22.8,21.2 L21.7,23.6 L29.1,22.9 L29.1,30.5 L30.9,30.5 L30.9,22.9 L38.3,23.6 L37.2,21.2 L42.4,16.9 L38.6,16.1 L39.8,13.6 L34.4,15.4 L35.5,10.8 L32.4,12.2 Z"/></svg>`
+    },
+    {
+      name: "Brazil",
+      svg: `<svg viewBox="0 0 60 36"><rect width="60" height="36" fill="#009B3A"/><polygon points="30,4 54,18 30,32 6,18" fill="#FFDF00"/><circle cx="30" cy="18" r="8.5" fill="#002776"/><path d="M22,16.5 Q30,14 38,19.5" stroke="#fff" stroke-width="1.6" fill="none"/></svg>`
+    },
+    {
+      name: "India",
+      svg: `<svg viewBox="0 0 60 36"><rect width="60" height="12" fill="#FF9933"/><rect y="12" width="60" height="12" fill="#fff"/><rect y="24" width="60" height="12" fill="#138808"/><circle cx="30" cy="18" r="4.2" fill="none" stroke="#000080" stroke-width="1.1"/><circle cx="30" cy="18" r="1" fill="#000080"/></svg>`
+    },
+    {
+      name: "Spain",
+      svg: `<svg viewBox="0 0 60 36"><rect width="60" height="9" fill="#AA151B"/><rect y="9" width="60" height="18" fill="#F1BF00"/><rect y="27" width="60" height="9" fill="#AA151B"/><rect x="13" y="13" width="7" height="10" rx="1" fill="#AA151B"/></svg>`
+    },
+    {
+      name: "Japan",
+      svg: `<svg viewBox="0 0 60 36"><rect width="60" height="36" fill="#fff"/><circle cx="30" cy="18" r="9.5" fill="#BC002D"/></svg>`
+    },
+    {
+      name: "Italy",
+      svg: `<svg viewBox="0 0 60 36"><rect width="20" height="36" fill="#009246"/><rect x="20" width="20" height="36" fill="#fff"/><rect x="40" width="20" height="36" fill="#CE2B37"/></svg>`
+    },
+    {
+      name: "Russia",
+      svg: `<svg viewBox="0 0 60 36"><rect width="60" height="12" fill="#fff"/><rect y="12" width="60" height="12" fill="#0039A6"/><rect y="24" width="60" height="12" fill="#D52B1E"/></svg>`
+    },
+    {
+      name: "Switzerland",
+      svg: `<svg viewBox="0 0 60 36"><rect width="60" height="36" fill="#DA291C"/><rect x="27" y="7" width="6" height="22" fill="#fff"/><rect x="19" y="15" width="22" height="6" fill="#fff"/></svg>`
+    },
+    {
+      name: "Sweden",
+      svg: `<svg viewBox="0 0 60 36"><rect width="60" height="36" fill="#006AA7"/><rect x="18" width="6" height="36" fill="#FECC00"/><rect y="15" width="60" height="6" fill="#FECC00"/></svg>`
+    },
+    {
+      name: "South Korea",
+      svg: `<svg viewBox="0 0 60 36"><rect width="60" height="36" fill="#fff"/><path d="M30,10 A8,8 0 0,1 30,26 A4,4 0 0,1 30,18 A4,4 0 0,0 30,10" fill="#CD2E3A"/><path d="M30,26 A8,8 0 0,1 30,10 A4,4 0 0,1 30,18 A4,4 0 0,0 30,26" fill="#0047A0"/></svg>`
+    },
+    {
+      name: "Poland",
+      svg: `<svg viewBox="0 0 60 36"><rect width="60" height="18" fill="#fff"/><rect y="18" width="60" height="18" fill="#DC143C"/></svg>`
+    },
+    {
+      name: "Netherlands",
+      svg: `<svg viewBox="0 0 60 36"><rect width="60" height="12" fill="#AE1C28"/><rect y="12" width="60" height="12" fill="#fff"/><rect y="24" width="60" height="12" fill="#21468B"/></svg>`
+    },
+    {
+      name: "Israel",
+      svg: `<svg viewBox="0 0 60 36"><rect width="60" height="36" fill="#fff"/><rect y="4.5" width="60" height="4.5" fill="#0038B8"/><rect y="27" width="60" height="4.5" fill="#0038B8"/><polygon points="30,11 35,21 25,21" fill="none" stroke="#0038B8" stroke-width="1.5"/><polygon points="30,25 35,15 25,15" fill="none" stroke="#0038B8" stroke-width="1.5"/></svg>`
+    },
+    {
+      name: "Turkey",
+      svg: `<svg viewBox="0 0 60 36"><rect width="60" height="36" fill="#E30A17"/><circle cx="24.5" cy="18" r="8.5" fill="#fff"/><circle cx="26.5" cy="18" r="6.8" fill="#E30A17"/><polygon points="35,18 39.2,19.4 36.6,15.8 36.6,20.2 39.2,16.6" fill="#fff"/></svg>`
+    },
+    {
+      name: "Australia",
+      svg: `<svg viewBox="0 0 60 36"><rect width="60" height="36" fill="#00008B"/><rect width="28" height="16" fill="#00008B"/><path d="M0,0 L28,16 M28,0 L0,16" stroke="#fff" stroke-width="3"/><path d="M0,0 L28,16 M28,0 L0,16" stroke="#FF0000" stroke-width="1.6"/><path d="M14,0 V16 M0,8 H28" stroke="#fff" stroke-width="5"/><path d="M14,0 V16 M0,8 H28" stroke="#FF0000" stroke-width="3"/><circle cx="14" cy="25" r="2.6" fill="#fff"/><circle cx="44" cy="10" r="1.6" fill="#fff"/><circle cx="49" cy="18" r="1.6" fill="#fff"/><circle cx="42" cy="24" r="1.6" fill="#fff"/><circle cx="47" cy="29" r="1.6" fill="#fff"/></svg>`
+    },
+    {
+      name: "Austria",
+      svg: `<svg viewBox="0 0 60 36"><rect width="60" height="12" fill="#ED2939"/><rect y="12" width="60" height="12" fill="#fff"/><rect y="24" width="60" height="12" fill="#ED2939"/></svg>`
+    },
+    {
+      name: "Czechia",
+      svg: `<svg viewBox="0 0 60 36"><rect width="60" height="18" fill="#fff"/><rect y="18" width="60" height="18" fill="#D7141A"/><polygon points="0,0 28,18 0,36" fill="#11457E"/></svg>`
+    },
+    {
+      name: "Singapore",
+      svg: `<svg viewBox="0 0 60 36"><rect width="60" height="18" fill="#EF3340"/><rect y="18" width="60" height="18" fill="#fff"/><circle cx="16" cy="9" r="5.5" fill="#fff"/><circle cx="18.2" cy="9" r="5" fill="#EF3340"/><g fill="#fff"><circle cx="24" cy="6.5" r="1.1"/><circle cx="26.5" cy="9.5" r="1.1"/><circle cx="25.5" cy="13" r="1.1"/><circle cx="21.5" cy="13" r="1.1"/><circle cx="20.5" cy="9.5" r="1.1"/></g></svg>`
+    },
+    {
+      name: "Pakistan",
+      svg: `<svg viewBox="0 0 60 36"><rect width="15" height="36" fill="#fff"/><rect x="15" width="45" height="36" fill="#01411C"/><circle cx="37.5" cy="18" r="8.5" fill="#fff"/><circle cx="39.8" cy="16" r="7.5" fill="#01411C"/><polygon points="41.5,12.5 42.6,15.5 45.8,15.5 43.2,17.4 44.2,20.4 41.5,18.5 38.8,20.4 39.8,17.4 37.2,15.5 40.4,15.5" fill="#fff"/></svg>`
+    },
+    {
+      name: "Ukraine",
+      svg: `<svg viewBox="0 0 60 36"><rect width="60" height="18" fill="#0057B7"/><rect y="18" width="60" height="18" fill="#FFD700"/></svg>`
+    }
+  ];
+
+  let activeFlagBtn = null;
+  const sheet = document.getElementById("sheet");
+  const countryList = document.getElementById("countryList");
+
+  for (let i = 1; i <= 8; i++) {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `
+      <div class="card-header">
+        <input class="aircraft-name" type="text" placeholder="Aircraft Name">
+        <button type="button" class="flag-btn" title="Click to select country flag" onclick="openFlagModal(this)">FLAG</button>
+      </div>
+      <label class="photo-frame" title="Click to choose aircraft image">
+        <input type="file" accept="image/*" style="display:none" onchange="loadImg(event, this)">
+        <img alt="Aircraft">
+        <span class="photo-placeholder">Click to add photo</span>
+      </label>
+      <div class="fact-section">
+        <span class="fact-badge">TOP TRUMPS FACT FILE</span>
+        <textarea class="fact-text" placeholder="Enter aircraft background, role, or key facts here..."></textarea>
+      </div>
+      <div class="stats-list">
+        ${stats.map(s => `
+          <div class="stat-row">
+            <span class="stat-label">${s}</span>
+            <input class="stat-val" type="text" placeholder="0">
+          </div>
+        `).join("")}
+      </div>
+    `;
+    sheet.appendChild(card);
+  }
+
+  TOP_25_COUNTRIES.forEach(c => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "country-item";
+    btn.innerHTML = `${c.svg}<span>${c.name}</span>`;
+    btn.onclick = () => selectCountryFlag(c);
+    countryList.appendChild(btn);
+  });
+
+  function openFlagModal(btn) {
+    activeFlagBtn = btn;
+    document.getElementById("flagModal").classList.add("open");
+  }
+
+  function closeFlagModal() {
+    document.getElementById("flagModal").classList.remove("open");
+    activeFlagBtn = null;
+  }
+
+  function closeModalOnBackdrop(e) {
+    if (e.target.id === "flagModal") closeFlagModal();
+  }
+
+  function selectCountryFlag(country) {
+    if (!activeFlagBtn) return;
+    activeFlagBtn.innerHTML = country.svg;
+    activeFlagBtn.title = country.name;
+    closeFlagModal();
+  }
+
+  function clearFlag() {
+    if (!activeFlagBtn) return;
+    activeFlagBtn.innerHTML = "FLAG";
+    activeFlagBtn.title = "Click to select country flag";
+    closeFlagModal();
+  }
+
+  function loadImg(e, input) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      const frame = input.parentElement;
+      const img = frame.querySelector("img");
+      const ph = frame.querySelector(".photo-placeholder");
+      img.src = ev.target.result;
+      img.style.display = "block";
+      if (ph) ph.style.display = "none";
+    };
+    reader.readAsDataURL(file);
+  }
+</script>
+</body>
+</html>
