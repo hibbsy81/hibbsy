@@ -50,7 +50,7 @@ function plot(id,{x0,x1,y0,y1,yf=v=>Math.round(v),dots=[],lines=[]}){const W=700
  dots.forEach(p=>s+=`<circle cx="${X(p[0])}" cy="${Y(p[1])}" r="3.5" fill="var(--run)" opacity=".45"/>`);
  lines.forEach(l=>s+=`<polyline fill="none" stroke="${l.c}" stroke-width="2" ${l.d?'stroke-dasharray="5 4"':''} points="${l.p.map(p=>X(p[0])+','+Y(p[1])).join(' ')}"/>`);
  const e=$(id);e.setAttribute('viewBox',`0 0 ${W} ${H}`);e.innerHTML=s}
-const API='https://cadence-api.YOURNAME.workers.dev';  // your deployed Worker address
+const API='https://cadence-api.mike-69f.workers.dev';  // your deployed Worker address
 let SID='';try{const m=location.hash.match(/s=([\w-]+)/);if(m){localStorage.setItem('cadence-sid',m[1]);history.replaceState(null,'',location.pathname)}SID=localStorage.getItem('cadence-sid')||''}catch(e){}
 const get=u=>fetch(API+u,{headers:{authorization:'Bearer '+SID}});
 const leave=async(path,msg)=>{if(msg&&!confirm(msg))return;await get(path).catch(()=>{});try{localStorage.removeItem('cadence-sid')}catch(e){}location.reload()};
