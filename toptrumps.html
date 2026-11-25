@@ -350,8 +350,11 @@
 </head>
 <body>
   <div class="toolbar">
-    <span><strong>Aeroplane Top Trumps Builder (8 per A4 Landscape):</strong> Click <strong>FLAG</strong> (top 25 aircraft nations), click a photo box, then print/save PDF (enable <em>Background graphics</em> if your print dialog has that toggle).</span>
-    <button onclick="window.print()">Print / Save as PDF</button>
+    <span><strong>Aeroplane Top Trumps Builder (8 per A4 Landscape):</strong> Auto-saved locally in this browser. Click <strong>FLAG</strong> (top 25 aircraft nations) or a photo box, then print/save PDF.</span>
+    <div style="display:flex; gap:8px; align-items:center;">
+      <button type="button" onclick="clearAllCards()" style="background:#334155; color:#f8fafc;">Clear All</button>
+      <button type="button" onclick="window.print()">Print / Save as PDF</button>
+    </div>
   </div>
   <div class="sheet" id="sheet"></div>
 
@@ -536,17 +539,105 @@
     if (e.target.id === "flagModal") closeFlagModal();
   }
 
+  const STORAGE_KEY = "aeroplane_top_trumps_8_per_a4_v1";
+
+  function applyPhotoToFrame(frame, dataUrl) {
+    const img = frame.querySelector("img");
+    const ph = frame.querySelector(".photo-placeholder");
+    if (dataUrl) {
+      img.src = dataUrl;
+      img.style.display = "block";
+      if (ph) ph.style.display = "none";
+    } else {
+      img.src = "";
+      img.style.display = "none";
+      if (ph) ph.style.display = "block";
+    }
+  }
+
+  function applyFlagToButton(btn, countryName) {
+    const match = TOP_25_COUNTRIES.find(c => c.name === countryName);
+    if (match) {
+      btn.innerHTML = match.svg;
+      btn.title = match.name;
+      btn.dataset.country = match.name;
+    } else {
+      btn.innerHTML = "FLAG";
+      btn.title = "Click to select country flag";
+      delete btn.dataset.country;
+    }
+  }
+
+  function saveState() {
+    try {
+      const cards = Array.from(sheet.querySelectorAll(".card")).map(card => {
+        const name = card.querySelector(".aircraft-name").value;
+        const flagBtn = card.querySelector(".flag-btn");
+        const country = flagBtn.dataset.country || "";
+        const img = card.querySelector(".photo-frame img");
+        const photo = img && img.style.display !== "none" ? img.src : "";
+        const fact = card.querySelector(".fact-text").value;
+        const statVals = Array.from(card.querySelectorAll(".stat-val")).map(el => el.value);
+        return { name, country, photo, fact, statVals };
+      });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(cards));
+    } catch (err) {
+      // Ignore quota errors if very large images are loaded
+      console.warn("Could not save card state to localStorage:", err);
+    }
+  }
+
+  function loadState() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      const cardsData = JSON.parse(raw);
+      if (!Array.isArray(cardsData)) return;
+      const cardEls = Array.from(sheet.querySelectorAll(".card"));
+      cardsData.forEach((data, idx) => {
+        const card = cardEls[idx];
+        if (!card || !data) return;
+        card.querySelector(".aircraft-name").value = data.name || "";
+        applyFlagToButton(card.querySelector(".flag-btn"), data.country || "");
+        applyPhotoToFrame(card.querySelector(".photo-frame"), data.photo || "");
+        card.querySelector(".fact-text").value = data.fact || "";
+        const statInputs = Array.from(card.querySelectorAll(".stat-val"));
+        if (Array.isArray(data.statVals)) {
+          statInputs.forEach((inp, sIdx) => {
+            inp.value = data.statVals[sIdx] || "";
+          });
+        }
+      });
+    } catch (err) {
+      console.warn("Could not restore card state from localStorage:", err);
+    }
+  }
+
+  function clearAllCards() {
+    if (!confirm("Clear all 8 cards on this sheet?")) return;
+    localStorage.removeItem(STORAGE_KEY);
+    Array.from(sheet.querySelectorAll(".card")).forEach(card => {
+      card.querySelector(".aircraft-name").value = "";
+      applyFlagToButton(card.querySelector(".flag-btn"), "");
+      const fileInp = card.querySelector('.photo-frame input[type="file"]');
+      if (fileInp) fileInp.value = "";
+      applyPhotoToFrame(card.querySelector(".photo-frame"), "");
+      card.querySelector(".fact-text").value = "";
+      card.querySelectorAll(".stat-val").forEach(inp => { inp.value = ""; });
+    });
+  }
+
   function selectCountryFlag(country) {
     if (!activeFlagBtn) return;
-    activeFlagBtn.innerHTML = country.svg;
-    activeFlagBtn.title = country.name;
+    applyFlagToButton(activeFlagBtn, country.name);
+    saveState();
     closeFlagModal();
   }
 
   function clearFlag() {
     if (!activeFlagBtn) return;
-    activeFlagBtn.innerHTML = "FLAG";
-    activeFlagBtn.title = "Click to select country flag";
+    applyFlagToButton(activeFlagBtn, "");
+    saveState();
     closeFlagModal();
   }
 
@@ -556,14 +647,16 @@
     const reader = new FileReader();
     reader.onload = function(ev) {
       const frame = input.parentElement;
-      const img = frame.querySelector("img");
-      const ph = frame.querySelector(".photo-placeholder");
-      img.src = ev.target.result;
-      img.style.display = "block";
-      if (ph) ph.style.display = "none";
+      applyPhotoToFrame(frame, ev.target.result);
+      saveState();
     };
     reader.readAsDataURL(file);
   }
+
+  // Wire up auto-save on any text/stat/fact edits and restore on load
+  sheet.addEventListener("input", saveState);
+  sheet.addEventListener("change", saveState);
+  loadState();
 </script>
 </body>
 </html>
