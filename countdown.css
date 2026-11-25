@@ -32,7 +32,7 @@
 
   /* Hibbs menu (menu.js / menu.css): colours follow this page's theme */
   --menu-ink: var(--ink);
-  --menu-accent: var(--amber);
+  --menu-accent: #4da3ff;   /* the blue glow: change it here */
   --menu-glass: color-mix(in srgb, var(--panel) 82%, transparent);
   --menu-line: color-mix(in srgb, var(--ink) 10%, transparent);
   --menu-hover: color-mix(in srgb, var(--ink) 7%, transparent);
