@@ -12,6 +12,8 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
@@ -299,23 +301,46 @@
   }
 
   @media print {
+    * {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+      color-adjust: exact !important;
+    }
     body {
-      background: none;
-      padding: 0;
+      background: #ffffff !important;
+      padding: 0 !important;
+      margin: 0 !important;
     }
     .toolbar, .modal-backdrop {
       display: none !important;
     }
     .sheet {
-      box-shadow: none;
+      box-shadow: none !important;
       width: 287mm;
       height: 198mm;
+      background: #ffffff !important;
     }
-    .aircraft-name {
-      border-bottom: none;
+    .card {
+      background: linear-gradient(180deg, #0b1c3d 0%, #061024 100%) !important;
+      background-color: #0b1c3d !important;
+      border-color: #030812 !important;
+      color: #ffffff !important;
     }
     .flag-btn {
-      border-color: rgba(255,255,255,0.35);
+      background: rgba(255, 255, 255, 0.08) !important;
+      border-color: rgba(255, 255, 255, 0.45) !important;
+    }
+    .photo-frame {
+      background: #dbe4ef !important;
+      border-color: #7b93b8 !important;
+    }
+    .aircraft-name {
+      border-bottom: none !important;
+      background: transparent !important;
+      color: #ffffff !important;
+    }
+    .fact-text, .stat-val {
+      background: transparent !important;
     }
     input::placeholder, textarea::placeholder {
       color: transparent !important;
@@ -325,7 +350,7 @@
 </head>
 <body>
   <div class="toolbar">
-    <span><strong>Aeroplane Top Trumps Builder (8 per A4 Landscape):</strong> Click <strong>FLAG</strong> to pick from the top 25 aeroplane-producing countries, or click a photo box to add an aircraft image.</span>
+    <span><strong>Aeroplane Top Trumps Builder (8 per A4 Landscape):</strong> Click <strong>FLAG</strong> (top 25 aircraft nations), click a photo box, then print/save PDF (enable <em>Background graphics</em> if your print dialog has that toggle).</span>
     <button onclick="window.print()">Print / Save as PDF</button>
   </div>
   <div class="sheet" id="sheet"></div>
