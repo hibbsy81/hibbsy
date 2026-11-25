@@ -54,7 +54,8 @@
 	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 4px 14px rgba(0, 0, 0, 0.08);
 	cursor: pointer;
 	-webkit-tap-highlight-color: transparent;
-	transition: transform 0.35s var(--spring), box-shadow 0.2s ease;
+	transition: transform 0.35s var(--spring), box-shadow 0.25s ease,
+	            border-color 0.2s ease, background-color 0.2s ease;
 }
 
 .menu-toggle:active {
@@ -64,6 +65,23 @@
 .menu-toggle:focus-visible {
 	outline: 2px solid var(--m-accent);
 	outline-offset: 3px;
+}
+
+/* glow: uses each page's accent colour (--menu-accent) */
+@media (hover: hover) {
+	.menu-toggle:hover {
+		border-color: var(--m-accent);
+		background-color: color-mix(in srgb, var(--m-accent) 12%, var(--m-glass));
+		box-shadow: 0 0 18px color-mix(in srgb, var(--m-accent) 35%, transparent),
+		            0 4px 14px rgba(0, 0, 0, 0.08);
+	}
+}
+
+/* stays lit while the menu is open */
+.menu-toggle[aria-expanded="true"] {
+	border-color: var(--m-accent);
+	box-shadow: 0 0 22px color-mix(in srgb, var(--m-accent) 45%, transparent),
+	            0 4px 14px rgba(0, 0, 0, 0.1);
 }
 
 .menu-toggle span {
@@ -153,10 +171,14 @@
 	transition: opacity 0.25s ease, transform 0.5s var(--spring);
 }
 
-/* the delay comes from each link's position (--i is set in menu.js), so any number of links staggers */
-.menu-toggle[aria-expanded="true"] + .menu-list li {
-	transition-delay: calc(0.06s + var(--i, 0) * 0.05s);
-}
+.menu-toggle[aria-expanded="true"] + .menu-list li:nth-child(1) { transition-delay: 0.06s; }
+.menu-toggle[aria-expanded="true"] + .menu-list li:nth-child(2) { transition-delay: 0.11s; }
+.menu-toggle[aria-expanded="true"] + .menu-list li:nth-child(3) { transition-delay: 0.16s; }
+.menu-toggle[aria-expanded="true"] + .menu-list li:nth-child(4) { transition-delay: 0.21s; }
+.menu-toggle[aria-expanded="true"] + .menu-list li:nth-child(5) { transition-delay: 0.26s; }
+.menu-toggle[aria-expanded="true"] + .menu-list li:nth-child(6) { transition-delay: 0.31s; }
+.menu-toggle[aria-expanded="true"] + .menu-list li:nth-child(7) { transition-delay: 0.36s; }
+.menu-toggle[aria-expanded="true"] + .menu-list li:nth-child(8) { transition-delay: 0.41s; }
 
 /* ---- the links ----------------------------------------------------------- */
 
@@ -177,12 +199,13 @@
 	white-space: nowrap;
 	text-decoration: none;
 	-webkit-tap-highlight-color: transparent;
-	transition: background-color 0.15s ease, transform 0.3s var(--spring);
+	transition: background-color 0.15s ease, box-shadow 0.2s ease, transform 0.3s var(--spring);
 }
 
 .menu-list a:hover,
 .menu-list a:focus-visible {
 	background: var(--m-hover);
+	box-shadow: 0 0 14px color-mix(in srgb, var(--m-accent) 22%, transparent);
 	text-decoration: none;
 	outline: none;
 }
