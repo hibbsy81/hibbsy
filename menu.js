@@ -16,6 +16,7 @@
     { label: 'Countdown', href: 'countdown.html' },
     { label: 'Chuff Chart',      href: 'chuff.html' },
         { label: 'Run Light',      href: 'run.html' },
+        { label: 'Cadence',      href: 'cadence.html' },
     { label: 'Webmail',          href: 'https://webmail.hibbs.org.uk/' }
   ];
 
