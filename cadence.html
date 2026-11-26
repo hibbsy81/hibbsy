@@ -50,6 +50,7 @@ svg{width:100%;height:auto;display:block}text{fill:var(--mut);font-size:10.5px;f
 input{font:inherit;width:84px;padding:4px 10px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--tx)}
 #tip{position:fixed;z-index:50;pointer-events:none;background:var(--tx);color:var(--bg);padding:8px 11px;border-radius:10px;font-size:12.5px;line-height:1.4;max-width:260px;box-shadow:0 8px 24px rgba(0,0,0,.25)}#tip em{opacity:.65;font-style:normal}
 .scroll{overflow-x:auto}
+.gear2{display:grid;grid-template-columns:1fr 1fr;gap:32px}.gear2 .gh{margin-top:6px}@media (max-width:700px){.gear2{grid-template-columns:1fr;gap:12px}}
 .spin{width:34px;height:34px;margin:0 auto 16px;border:3px solid var(--line);border-top-color:var(--run);border-radius:50%;animation:sp .8s linear infinite}@keyframes sp{to{transform:rotate(360deg)}}@media (prefers-reduced-motion:reduce){.spin{animation-duration:2.4s}}
 </style></head><body>
 <div id="loading" style="text-align:center;padding:90px 0"><div class="spin"></div><p class="sub" id="lmsg">Connecting to Strava…</p></div>
@@ -61,12 +62,12 @@ input{font:inherit;width:84px;padding:4px 10px;border-radius:10px;border:1px sol
 <div class="kpis" id="kpis"></div>
 <div class="cards">
 <div class="card wide"><h2>Weekly distance</h2><p class="note">Hover a week for the breakdown. Line is the 4-week average.<span id="wo"></span></p><svg id="weekly"></svg><div class="leg"><span><i style="background:var(--run)"></i>Running</span><span><i style="background:var(--hike)"></i>Hiking</span><span><i style="background:var(--ride)"></i>Cycling</span></div></div>
-<div class="card wide"><h2>Fitness and fatigue</h2><p class="note">Fitness (42-day load) vs fatigue (7-day load). <b id="form"></b></p><svg id="ff"></svg><div class="leg"><span><i style="background:var(--ride)"></i>Fitness</span><span><i style="background:var(--run)"></i>Fatigue</span></div></div>
 <div class="card"><h2>Pace trend</h2><p class="note">Runs of 5 km+. Click a dot to switch that run off or on. Higher is faster.<span id="po"></span></p><svg id="pace"></svg></div>
 <div class="card"><h2>Aerobic efficiency</h2><p class="note">Speed per heartbeat. Rising means fitter. Click a dot to toggle.<span id="eo"></span></p><svg id="eff"></svg></div>
 <div class="card"><h2>Pace vs distance</h2><p class="note">Every run of 5 km+. Click a dot to toggle.<span id="vo"></span></p><svg id="pvd"></svg></div>
 <div class="card"><h2>Year goal</h2><p class="note">Running km goal <input id="goal" type="number" min="1" value="1500"> <span id="proj"></span></p><svg id="gl"></svg></div>
-<div class="card"><h2>Bikes</h2><div id="bikes"><p class="note">Loading…</p></div><h2 style="margin-top:16px">Shoes</h2><p class="note" style="margin:0">Flagged at 700 km.</p><div id="shoes"></div></div>
+<div class="card wide"><h2>Fitness and fatigue</h2><p class="note">Fitness (42-day load) vs fatigue (7-day load). <b id="form"></b></p><svg id="ff"></svg><div class="leg"><span><i style="background:var(--ride)"></i>Fitness</span><span><i style="background:var(--run)"></i>Fatigue</span></div></div>
+<div class="card wide"><h2>Gear</h2><div class="gear2"><div><div class="gh">Shoes</div><p class="note" style="margin:0 0 4px">Flagged at 700 km.</p><div id="shoes"><p class="note">Loading…</p></div></div><div><div class="gh">Bikes</div><div id="bikes"><p class="note">Loading…</p></div></div></div></div>
 <div class="card wide"><h2>Activity calendar</h2><p class="note">Daily distance over the last 52 weeks</p><div class="scroll"><svg id="cal" style="min-width:720px"></svg></div></div>
 </div>
 <p class="note" style="text-align:center;margin:22px 0"><a href="#" class="lnk" id="out">Sign out</a> · <a href="#" class="lnk" id="disc">Disconnect and delete my data</a> · Powered by Strava</p>
