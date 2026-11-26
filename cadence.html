@@ -55,20 +55,19 @@ input{font:inherit;width:84px;padding:4px 10px;border-radius:10px;border:1px sol
 <div id="loading" style="text-align:center;padding:90px 0"><div class="spin"></div><p class="sub" id="lmsg">Connecting to Strava…</p></div>
 <div id="login" hidden style="text-align:center;padding:90px 0"><h1 style="margin:0">Cadence</h1><p class="sub" style="margin:8px 0 26px">Connect your Strava account to see your own training dashboard. Your data is only shown to you.</p><a class="btn" id="signin" href="#">Connect with Strava</a></div>
 <div id="app" hidden>
-<h1>Cadence</h1><p class="sub" id="range"></p>
+<h1>Cadence</h1><p class="sub"><span id="range"></span> <button class="lnk" id="reset" hidden>Switch all back on</button></p>
 <div class="bar2"><div class="seg" id="rangeSeg"><button data-range="90">3M</button><button data-range="180">6M</button><button data-range="365">1Y</button><button data-range="0">All</button></div>
 <div class="chips" id="sportChips"><button data-sport="run" style="--c:var(--run)"><i></i>Run</button><button data-sport="hike" style="--c:var(--hike)"><i></i>Hike</button><button data-sport="ride" style="--c:var(--ride)"><i></i>Ride</button></div></div>
 <div class="kpis" id="kpis"></div>
 <div class="cards">
-<div class="card wide"><h2>Weekly distance</h2><p class="note">Hover a week for the breakdown. Line is the 4-week average.</p><svg id="weekly"></svg><div class="leg"><span><i style="background:var(--run)"></i>Running</span><span><i style="background:var(--hike)"></i>Hiking</span><span><i style="background:var(--ride)"></i>Cycling</span></div></div>
+<div class="card wide"><h2>Weekly distance</h2><p class="note">Hover a week for the breakdown. Line is the 4-week average.<span id="wo"></span></p><svg id="weekly"></svg><div class="leg"><span><i style="background:var(--run)"></i>Running</span><span><i style="background:var(--hike)"></i>Hiking</span><span><i style="background:var(--ride)"></i>Cycling</span></div></div>
 <div class="card wide"><h2>Fitness and fatigue</h2><p class="note">Fitness (42-day load) vs fatigue (7-day load). <b id="form"></b></p><svg id="ff"></svg><div class="leg"><span><i style="background:var(--ride)"></i>Fitness</span><span><i style="background:var(--run)"></i>Fatigue</span></div></div>
-<div class="card"><h2>Pace trend</h2><p class="note">Runs of 5 km+. Click a dot to switch that run off or on. Higher is faster.</p><svg id="pace"></svg></div>
-<div class="card"><h2>Aerobic efficiency</h2><p class="note">Speed per heartbeat. Rising means fitter. Click a dot to toggle.</p><svg id="eff"></svg></div>
-<div class="card"><h2>Pace vs distance</h2><p class="note">Every run of 5 km+. Click a dot to toggle.</p><svg id="pvd"></svg></div>
+<div class="card"><h2>Pace trend</h2><p class="note">Runs of 5 km+. Click a dot to switch that run off or on. Higher is faster.<span id="po"></span></p><svg id="pace"></svg></div>
+<div class="card"><h2>Aerobic efficiency</h2><p class="note">Speed per heartbeat. Rising means fitter. Click a dot to toggle.<span id="eo"></span></p><svg id="eff"></svg></div>
+<div class="card"><h2>Pace vs distance</h2><p class="note">Every run of 5 km+. Click a dot to toggle.<span id="vo"></span></p><svg id="pvd"></svg></div>
 <div class="card"><h2>Year goal</h2><p class="note">Running km goal <input id="goal" type="number" min="1" value="1500"> <span id="proj"></span></p><svg id="gl"></svg></div>
 <div class="card"><h2>Bikes</h2><div id="bikes"><p class="note">Loading…</p></div><h2 style="margin-top:16px">Shoes</h2><p class="note" style="margin:0">Flagged at 700 km.</p><div id="shoes"></div></div>
-<div class="card"><h2>Activity calendar</h2><p class="note">Daily distance over 26 weeks</p><div class="scroll"><svg id="cal" style="min-width:520px"></svg></div></div>
-<div class="card wide"><div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><h2>Activities</h2><button class="lnk" id="reset" hidden>Switch all back on</button></div><p class="note" id="hid">Switch any activity off to remove it from every chart and total.</p><div id="list"></div><div style="text-align:center;margin-top:10px"><button class="lnk" id="more" hidden>Show more</button></div></div>
+<div class="card wide"><h2>Activity calendar</h2><p class="note">Daily distance over the last 52 weeks</p><div class="scroll"><svg id="cal" style="min-width:720px"></svg></div></div>
 </div>
 <p class="note" style="text-align:center;margin:22px 0"><a href="#" class="lnk" id="out">Sign out</a> · <a href="#" class="lnk" id="disc">Disconnect and delete my data</a> · Powered by Strava</p>
 </div>
@@ -87,13 +86,14 @@ const store={get(k,d){try{const v=JSON.parse(localStorage.getItem(k));return v==
 const st={range:store.get('cadence-range',365),sports:Object.assign({run:1,hike:1,ride:1},store.get('cadence-sports',{})),off:new Set(store.get('cadence-off',[])),more:60};
 const save=()=>{store.set('cadence-off',[...st.off]);store.set('cadence-range',st.range);store.set('cadence-sports',st.sports)};
 const nice=v=>{const p=10**Math.floor(Math.log10(v||1)),m=v/p;return(m<=1?1:m<=2?2:m<=5?5:10)*p};
+const ceilN=v=>4*([1,2,4,5,8,10,15,20,25,30,40,50,75,100].find(t=>t*4>=v)||Math.ceil(v/4));
 const trend=(a,n=5)=>a.map((p,i)=>{const q=a.slice(Math.max(0,i-n+1),i+1);return[p[0],sum(q,x=>x[1])/q.length]});
 function monthTicks(x0,x1){const o=[];for(let d=new Date(x0);;){d=new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth()+1,1));if(+d>x1)break;o.push([+d,mon(d)+(d.getUTCMonth()===0?" ’"+String(d.getUTCFullYear()).slice(2):'')])}const n=Math.ceil(o.length/9)||1;return o.filter((_,i)=>i%n===0)}
 function plot(id,o){const W=700,H=220,L=46,R=10,T=10,B=H-24,{x0,x1,y0,y1}=o,X=t=>L+(t-x0)/(x1-x0||1)*(W-L-R),Y=v=>B-(v-y0)/(y1-y0||1)*(B-T);let s='';
  for(let i=0;i<=4;i++){const v=y0+(y1-y0)*i/4;s+=`<line class="gl" x1="${L}" x2="${W-R}" y1="${Y(v)}" y2="${Y(v)}"/><text x="${L-7}" y="${Y(v)+3}" text-anchor="end">${(o.yf||Math.round)(v)}</text>`}
  (o.xt||monthTicks(x0,x1)).forEach(([v,l])=>s+=`<text x="${X(v)}" y="${H-6}" text-anchor="middle">${l}</text>`);
  if(o.area&&o.area.length)s+=`<path d="M${X(o.area[0][0])},${B} ${o.area.map(p=>'L'+X(p[0])+','+Y(p[1])).join(' ')} L${X(o.area[o.area.length-1][0])},${B}Z" fill="${o.areaC}" opacity=".13"/>`;
- const bw=(W-L-R)/(o.n||1);(o.bars||[]).forEach(b=>{let y=B;b.segs.forEach(([v,c])=>{const h=v/(y1-y0||1)*(B-T);y-=h;s+=`<rect x="${X(b.x)-bw/2+1.5}" y="${y}" width="${Math.max(bw-3,1)}" height="${h}" rx="3" fill="${c}"/>`});s+=`<rect data-tip="${esc(b.tip)}" x="${X(b.x)-bw/2}" y="${T}" width="${bw}" height="${B-T}" fill="transparent"/>`});
+ const bw=(W-L-R)/(o.n||1);(o.bars||[]).forEach(b=>{let y=B;b.segs.forEach(([v,c])=>{const h=v/(y1-y0||1)*(B-T);y-=h;s+=`<rect x="${X(b.x)-bw/2+1.5}" y="${y}" width="${Math.max(bw-3,1)}" height="${h}" rx="3" fill="${c}"/>`});if(b.clip)s+=`<path d="M${X(b.x)-4},${T+11}L${X(b.x)+4},${T+11}L${X(b.x)},${T+3}Z" fill="var(--card)"/>`;s+=`<rect data-tip="${esc(b.tip)}" x="${X(b.x)-bw/2}" y="${T}" width="${bw}" height="${B-T}" fill="transparent"/>`});
  (o.lines||[]).forEach(l=>{if(l.p.length>1)s+=`<polyline fill="none" stroke="${l.c}" stroke-width="${l.w||2.4}" stroke-linejoin="round" stroke-linecap="round" ${l.d?'stroke-dasharray="6 5"':''} points="${l.p.map(p=>X(p[0]).toFixed(1)+','+Y(p[1]).toFixed(1)).join(' ')}"/>`});
  (o.cols||[]).forEach(c=>s+=`<rect data-tip="${esc(c.tip)}" x="${X(c.x)-c.w/2}" y="${T}" width="${c.w}" height="${B-T}" fill="transparent"/>`);
  (o.dots||[]).forEach(d=>{const x=X(d.x).toFixed(1),y=Y(d.y).toFixed(1);s+=`<g data-k="${esc(d.k)}" data-tip="${esc(d.tip)}" class="dot${d.off?' off':''}"><circle cx="${x}" cy="${y}" r="14" fill="transparent"/><circle class="pt" cx="${x}" cy="${y}" r="5" fill="${d.c}"/></g>`});
@@ -110,8 +110,11 @@ function render(){
  // weekly
  const m0=t=>t-((new Date(t).getUTCDay()+6)%7)*DAY,nw=Math.min(104,Math.floor((m0(T0)-m0(start))/(7*DAY))+1),W0=m0(T0)-(nw-1)*7*DAY,wk=Array.from({length:nw},()=>({run:0,hike:0,ride:0}));
  act.forEach(a=>{const i=Math.floor((a.t-W0)/(7*DAY));if(i>=0&&i<nw)wk[i][a.ty]+=a.km});
- const tot=wk.map(w=>w.run+w.hike+w.ride),ma=tot.map((_,i)=>[W0+(i+.5)*7*DAY,sum(tot.slice(Math.max(0,i-3),i+1),x=>x)/Math.min(i+1,4)]);
- plot('weekly',{x0:W0,x1:W0+nw*7*DAY,y0:0,y1:nice(Math.max(...tot,1)),n:nw,none:!act.length,bars:wk.map((w,i)=>({x:W0+(i+.5)*7*DAY,segs:[[w.run,cv('run')],[w.hike,cv('hike')],[w.ride,cv('ride')]],tip:`<b>Week of ${dshort(W0+i*7*DAY)}</b><br>${tot[i].toFixed(1)} km<br>Run ${w.run.toFixed(1)} · Hike ${w.hike.toFixed(1)} · Ride ${w.ride.toFixed(1)}`})),lines:[{c:'var(--tx)',w:2,p:ma}]});
+ const tot=wk.map(w=>w.run+w.hike+w.ride),nz=tot.filter(v=>v>0).sort((a,b)=>a-b),q=f=>nz[Math.min(nz.length-1,Math.floor(f*nz.length))],mxT=Math.max(...tot,1);
+ const cap=nz.length>=6?ceilN(Math.min(mxT,Math.max(q(.75)+1.5*(q(.75)-q(.25)),q(.9)*1.1))):ceilN(mxT),nclip=tot.filter(v=>v>cap).length;
+ const ma=tot.map((_,i)=>[W0+(i+.5)*7*DAY,Math.min(cap,sum(tot.slice(Math.max(0,i-3),i+1),x=>x)/Math.min(i+1,4))]);
+ $('wo').textContent=nclip?` ${nclip} unusually big week${nclip>1?'s are':' is'} clipped at ${cap} km. Hover for the real total.`:'';
+ plot('weekly',{x0:W0,x1:W0+nw*7*DAY,y0:0,y1:cap,n:nw,none:!act.length,bars:wk.map((w,i)=>{const k=tot[i]>cap?cap/tot[i]:1;return{x:W0+(i+.5)*7*DAY,clip:k<1,segs:[[w.run*k,cv('run')],[w.hike*k,cv('hike')],[w.ride*k,cv('ride')]],tip:`<b>Week of ${dshort(W0+i*7*DAY)}</b><br>${tot[i].toFixed(1)} km<br>Run ${w.run.toFixed(1)} · Hike ${w.hike.toFixed(1)} · Ride ${w.ride.toFixed(1)}`}}),lines:[{c:'var(--tx)',w:2,p:ma}]});
  // fitness
  const on=A.filter(a=>st.sports[a.ty]&&!st.off.has(a.key)),d0=A[0].t,load=new Map();on.forEach(a=>load.set(a.t,(load.get(a.t)||0)+(a.ss||a.mt/60*.6)));
  let c=0,f=0;const days=Math.round((T0-d0)/DAY),show=Math.max(st.range||days,90),C=[],F=[];
@@ -120,38 +123,40 @@ function render(){
  plot('ff',{x0:C[0][0],x1:T0,y0:0,y1:nice(Math.max(...C.map(p=>p[1]),...F.map(p=>p[1]),1)*1.05),none:!on.length,area:C,areaC:cv('ride'),lines:[{c:cv('ride'),p:C},{c:cv('run'),p:F}],
   cols:Array.from({length:nc},(_,i)=>{const j=Math.round(i/Math.max(nc-1,1)*(C.length-1));return{x:C[j][0],w:650/nc,tip:`<b>${dshort(C[j][0])}</b><br>Fitness ${C[j][1].toFixed(0)} · Fatigue ${F[j][1].toFixed(0)}<br>Form ${C[j][1]-F[j][1]>0?'+':''}${(C[j][1]-F[j][1]).toFixed(0)}`}})});
  // dot charts
- const rc=cand.filter(a=>a.ty==='run'&&a.km>=5&&a.mt/a.km<480),pc=a=>a.mt/a.km,rng=(v,pad)=>[Math.min(...v)-pad,Math.max(...v)+pad];
+ const fence=(v,k=3)=>{const s=v.slice().sort((a,b)=>a-b),g=f=>s[Math.min(s.length-1,Math.floor(f*s.length))],i=g(.75)-g(.25);return s.length<8?[-Infinity,Infinity]:[g(.25)-k*i,g(.75)+k*i]},inF=(v,r)=>v>=r[0]&&v<=r[1],note=(id,n)=>{$(id).textContent=n?` ${n} outlier${n>1?'s':''} hidden.`:''};
+ const rc0=cand.filter(a=>a.ty==='run'&&a.km>=5&&a.mt/a.km<480),pc=a=>a.mt/a.km,effOf=a=>a.km*1000/(a.mt/60)/a.hr,rng=(v,pad)=>[Math.min(...v)-pad,Math.max(...v)+pad];
+ const fp=fence(rc0.map(pc)),rc=rc0.filter(a=>inF(pc(a),fp));note('po',rc0.length-rc.length);
  const pd=rc.map(a=>({x:a.t,y:-pc(a),k:a.key,off:st.off.has(a.key),c:cv('run'),tip:dotTip(a,fmt(pc(a))+' /km')}));
  if(pd.length){const[y0,y1]=rng(pd.map(d=>d.y),6);plot('pace',{x0:start,x1:T0,y0,y1,yf:v=>fmt(-v),dots:pd,lines:[{c:'var(--tx)',p:trend(pd.filter(d=>!d.off).map(d=>[d.x,d.y]))}]})}else plot('pace',{x0:0,x1:1,y0:0,y1:1,none:1});
- const ef=rc.filter(a=>a.hr).map(a=>({x:a.t,y:a.km*1000/(a.mt/60)/a.hr,k:a.key,off:st.off.has(a.key),c:cv('ride'),tip:dotTip(a,Math.round(a.hr)+' bpm')}));
+ const eh=rc.filter(a=>a.hr),fe=fence(eh.map(effOf)),ehIn=eh.filter(a=>inF(effOf(a),fe));note('eo',eh.length-ehIn.length);
+ const ef=ehIn.map(a=>({x:a.t,y:effOf(a),k:a.key,off:st.off.has(a.key),c:cv('ride'),tip:dotTip(a,Math.round(a.hr)+' bpm')}));
  if(ef.length){const[y0,y1]=rng(ef.map(d=>d.y),.03);plot('eff',{x0:start,x1:T0,y0,y1,yf:v=>v.toFixed(2),dots:ef,lines:[{c:'var(--tx)',p:trend(ef.filter(d=>!d.off).map(d=>[d.x,d.y]))}]})}else plot('eff',{x0:0,x1:1,y0:0,y1:1,none:1});
- if(pd.length){const xs=rc.map(a=>a.km),xa=Math.floor(Math.min(...xs)),xb=Math.ceil(Math.max(...xs)),[y0,y1]=rng(pd.map(d=>d.y),6),st5=nice((xb-xa)/6)||1;
-  plot('pvd',{x0:xa,x1:xb,y0,y1,yf:v=>fmt(-v),xt:Array.from({length:Math.floor((xb-xa)/st5)+1},(_,i)=>[xa+i*st5,(xa+i*st5)+' km']),dots:rc.map(a=>({x:a.km,y:-pc(a),k:a.key,off:st.off.has(a.key),c:cv('run'),tip:dotTip(a,fmt(pc(a))+' /km')}))})}else plot('pvd',{x0:0,x1:1,y0:0,y1:1,none:1});
+ const fx=fence(rc.map(a=>a.km)),rv=rc.filter(a=>inF(a.km,fx));note('vo',rc0.length-rv.length);
+ if(rv.length){const xs=rv.map(a=>a.km),xa=Math.floor(Math.min(...xs)),xb=Math.ceil(Math.max(...xs)),[y0,y1]=rng(rv.map(a=>-pc(a)),6),st5=nice((xb-xa)/6)||1;
+  plot('pvd',{x0:xa,x1:xb,y0,y1,yf:v=>fmt(-v),xt:Array.from({length:Math.floor((xb-xa)/st5)+1},(_,i)=>[xa+i*st5,(xa+i*st5)+' km']),dots:rv.map(a=>({x:a.km,y:-pc(a),k:a.key,off:st.off.has(a.key),c:cv('run'),tip:dotTip(a,fmt(pc(a))+' /km')}))})}else plot('pvd',{x0:0,x1:1,y0:0,y1:1,none:1});
  // goal
  const yr=new Date(T0).getUTCFullYear(),Y0=Date.UTC(yr,0,1),Y1=Date.UTC(yr,11,31),ry=A.filter(a=>a.ty==='run'&&!st.off.has(a.key)&&a.t>=Y0),byd=new Map();ry.forEach(a=>byd.set(a.t,(byd.get(a.t)||0)+a.km));
  let cum=0;const cp=[[Y0,0],...[...byd.keys()].sort((a,b)=>a-b).map(t=>[t,cum+=byd.get(t)]),[T0,cum]],prj=cum/((T0-Y0)/DAY+1)*365,g=+$('goal').value||1500;store.set('cadence-goal',g);
  $('proj').textContent=`· ${Math.round(cum)} km so far, on course for ${Math.round(prj)} km`;
  plot('gl',{x0:Y0,x1:Y1,y0:0,y1:nice(Math.max(g,prj,1)*1.05),lines:[{c:'var(--mut)',d:1,w:1.6,p:[[Y0,0],[Y1,g]]},{c:cv('hike'),d:1,p:[[T0,cum],[Y1,prj]]},{c:cv('run'),p:cp}]});
  // calendar
- const day=new Map();on.forEach(a=>day.set(a.t,(day.get(a.t)||0)+a.km));const c0=m0(T0)-25*7*DAY;let cs='';
- for(let w=0;w<26;w++)for(let d=0;d<7;d++){const t=c0+(w*7+d)*DAY;if(t>T0)continue;const v=day.get(t)||0;cs+=`<rect data-tip="${dshort(t)}<br>${v?v.toFixed(1)+' km':'Rest day'}" x="${w*22+2}" y="${d*22+2}" width="18" height="18" rx="5" fill="${cv(v===0?'h0':v<4?'h1':v<9?'h2':'h3')}"/>`}
- $('cal').setAttribute('viewBox','0 0 576 158');$('cal').innerHTML=cs;
- // list
- const hid=cand.length-act.length;$('reset').hidden=!st.off.size;$('hid').textContent=hid?`${hid} switched off. They are excluded from every chart and total.`:'Switch any activity off to remove it from every chart and total.';
- const rows=cand.slice().reverse();$('list').innerHTML=rows.slice(0,st.more).map(a=>`<button class="act${st.off.has(a.key)?' off':''}" data-k="${esc(a.key)}"><i style="background:${cv(a.ty)}"></i><span class="an">${esc(a.n)}</span><span class="am">${dshort(a.t)} · ${a.km.toFixed(1)} km${a.ty==='run'?' · '+fmt(a.mt/a.km)+'/km':''}</span><span class="sw"></span></button>`).join('');
- $('more').hidden=rows.length<=st.more}
+ const day=new Map();on.forEach(a=>day.set(a.t,(day.get(a.t)||0)+a.km));const c0=m0(T0)-51*7*DAY;let cs='',pm=-1;
+ for(let w=0;w<52;w++){const wm=new Date(c0+w*7*DAY).getUTCMonth();if(wm!==pm){cs+=`<text x="${w*22+2}" y="10">${mon(c0+w*7*DAY)}</text>`;pm=wm}
+  for(let d=0;d<7;d++){const t=c0+(w*7+d)*DAY;if(t>T0)continue;const v=day.get(t)||0;cs+=`<rect data-tip="${dshort(t)}<br>${v?v.toFixed(1)+' km':'Rest day'}" x="${w*22+2}" y="${d*22+16}" width="18" height="18" rx="5" fill="${cv(v===0?'h0':v<4?'h1':v<9?'h2':'h3')}"/>`}}
+ $('cal').setAttribute('viewBox','0 0 1146 172');$('cal').innerHTML=cs;
+ $('reset').hidden=!st.off.size}
 const isBike=g=>String(g.id).startsWith('b');
-function drawGear(gs){const list=(arr,shoe)=>{if(!arr.length)return'<p class="note">None to show.</p>';const mx=arr[0].distance/1000||1;return arr.map(g=>{const km=g.distance/1000,warn=shoe&&km>700;return`<div class="gr"><div class="t"><span>${esc(g.name||g.nickname||'Unnamed')}</span><b>${Math.round(km).toLocaleString()} km${warn?' · replace soon':''}</b></div><div class="bar"><b style="width:${km/mx*100}%;${warn?'background:var(--run)':''}"></b></div></div>`}).join('')};
+function drawGear(gs){gs=gs.filter(g=>!g.retired&&!/retired/i.test((g.name||'')+' '+(g.nickname||'')));const list=(arr,shoe)=>{if(!arr.length)return'<p class="note">None to show.</p>';const mx=arr[0].distance/1000||1;return arr.map(g=>{const km=g.distance/1000,warn=shoe&&km>700;return`<div class="gr"><div class="t"><span>${esc(g.name||g.nickname||'Unnamed')}</span><b>${Math.round(km).toLocaleString()} km${warn?' · replace soon':''}</b></div><div class="bar"><b style="width:${km/mx*100}%;${warn?'background:var(--run)':''}"></b></div></div>`}).join('')};
  $('bikes').innerHTML=list(gs.filter(isBike),false);$('shoes').innerHTML=list(gs.filter(g=>!isBike(g)),true)}
 async function loadGear(){
  const ids=[...new Set(A.map(a=>a.g).filter(Boolean))];
- const gs=(await Promise.all(ids.map(i=>get('/api/gear?id='+encodeURIComponent(i)).then(r=>r.ok?r.json():null).catch(()=>null)))).filter(Boolean).filter(g=>!/retired/i.test((g.name||'')+' '+(g.nickname||''))).sort((a,b)=>b.distance-a.distance);
+ const gs=(await Promise.all(ids.map(i=>get('/api/gear?id='+encodeURIComponent(i)).then(r=>r.ok?r.json():null).catch(()=>null)))).filter(Boolean).sort((a,b)=>b.distance-a.distance);
  store.set('cadence-gear',gs);drawGear(gs)}
 const toggle=k=>{st.off.has(k)?st.off.delete(k):st.off.add(k);save();$('tip').hidden=true;render()};
 document.addEventListener('click',e=>{const t=e.target.closest('[data-k]');if(t)return toggle(t.getAttribute('data-k'));
  const r=e.target.closest('[data-range]');if(r){st.range=+r.dataset.range;save();return render()}
  const s=e.target.closest('[data-sport]');if(s){st.sports[s.dataset.sport]=st.sports[s.dataset.sport]?0:1;save();return render()}
- if(e.target.closest('#reset')){st.off.clear();save();render()}if(e.target.closest('#more')){st.more+=60;render()}});
+ if(e.target.closest('#reset')){st.off.clear();save();render()}});
 const tipEl=$('tip'),showTip=e=>{const t=e.target.closest&&e.target.closest('[data-tip]');if(!t){tipEl.hidden=true;return}tipEl.innerHTML=t.getAttribute('data-tip');tipEl.hidden=false;const r=tipEl.getBoundingClientRect(),x=Math.max(8,Math.min(e.clientX+14,innerWidth-r.width-8)),y=e.clientY+18+r.height>innerHeight?e.clientY-r.height-12:e.clientY+18;tipEl.style.left=x+'px';tipEl.style.top=y+'px'};
 document.addEventListener('pointermove',showTip);document.addEventListener('pointerdown',showTip);
 $('goal').value=store.get('cadence-goal',1500);$('goal').oninput=render;
