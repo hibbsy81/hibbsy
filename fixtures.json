@@ -1,44 +1,44 @@
 {
- "updated": "27 Nov 2026, 01:47",
- "updated_iso": "2026-11-27T01:47:15.121749+00:00",
+ "updated": "27 Nov 2026, 16:47",
+ "updated_iso": "2026-11-27T16:47:01.319069+00:00",
  "health": {
   "mc": {
-   "last_ok_iso": "2026-11-26T17:01:44.593736+00:00",
-   "from": null,
+   "last_ok_iso": "2026-11-27T16:47:01.319069+00:00",
+   "from": "man-city-on-tv.html",
    "count": 14
   },
   "mw": {
-   "last_ok_iso": "2026-11-26T17:01:44.593736+00:00",
-   "from": null,
+   "last_ok_iso": "2026-11-27T16:47:01.319069+00:00",
+   "from": "man-city-women-on-tv.html",
    "count": 3
   },
   "aw": {
-   "last_ok_iso": "2026-11-26T17:01:44.593736+00:00",
-   "from": null,
+   "last_ok_iso": "2026-11-27T16:47:01.319069+00:00",
+   "from": "arsenal-women-on-tv.html",
    "count": 3
   },
   "mu": {
-   "last_ok_iso": "2026-11-26T17:01:44.593736+00:00",
-   "from": null,
+   "last_ok_iso": "2026-11-27T16:47:01.319069+00:00",
+   "from": "man-utd-women-on-tv.html",
    "count": 2
   },
   "cw": {
-   "last_ok_iso": "2026-11-26T17:01:44.593736+00:00",
-   "from": null,
+   "last_ok_iso": "2026-11-27T16:47:01.319069+00:00",
+   "from": "chelsea-women-on-tv.html",
    "count": 3
   },
   "li": {
-   "last_ok_iso": "2026-11-26T17:01:44.593736+00:00",
-   "from": null,
+   "last_ok_iso": "2026-11-27T16:47:01.319069+00:00",
+   "from": "england-women-on-tv.html",
    "count": 2
   },
   "en": {
-   "last_ok_iso": "2026-11-26T17:01:44.593736+00:00",
-   "from": null,
+   "last_ok_iso": "2026-11-27T16:47:01.319069+00:00",
+   "from": "england-on-tv.html",
    "count": 2
   },
   "f1": {
-   "last_ok_iso": "2026-11-27T01:47:15.121749+00:00",
+   "last_ok_iso": "2026-11-27T16:47:01.319069+00:00",
    "from": "api.jolpi.ca",
    "count": 4
   }
@@ -409,6 +409,7 @@
    "a": "Man City",
    "ch": [
     "TNT Sports 1",
+    "TNT Sports Ultimate",
     "HBO Max"
    ],
    "note": "",
